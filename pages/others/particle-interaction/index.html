@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Gesture-Controlled 3D Particle System</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- MediaPipe Hands & Camera Utils -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #050505;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        #video-preview {
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            aspect-ratio: 4 / 3;
+            border-radius: 12px;
+            transform: scaleX(-1);
+            /* mirrored preview */
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: #000;
+            object-fit: cover;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+        }
+
+        /* custom panel styling */
+        .glass-panel {
+            background: rgba(20, 20, 20, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .btn-option {
+            transition: all 0.3s ease;
+        }
+
+        .btn-option:hover,
+        .btn-option.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        #loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: #000;
+            z-index: 50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            flex-direction: column;
+            transition: opacity 0.5s;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Loading Screen -->
+    <div id="loading-overlay">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+        <p class="text-lg tracking-widest text-gray-300">Initializing AI model and particle engine...</p>
+        <p class="text-xs text-gray-500 mt-2">First load may take a few seconds</p>
+    </div>
+
+    <!-- UI Control Panel -->
+    <div id="control-panel" class="absolute top-6 left-6 z-20 w-72 glass-panel rounded-2xl p-4 text-white">
+        <div id="panel-toggle" class="cursor-pointer select-none">
+            <h1 class="text-xl font-bold mb-1 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
+                Particle Morph Controller</h1>
+            <p class="text-xs text-gray-400">Double-click to toggle the control panel</p>
+            <p class="text-[11px] text-gray-500 mt-1">Raise hand: fist to contract, open palm to expand</p>
+        </div>
+
+        <div id="panel-body" class="space-y-6 mt-4 hidden">
+            <!-- Color Palette -->
+            <div class="space-y-2">
+                <label class="text-xs uppercase tracking-wider text-gray-400 mb-1 block">Custom Palette</label>
+                <div class="flex items-center justify-between gap-2">
+                    <input type="color" id="color-1" value="#ff0055"
+                        class="w-10 h-10 rounded cursor-pointer border-none bg-transparent" title="Color 1">
+                    <input type="color" id="color-2" value="#00ffff"
+                        class="w-10 h-10 rounded cursor-pointer border-none bg-transparent" title="Color 2">
+                    <input type="color" id="color-3" value="#ffff00"
+                        class="w-10 h-10 rounded cursor-pointer border-none bg-transparent" title="Color 3">
+                </div>
+            </div>
+
+            <!-- Shape Templates -->
+            <div class="space-y-3">
+                <label class="text-xs uppercase tracking-wider text-gray-400 mb-1 block">Choose Shape</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <button
+                        class="btn-option active w-full py-2 px-3 rounded-lg border border-white/10 text-sm text-left flex items-center gap-2"
+                        data-shape="heart">
+                        <span>❤️</span> Heart
+                    </button>
+                    <button
+                        class="btn-option w-full py-2 px-3 rounded-lg border border-white/10 text-sm text-left flex items-center gap-2"
+                        data-shape="saturn">
+                        <span>🪐</span> Saturn
+                    </button>
+                    <button
+                        class="btn-option w-full py-2 px-3 rounded-lg border border-white/10 text-sm text-left flex items-center gap-2"
+                        data-shape="tree">
+                        <span>🎄</span> Tree
+                    </button>
+                    <button
+                        class="btn-option w-full py-2 px-3 rounded-lg border border-white/10 text-sm text-left flex items-center gap-2"
+                        data-shape="buddha">
+                        <span>🧘</span> Zen
+                    </button>
+                    <button
+                        class="btn-option w-full py-2 px-3 rounded-lg border border-white/10 text-sm text-left flex items-center gap-2"
+                        data-shape="fireworks">
+                        <span>🎆</span> Fireworks
+                    </button>
+                    <button
+                        class="btn-option w-full py-2 px-3 rounded-lg border border-white/10 text-sm text-left flex items-center gap-2"
+                        data-shape="sphere">
+                        <span>🔮</span> Sphere
+                    </button>
+                </div>
+            </div>
+
+            <!-- Camera & Status -->
+            <div class="pt-4 border-t border-white/10 space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs uppercase tracking-wider text-gray-400">Camera Preview</span>
+                    <div id="gesture-status" class="text-xs font-bold text-blue-400">Waiting for camera...</div>
+                </div>
+                <canvas id="video-preview"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Input (Hidden but used for processing) -->
+    <video id="video-input" class="hidden"></video>
+
+    <!-- 3D Canvas -->
+    <div id="canvas-container"></div>
+
+    <script>
+        // --- 1. Global config & state ---
+        const config = {
+            particleCount: 20000,
+            particleSize: 0.18,
+            lerpSpeed: 0.08, // morph speed
+            handSensitivity: 0.1 // hand reaction speed
+        };
+
+        const state = {
+            currentShape: 'heart',
+            handOpenness: 0.5, // 0 = fist, 1 = open palm
+            targetHandOpenness: 0.5,
+            isHandDetected: false,
+            handRotation: 0,
+            handRotationTarget: 0,
+            // default palette
+            palette: [
+                new THREE.Color('#ff0000'), // Red
+                new THREE.Color('#ffaf00'), // Orange
+                new THREE.Color('#ff007b')  // Pink (Default for Heart)
+            ]
+        };
+
+        // Initialize input pickers to match default palette
+        document.getElementById('color-1').value = '#ff0000';
+        document.getElementById('color-2').value = '#ffaf00';
+        document.getElementById('color-3').value = '#ff007b';
+
+        // Gesture tracking helpers
+        let lastFingerX = null;
+        let lastFingerTimestamp = 0;
+        let lastGestureSwitch = 0;
+
+        // --- 2. Three.js setup ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x050505, 0.02);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.z = 30;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        // --- 3. Particle system core ---
+        function getTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 32;
+            canvas.height = 32;
+            const context = canvas.getContext('2d');
+            const gradient = context.createRadialGradient(16, 16, 0, 16, 16, 16);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)');
+            gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.2)');
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            context.fillStyle = gradient;
+            context.fillRect(0, 0, 32, 32);
+            const texture = new THREE.Texture(canvas);
+            texture.needsUpdate = true;
+            return texture;
+        }
+
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(config.particleCount * 3);
+        const colors = new Float32Array(config.particleCount * 3);
+        const targetPositions = new Float32Array(config.particleCount * 3);
+        const targetColors = new Float32Array(config.particleCount * 3);
+        const randoms = new Float32Array(config.particleCount);
+
+        for (let i = 0; i < config.particleCount; i++) {
+            positions[i * 3] = (Math.random() - 0.5) * 50;
+            positions[i * 3 + 1] = (Math.random() - 0.5) * 50;
+            positions[i * 3 + 2] = (Math.random() - 0.5) * 50;
+            randoms[i] = Math.random();
+
+            // initial color
+            const c = state.palette[Math.floor(Math.random() * 3)];
+            colors[i * 3] = c.r;
+            colors[i * 3 + 1] = c.g;
+            colors[i * 3 + 2] = c.b;
+        }
+
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        const material = new THREE.PointsMaterial({
+            size: config.particleSize,
+            vertexColors: true,
+            map: getTexture(),
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            transparent: true,
+            opacity: 0.8
+        });
+
+        const particleSystem = new THREE.Points(geometry, material);
+        scene.add(particleSystem);
+
+        // --- 4. Shape generators ---
+        function getPaletteColor() {
+            return state.palette[Math.floor(Math.random() * 3)];
+        }
+
+        const Shapes = {
+            sphere: (i) => {
+                const r = 10;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos((Math.random() * 2) - 1);
+                const col = getPaletteColor();
+                return {
+                    x: r * Math.sin(phi) * Math.cos(theta),
+                    y: r * Math.sin(phi) * Math.sin(theta),
+                    z: r * Math.cos(phi),
+                    r: col.r, g: col.g, b: col.b
+                };
+            },
+            heart: (i) => {
+                let t = Math.random() * Math.PI * 2;
+                let r = Math.sqrt(Math.random());
+                let x2d = r * (16 * Math.pow(Math.sin(t), 3));
+                let y2d = r * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+                let zMax = 8 * (1 - Math.pow(r, 1.5));
+                let z = (Math.random() - 0.5) * zMax;
+                const scale = 0.8;
+                const col = getPaletteColor();
+
+                return {
+                    x: x2d * scale,
+                    y: (y2d * scale) + 3,
+                    z: z * scale,
+                    r: col.r, g: col.g, b: col.b
+                };
+            },
+            saturn: (i) => {
+                const isRing = Math.random() > 0.6;
+                if (isRing) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = 12 + Math.random() * 8;
+                    // White ring by default
+                    const col = state.palette[1];
+                    return {
+                        x: Math.cos(angle) * radius,
+                        y: (Math.random() - 0.5) * 0.5,
+                        z: Math.sin(angle) * radius,
+                        r: col.r, g: col.g, b: col.b
+                    };
+                } else {
+                    const r = 7;
+                    const theta = Math.random() * Math.PI * 2;
+                    const phi = Math.acos((Math.random() * 2) - 1);
+                    // Orange planet body
+                    const col = state.palette[0];
+                    return {
+                        x: r * Math.sin(phi) * Math.cos(theta),
+                        y: r * Math.sin(phi) * Math.sin(theta),
+                        z: r * Math.cos(phi),
+                        r: col.r, g: col.g, b: col.b
+                    };
+                }
+            },
+            tree: (i) => {
+                const rand = Math.random();
+                let x, y, z;
+                let col;
+
+                if (rand < 0.1) { // Trunk
+                    const theta = Math.random() * Math.PI * 2;
+                    const radius = Math.random() * 1.5;
+                    const height = Math.random() * 6;
+                    x = Math.cos(theta) * radius;
+                    y = height - 12;
+                    z = Math.sin(theta) * radius;
+                    // Palette 1 (Brown)
+                    col = state.palette[1];
+                } else { // Leaves
+                    const h = Math.random() * 18;
+                    const coneY = h - 6;
+                    const maxR = 9 * (1 - h / 18);
+                    const theta = Math.random() * Math.PI * 2;
+                    const rad = Math.sqrt(Math.random()) * maxR;
+
+                    x = Math.cos(theta) * rad;
+                    y = coneY;
+                    z = Math.sin(theta) * rad;
+
+                    if (Math.random() < 0.1) { // Ornaments
+                        // Palette 0 (Red)
+                        col = state.palette[0];
+                        x *= 1.1; z *= 1.1; y += 0.2;
+                    } else { // Foliage
+                        // Palette 2 (Green)
+                        col = state.palette[2];
+                    }
+                }
+                return { x, y, z, r: col.r, g: col.g, b: col.b };
+            },
+            buddha: (i) => {
+                const rand = Math.random();
+                let x, y, z;
+                const col = getPaletteColor();
+
+                if (rand < 0.2) { // head
+                    const r = 2.5;
+                    const theta = Math.random() * Math.PI * 2;
+                    const phi = Math.acos((Math.random() * 2) - 1);
+                    x = r * Math.sin(phi) * Math.cos(theta);
+                    y = r * Math.sin(phi) * Math.sin(theta) + 7;
+                    z = r * Math.cos(phi);
+                } else if (rand < 0.6) { // torso
+                    const r = 4.5;
+                    const theta = Math.random() * Math.PI * 2;
+                    const phi = Math.acos((Math.random() * 2) - 1);
+                    x = r * Math.sin(phi) * Math.cos(theta);
+                    y = r * Math.sin(phi) * Math.sin(theta) + 1;
+                    z = r * Math.cos(phi);
+                } else { // legs
+                    const r = 7;
+                    const theta = Math.random() * Math.PI * 2;
+                    const phi = Math.acos((Math.random() * 2) - 1);
+                    x = r * Math.sin(phi) * Math.cos(theta);
+                    y = (r * Math.sin(phi) * Math.sin(theta)) * 0.4 - 4;
+                    z = r * Math.cos(phi);
+                }
+                return { x, y, z, r: col.r, g: col.g, b: col.b };
+            },
+            fireworks: (i) => {
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos((Math.random() * 2) - 1);
+                const r = 5 + Math.random() * 25;
+                const col = getPaletteColor();
+                return {
+                    x: r * Math.sin(phi) * Math.cos(theta),
+                    y: r * Math.sin(phi) * Math.sin(theta),
+                    z: r * Math.cos(phi),
+                    r: col.r, g: col.g, b: col.b
+                };
+            }
+        };
+
+        // Compute target positions and colors
+        function calculateTargets(shapeName) {
+            const generator = Shapes[shapeName] || Shapes.sphere;
+            for (let i = 0; i < config.particleCount; i++) {
+                const data = generator(i);
+                targetPositions[i * 3] = data.x;
+                targetPositions[i * 3 + 1] = data.y;
+                targetPositions[i * 3 + 2] = data.z;
+
+                targetColors[i * 3] = data.r;
+                targetColors[i * 3 + 1] = data.g;
+                targetColors[i * 3 + 2] = data.b;
+            }
+
+            if (shapeName === 'fireworks') {
+                const posAttr = geometry.attributes.position;
+                const arr = posAttr.array;
+                for (let k = 0; k < arr.length; k++) arr[k] = 0;
+                posAttr.needsUpdate = true;
+            }
+        }
+
+        // Initial target generation
+        calculateTargets('heart');
+
+        // --- 5. MediaPipe Hands integration ---
+        const videoElement = document.getElementById('video-input');
+        const canvasElement = document.getElementById('video-preview');
+        const canvasCtx = canvasElement.getContext('2d');
+        const statusDiv = document.getElementById('gesture-status');
+
+        // Match camera resolution to avoid stretching
+        canvasElement.width = 320;
+        canvasElement.height = 240;
+
+        function palmYawFromLandmarks(landmarks) {
+            const wrist = landmarks[0];
+            const indexMcp = landmarks[5];
+            const pinkyMcp = landmarks[17];
+
+            const v1 = { x: indexMcp.x - wrist.x, y: indexMcp.y - wrist.y, z: indexMcp.z - wrist.z };
+            const v2 = { x: pinkyMcp.x - wrist.x, y: pinkyMcp.y - wrist.y, z: pinkyMcp.z - wrist.z };
+
+            // Palm normal via cross product to distinguish front/back
+            const normal = {
+                x: v1.y * v2.z - v1.z * v2.y,
+                y: v1.z * v2.x - v1.x * v2.z,
+                z: v1.x * v2.y - v1.y * v2.x
+            };
+
+            const len = Math.hypot(normal.x, normal.y, normal.z);
+            if (len < 1e-5) return state.handRotationTarget; // fallback when tracking is unstable
+
+            // Yaw around camera axis; positive direction follows hand rotation
+            return Math.atan2(normal.x, normal.y);
+        }
+
+        function shortestAngleDiff(target, current) {
+            const diff = target - current;
+            return Math.atan2(Math.sin(diff), Math.cos(diff));
+        }
+
+        function onResults(results) {
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                state.isHandDetected = true;
+                const landmarks = results.multiHandLandmarks[0];
+                drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, { color: '#00FF00', lineWidth: 2 });
+                const wrist = landmarks[0];
+                const tips = [4, 8, 12, 16, 20];
+                let totalDist = 0;
+                tips.forEach(idx => {
+                    const tip = landmarks[idx];
+                    totalDist += Math.sqrt(Math.pow(tip.x - wrist.x, 2) + Math.pow(tip.y - wrist.y, 2));
+                });
+                let openness = (totalDist / 5 - 0.15) / (0.45 - 0.15);
+                openness = Math.max(0, Math.min(1, openness));
+                state.targetHandOpenness = openness;
+                statusDiv.innerText = openness > 0.6 ? "State: Open (expand)" : (openness < 0.3 ? "State: Fist (contract)" : "State: Neutral");
+                statusDiv.className = openness > 0.6 ? "text-xs font-bold text-red-400" : (openness < 0.3 ? "text-xs font-bold text-blue-400" : "text-xs font-bold text-green-400");
+
+                // Palm orientation -> control rotation (using palm normal to avoid flips)
+                state.handRotationTarget = palmYawFromLandmarks(landmarks);
+
+                // Horizontal finger swipe -> switch shapes
+                const avgTipX = tips.reduce((sum, idx) => sum + landmarks[idx].x, 0) / tips.length;
+                const now = Date.now();
+                if (lastFingerX !== null) {
+                    const deltaX = avgTipX - lastFingerX;
+                    const elapsed = now - lastFingerTimestamp;
+                    if (elapsed > 30 && Math.abs(deltaX) > 0.12 && (now - lastGestureSwitch) > 700) {
+                        gestureSwitch(deltaX > 0 ? 1 : -1);
+                        lastGestureSwitch = now;
+                    }
+                }
+                lastFingerX = avgTipX;
+                lastFingerTimestamp = now;
+            } else {
+                state.isHandDetected = false;
+                state.targetHandOpenness = 0.5 + Math.sin(Date.now() * 0.002) * 0.1;
+                statusDiv.innerText = "No hand detected";
+                statusDiv.className = "text-xs font-bold text-gray-500";
+                lastFingerX = null;
+                lastFingerTimestamp = 0;
+            }
+            canvasCtx.restore();
+        }
+
+        const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+        hands.onResults(onResults);
+
+        const cameraUtils = new Camera(videoElement, {
+            onFrame: async () => { await hands.send({ image: videoElement }); },
+            width: 320, height: 240
+        });
+        cameraUtils.start().then(() => {
+            document.getElementById('loading-overlay').style.opacity = '0';
+            setTimeout(() => document.getElementById('loading-overlay').remove(), 500);
+        }).catch(err => {
+            console.error(err);
+        });
+
+        // --- 6. Interaction logic & animation loop ---
+
+        // Default palette per shape
+        const shapePalettes = {
+            heart: ['#ff0000', '#ffaf00', '#ff007b'], // Red, Orange, Pink
+            saturn: ['#ffa500', '#ffffff', '#007bff'], // Orange planet, White ring, Blue accent
+            tree: ['#ff0000', '#8b4513', '#008000']   // Red, Brown, Green
+        };
+
+        const shapeButtons = document.querySelectorAll('.btn-option');
+        const shapeOrder = Array.from(shapeButtons).map(btn => btn.getAttribute('data-shape'));
+        const panelBody = document.getElementById('panel-body');
+        const panelToggle = document.getElementById('panel-toggle');
+        let panelOpen = false;
+
+        function applyShape(shape) {
+            shapeButtons.forEach(b => b.classList.toggle('active', b.getAttribute('data-shape') === shape));
+            state.currentShape = shape;
+
+            if (shapePalettes[shape]) {
+                const newColors = shapePalettes[shape];
+                state.palette = newColors.map(c => new THREE.Color(c));
+                document.getElementById('color-1').value = newColors[0];
+                document.getElementById('color-2').value = newColors[1];
+                document.getElementById('color-3').value = newColors[2];
+            }
+
+            calculateTargets(shape);
+        }
+
+        function gestureSwitch(direction) {
+            const idx = shapeOrder.indexOf(state.currentShape);
+            if (idx === -1) return;
+            const nextIdx = (idx + (direction > 0 ? 1 : -1) + shapeOrder.length) % shapeOrder.length;
+            applyShape(shapeOrder[nextIdx]);
+        }
+
+        shapeButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const shape = e.currentTarget.getAttribute('data-shape');
+                applyShape(shape);
+            });
+        });
+
+        panelToggle.addEventListener('dblclick', () => {
+            panelOpen = !panelOpen;
+            panelBody.classList.toggle('hidden', !panelOpen);
+        });
+
+        // Color picker listeners
+        ['color-1', 'color-2', 'color-3'].forEach((id, index) => {
+            document.getElementById(id).addEventListener('input', (e) => {
+                state.palette[index] = new THREE.Color(e.target.value);
+                calculateTargets(state.currentShape);
+            });
+        });
+
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
+
+            state.handOpenness += (state.targetHandOpenness - state.handOpenness) * config.handSensitivity;
+
+            const posAttr = geometry.attributes.position;
+            const colAttr = geometry.attributes.color;
+            const currentPos = posAttr.array;
+            const currentCols = colAttr.array;
+
+            // Expansion factor from hand openness
+            let expansionFactor = 1.0;
+            // Fireworks: more openness = larger spread, capped
+            if (state.currentShape === 'fireworks') {
+                expansionFactor = 0.2 + state.handOpenness * 2.5;
+            } else {
+                expansionFactor = 0.5 + state.handOpenness * 1.5;
+            }
+
+            for (let i = 0; i < config.particleCount; i++) {
+                const ix = i * 3;
+                const iy = i * 3 + 1;
+                const iz = i * 3 + 2;
+
+                let tx = targetPositions[ix];
+                let ty = targetPositions[iy];
+                let tz = targetPositions[iz];
+
+                // Apply gesture scaling
+                tx *= expansionFactor;
+                ty *= expansionFactor;
+                tz *= expansionFactor;
+
+                // Breathing noise
+                const noise = Math.sin(time * 2 + randoms[i] * 10) * (0.2 + state.handOpenness);
+                if (state.currentShape !== 'tree') {
+                    tx += noise; ty += noise; tz += noise;
+                }
+
+                // Position lerp
+                currentPos[ix] += (tx - currentPos[ix]) * config.lerpSpeed;
+                currentPos[iy] += (ty - currentPos[iy]) * config.lerpSpeed;
+                currentPos[iz] += (tz - currentPos[iz]) * config.lerpSpeed;
+
+                // Color lerp
+                currentCols[ix] += (targetColors[ix] - currentCols[ix]) * 0.1;
+                currentCols[iy] += (targetColors[iy] - currentCols[iy]) * 0.1;
+                currentCols[iz] += (targetColors[iz] - currentCols[iz]) * 0.1;
+            }
+
+            posAttr.needsUpdate = true;
+            colAttr.needsUpdate = true;
+
+            // Rotation: follow hand when detected, otherwise auto-spin
+            if (state.isHandDetected) {
+                const delta = shortestAngleDiff(state.handRotationTarget, state.handRotation);
+                state.handRotation += delta * 0.2;
+                particleSystem.rotation.y = state.handRotation;
+            } else {
+                const rotationSpeed = 0.005 + (state.handOpenness * 0.01);
+                particleSystem.rotation.y += rotationSpeed;
+                state.handRotation = particleSystem.rotation.y;
+            }
+
+            // Special z-tilt handling
+            if (state.currentShape === 'saturn') {
+                particleSystem.rotation.z = 0.4;
+            } else if (state.currentShape === 'tree') {
+                particleSystem.rotation.z = 0;
+            } else {
+                particleSystem.rotation.z *= 0.95;
+            }
+
+            material.size = config.particleSize * (0.8 + state.handOpenness);
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+
+</html>

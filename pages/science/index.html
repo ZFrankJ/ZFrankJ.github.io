@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fujia Zhang | Science</title>
+  <script>
+    (function () {
+      const saved = localStorage.getItem("fz-theme");
+      const prefers = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+      const theme = saved || (prefers ? "light" : "dark");
+      document.documentElement.classList.toggle("theme-light", theme === "light");
+      window.__fzPreferredTheme = theme;
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../../assets/css/site.css?v=4" />
+</head>
+<body>
+  <div class="page">
+    <div class="breadcrumbs">
+      <a href="../../index.html">Home</a>
+      <span>·</span>
+      <span>Science</span>
+    </div>
+
+    <header class="sub-hero" data-lens>
+      <h1>Science</h1>
+      <p class="lede">Brain-inspired AI, experiments in language&vision, and AI-based projects that build intuition.</p>
+    </header>
+
+    <div class="back-row">
+      <a class="pill pill--ghost" href="../../index.html">← Back to home</a>
+    </div>
+
+    <main class="content timeline">
+      <div class="timeline-item">
+        <div class="timeline-item__date">2025/10</div>
+        <div class="timeline-item__body">
+          <h3>Reboot mature cortical models</h3>
+          <p class="muted">Invent a neuron definition that successfully achieved higher efficiency compared with LSTM cell in language modeling tasks.</p>
+          <p class="muted">Source: <a href="https://github.com/ZFrankJ/neo-neuron" target="_blank" rel="noopener noreferrer">GitHub Repo</a></p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-item__date">2025/08</div>
+        <div class="timeline-item__body">
+          <h3>Transformer Train and confirm failure in early cortical models</h3>
+          <p class="muted">Successfully train a Transformer to SOTA level ppl, but failed to scaling up early cortical models.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-item__date">2025/03</div>
+        <div class="timeline-item__body">
+          <h3>Early cortical models</h3>
+          <p class="muted">Build cortical-style model with new activation function&architecture and succeed on MNIST.</p>
+          <div style="display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 8px;">
+            <img src="../../assets/img/science-cortical-1.png" alt="Early cortical model figure 1" style="width: 100%; border-radius: 10px; border: 1px solid var(--border); object-fit: cover;">
+            <img src="../../assets/img/science-cortical-2.png" alt="Early cortical model figure 2" style="width: 100%; border-radius: 10px; border: 1px solid var(--border); object-fit: cover;">
+          </div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-item__date">2025/01</div>
+        <div class="timeline-item__body">
+          <h3>Virtual Try-on</h3>
+          <p class="muted">Build prototype by utilizing AI workflows in coze to generate virtual try-on experiences (Done in 2025 GIR camp).</p>
+          <p class="muted">Source: <a href="https://www.coze.cn/store/project/7463657937194450981" target="_blank" rel="noopener noreferrer">Project page</a></p>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(120px, 1fr)); gap: 10px; margin-top: 8px;">
+            <img src="../../assets/img/science-tryon-1.png" alt="Virtual try-on sample 1" style="width: 100%; border-radius: 10px; border: 1px solid var(--border); object-fit: cover;">
+            <img src="../../assets/img/science-tryon-2.png" alt="Virtual try-on sample 2" style="width: 100%; border-radius: 10px; border: 1px solid var(--border); object-fit: cover;">
+            <img src="../../assets/img/science-tryon-3.png" alt="Virtual try-on sample 3" style="width: 100%; border-radius: 10px; border: 1px solid var(--border); object-fit: cover;">
+          </div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-item__date">2024/11</div>
+        <div class="timeline-item__body">
+          <h3>Humanity's Last Exam</h3>
+          <p class="muted">Attempts to frame hard questions for frontier AI models, but failed to be included in dataset.</p>
+          <div style="display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 8px;">
+            <img src="../../assets/img/science-humanity-1.png" alt="Humanity's Last Exam image 1" style="width: 100%; border-radius: 10px; border: 1px solid var(--border); object-fit: cover;">
+            <img src="../../assets/img/science-humanity-2.png" alt="Humanity's Last Exam image 2" style="width: 100%; border-radius: 10px; border: 1px solid var(--border); object-fit: cover;">
+          </div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-item__date">2024/10</div>
+        <div class="timeline-item__body">
+          <h3>Early paper writing</h3>
+          <p class="muted">Forming ideas including MoE, Large Concept Model, but lack formal experiments to support.</p>
+          <p class="muted">Source: <a href="../../assets/docs/science-early-paper.pdf" target="_blank" rel="noopener noreferrer">Preview draft (PDF)</a></p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-item__date">2024/08</div>
+        <div class="timeline-item__body">
+          <h3>Prompt Engineering</h3>
+          <p class="muted">Try using prompts to let LLMs to think in CoT.</p>
+          <p class="muted">Source: <a href="https://youtu.be/4aajKcj_trU" target="_blank" rel="noopener noreferrer">My YouTube channel</a></p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-item__date">Origin</div>
+        <div class="timeline-item__body">
+          <h3>Reading <cite> Life 3.0 </cite> </h3>
+          <p class="muted">First bringing me the big, fascinating future of the world with AI.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="control-bubbles" aria-label="Display controls">
+    <button class="bubble" data-toggle="theme" aria-pressed="false" title="Switch theme">☀</button>
+    <button class="bubble bubble--ghost" data-toggle="lens" aria-pressed="true" title="Disable liquid lens">FX</button>
+  </div>
+
+  <script type="module" src="../../assets/js/site.js?v=4"></script>
+</body>
+</html>

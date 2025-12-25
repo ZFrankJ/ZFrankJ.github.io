@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fujia Zhang | Profile</title>
+  <script>
+    (function () {
+      const saved = localStorage.getItem("fz-theme");
+      const prefers = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+      const theme = saved || (prefers ? "light" : "dark");
+      document.documentElement.classList.toggle("theme-light", theme === "light");
+      window.__fzPreferredTheme = theme;
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../../assets/css/site.css?v=4" />
+</head>
+<body>
+  <div class="page">
+    <div class="breadcrumbs">
+      <a href="../../index.html">Home</a>
+      <span>·</span>
+      <span>Profile</span>
+    </div>
+
+    <header class="sub-hero" data-lens>
+      <h1>Profile</h1>
+      <p class="lede">How to reach me and what I’m most excited to talk about right now.</p>
+    </header>
+
+    <div class="back-row">
+      <a class="pill pill--ghost" href="../../index.html">← Back to home</a>
+    </div>
+
+    <main class="content">
+      <div class="content-section">
+        <div class="profile-card" style="border: 1px solid var(--border); border-radius: 14px; background: var(--panel); padding: 16px; box-shadow: var(--shadow);">
+          <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+            <div class="profile-photo">
+              <img src="../../assets/img/profile.png" alt="Fujia Zhang portrait" loading="lazy">
+            </div>
+            <div style="min-width: 260px;">
+              <h3 style="margin: 0 0 8px 0; font-size: 28px;">Fujia Zhang</h3>
+              <p class="muted" style="margin: 0 0 6px 0; font-size: 16px;">Institution: <em>Shanghai GuangHua Cambridge International School</em></p>
+              <p class="muted" style="margin: 0; font-size: 16px;">Role: <em>High School Student Researcher & Aspiring AI Scientist</em></p> 
+            </div>
+          </div>
+          <div style="margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px;">
+            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); color: var(--muted);">
+              <span>Email</span>
+              <a href="mailto:zfrankj0927@gmail.com"><em>zfrankj0927@gmail.com</em></a>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); color: var(--muted);">
+              <span>GitHub</span>
+              <a href="https://github.com/ZFrankJ"><em>ZFrankJ</em></a>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); color: var(--muted);">
+              <span>Topics</span>
+              <span class="muted" style="max-width: 420px; text-align: right;"><em>Brain-inspired AI, Quantitative trading and Vibe coding</em></span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 10px 0; color: var(--muted);">
+              <span>Aphorism</span>
+              <span class="muted" style="max-width: 470px; text-align: left;"><em>“Deep Learning is the most important event of this age, but Learning Deeply is the most important event for all time.”</em></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <h3>Quick links</h3>
+        <ul class="content-list">
+          <li><a href="../science/">Science</a> — Brain-inspired AI experiments.</li>
+          <li><a href="../finance/">Finance</a> — Quantitative Trading.</li>
+          <li><a href="../others/">Others</a> — Vibe coding and self-cultivation.</li>
+          <li><a href="../../index.html#highlights">Highlights</a> — Direct link to important events.</li>
+        </ul>
+      </div>
+    </main>
+  </div>
+
+  <div class="control-bubbles" aria-label="Display controls">
+    <button class="bubble" data-toggle="theme" aria-pressed="false" title="Switch theme">☀</button>
+    <button class="bubble bubble--ghost" data-toggle="lens" aria-pressed="true" title="Disable liquid lens">FX</button>
+  </div>
+
+  <script type="module" src="../../assets/js/site.js?v=4"></script>
+</body>
+</html>

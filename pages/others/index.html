@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fujia Zhang | Others</title>
+  <script>
+    (function () {
+      const saved = localStorage.getItem("fz-theme");
+      const prefers = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+      const theme = saved || (prefers ? "light" : "dark");
+      document.documentElement.classList.toggle("theme-light", theme === "light");
+      window.__fzPreferredTheme = theme;
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../../assets/css/site.css?v=4" />
+</head>
+<body>
+  <div class="page">
+    <div class="breadcrumbs">
+      <a href="../../index.html">Home</a>
+      <span>·</span>
+      <span>Others</span>
+    </div>
+
+    <header class="sub-hero" data-lens>
+      <h1>Others</h1>
+      <p class="lede">Vibe coding and self-cultivation that don’t fit neatly into science or finance.</p>
+    </header>
+
+    <div class="back-row">
+      <a class="pill pill--ghost" href="../../index.html">← Back to home</a>
+    </div>
+
+    <main class="content">
+      <section class="content-section">
+        <h2>Vibe coding</h2>
+        <p class="muted">Playful prototypes, hand-driven interfaces, and quick games.</p>
+        <div class="box-grid">
+          <a class="box" href="./solar-system/" target="_blank" rel="noopener noreferrer">
+            <h3>Solar System</h3>
+            <p class="muted">Solar system displaying and simulating.</p>
+          </a>
+          <a class="box" href="./tiny-tools/" target="_blank" rel="noopener noreferrer">
+            <h3>Tiny tools</h3>
+            <p class="muted">Simple transformation from .txt file to .md file.</p>
+          </a>
+          <a class="box" href="./fps/" target="_blank" rel="noopener noreferrer">
+            <h3>FPS</h3>
+            <p class="muted">3D futuristic FPS games.</p>
+          </a>
+          <a class="box" href="./particle-interaction/" target="_blank" rel="noopener noreferrer">
+            <h3>Particle interaction</h3>
+            <p class="muted">3D particle interaction using hand gestures.</p>
+          </a>
+          <a class="box" href="./flowingos/" target="_blank" rel="noopener noreferrer">
+            <h3>FlowingOS</h3>
+            <p class="muted">Hand gestures driven operation system.</p>
+          </a>
+          <a class="box" href="./plane-simulating/" target="_blank" rel="noopener noreferrer">
+            <h3>Plane simulating</h3>
+            <p class="muted">3D simulating of flight dynamics.</p>
+          </a>
+        </div>
+      </section>
+
+      <section class="content-section">
+        <h2>Self-Cultivation</h2>
+        <p class="muted">Sport exercise, aesthetic accomplishment and internal journey of myself.</p>
+        <div class="box-grid">
+          <div class="box">
+            <h3>Karate</h3>
+            <p class="muted">Strengthen body and keep fit.</p>
+          </div>
+          <div class="box">
+            <h3>Calligraphy</h3>
+            <p class="muted">Practicing brushwork to refine focus and flow.</p>
+          </div>
+          <div class="box">
+            <h3>Traditional Chinese Painting</h3>
+            <p class="muted">Ink and wash to capture stillness and movement.</p>
+          </div>
+          <div class="box">
+            <h3>The Duke of Edinburgh's International Award</h3>
+            <p class="muted">Adventure, service, and persistence in a global program.</p>
+          </div>
+          <div class="box">
+            <h3>Buddhism</h3>
+            <p class="muted">Exploring what inside, experiencing what outside.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="control-bubbles" aria-label="Display controls">
+    <button class="bubble" data-toggle="theme" aria-pressed="false" title="Switch theme">☀</button>
+    <button class="bubble bubble--ghost" data-toggle="lens" aria-pressed="true" title="Disable liquid lens">FX</button>
+  </div>
+
+  <script type="module" src="../../assets/js/site.js?v=4"></script>
+</body>
+</html>

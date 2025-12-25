@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stellar Command - Solar System Explorer</title>
+    <!-- 1. Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 2. Load three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- 3. Load Google Fonts for a sci-fi feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Custom font families */
+        :root {
+            --font-display: 'Orbitron', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        /* Base styles */
+        body {
+            font-family: var(--font-body);
+            background-color: #020818; /* Deep space blue */
+            color: #E0EFFF;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* Faint stars background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image: radial-gradient(white 0.5px, transparent 0),
+                              radial-gradient(white 0.5px, transparent 0);
+            background-size: 40px 40px, 60px 60px;
+            background-position: 0 0, 30px 30px;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        /* Main 3D Canvas */
+        #main-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        /* Warp Transition Canvas */
+        #warp-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            z-index: 100;
+            display: none;
+        }
+
+        /* Heads-Up Display (HUD) Overlay */
+        #hud-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 2px solid rgba(0, 242, 255, 0.2);
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.1) inset, 0 0 15px rgba(0, 242, 255, 0.1);
+            z-index: 10;
+            pointer-events: none; /* Make it click-through */
+        }
+        
+        /* HUD Corner Elements */
+        .hud-corner {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #00f2ff;
+            opacity: 0.7;
+        }
+        .hud-top-left { top: 15px; left: 15px; border-right: none; border-bottom: none; }
+        .hud-top-right { top: 15px; right: 15px; border-left: none; border-bottom: none; }
+        .hud-bottom-left { bottom: 15px; left: 15px; border-right: none; border-top: none; }
+        .hud-bottom-right { bottom: 15px; right: 15px; border-left: none; border-top: none; }
+        
+        /* Glassmorphism UI Panel Style */
+        .ui-panel {
+            background: rgba(10, 20, 40, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1), 0 0 20px rgba(0, 242, 255, 0.1) inset;
+        }
+
+        /* Title Screen */
+        #title-screen h1 {
+            font-family: var(--font-display);
+            text-shadow: 0 0 15px rgba(0, 242, 255, 0.5);
+        }
+
+        #start-button {
+            font-family: var(--font-display);
+            background: #00f2ff;
+            color: #020818;
+            border: none;
+            box-shadow: 0 0 20px #00f2ff, 0 0 30px #00f2ff;
+            transition: all 0.3s ease;
+        }
+        #start-button:hover {
+            box-shadow: 0 0 30px #00f2ff, 0 0 45px #00f2ff, 0 0 10px #fff inset;
+            transform: scale(1.05);
+        }
+
+        /* Info Card */
+        #info-card h2 {
+            font-family: var(--font-display);
+            color: #00f2ff;
+            text-shadow: 0 0 10px rgba(0, 242, 255, 0.7);
+        }
+        
+        /* Custom spinner for texture loading */
+        .loader {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #00f2ff;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 3D Canvas -->
+    <canvas id="main-canvas"></canvas>
+
+    <!-- Warp Transition Canvas -->
+    <canvas id="warp-canvas"></canvas>
+    
+    <!-- Cockpit HUD Overlay -->
+    <div id="hud-overlay">
+        <div class="hud-corner hud-top-left"></div>
+        <div class="hud-corner hud-top-right"></div>
+        <div class="hud-corner hud-bottom-left"></div>
+        <div class="hud-corner hud-bottom-right"></div>
+    </div>
+
+    <!-- Title/Start Screen -->
+    <div id="title-screen" class="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center bg-black bg-opacity-80 z-30 text-center p-8">
+        <h1 class="text-6xl font-bold mb-4 text-white">STELLAR COMMAND</h1>
+        <p class="text-xl mb-8 text-gray-300">Welcome, Captain. The solar system awaits your command.</p>
+        <button id="start-button" class="px-8 py-4 text-lg font-bold rounded-lg transform">
+            E N G A G E
+        </button>
+    </div>
+
+    <!-- Planet Info Card (hidden by default) -->
+    <div id="info-card" class="ui-panel absolute top-1/2 md:top-1/4 right-4 md:right-8 w-11/12 md:w-80 p-6 rounded-xl text-left z-20 hidden transform -translate-y-1/2 md:translate-y-0 opacity-0 transition-all duration-500 ease-in-out">
+        <h2 id="info-title" class="text-3xl font-bold mb-3"></h2>
+        <p id="info-description" class="text-sm mb-4 text-gray-200"></p>
+        <ul id="info-facts" class="text-sm space-y-2 text-gray-300">
+            <!-- Facts will be populated by JavaScript -->
+        </ul>
+        <!-- Texture Loading Status -->
+        <div id="texture-status" class="mt-4 pt-4 border-t border-cyan-500 border-opacity-30">
+            <!-- Status populated by JS -->
+        </div>
+    </div>
+
+    <!-- Back Button (hidden by default) -->
+    <button id="back-button" class="ui-panel absolute top-5 left-5 px-5 py-2 text-white font-semibold rounded-lg hover:bg-opacity-90 transition-all duration-300 z-20 hidden">
+        &larr; System View
+    </button>
+    
+    <!-- Global Texture Status -->
+    <div id="global-status" class="absolute bottom-5 left-5 z-20 text-sm text-cyan-300 hidden items-center space-x-2">
+        <div class="loader"></div>
+        <span id="global-status-text">Generating planetary textures...</span>
+    </div>
+
+    <script type="module">
+        // --- Global Variables ---
+        let scene, camera, renderer, raycaster, mouse;
+        let mainCanvas, warpCanvas, infoCard, backButton, titleScreen, startButton, globalStatus, globalStatusText;
+        
+        const planets = [];
+        let currentView = 'system';
+        let targetPlanet = null;
+        let texturesLoading = 0;
+        let systemCameraHeight = 80;
+
+        // --- Planet Data with Texture Prompts ---
+        const planetData = {
+            mercury: {
+                name: "Mercury",
+                radius: 0.38,
+                distance: 12,
+                color: 0xAAAAAA,
+                orbitSpeed: 0.004,
+                rotationSpeed: 0.001,
+                fallbackTexture: "https://placehold.co/512x256/AAAAAA/333333?text=Mercury",
+                texturePrompt: "A high-resolution, seamless, equirectangular texture map of the planet Mercury. Photorealistic, showing a heavily cratered, rocky gray surface.",
+                description: "The smallest planet in our solar system and nearest to the Sun, Mercury is only slightly larger than Earth's Moon.",
+                facts: ["Diameter: 4,879 km", "Day Length: 59 Earth days", "Year Length: 88 Earth days"],
+                textureStatus: 'loading'
+            },
+            venus: {
+                name: "Venus",
+                radius: 0.95,
+                distance: 18,
+                color: 0xFFE4B5,
+                orbitSpeed: 0.002,
+                rotationSpeed: 0.0005,
+                fallbackTexture: "https://placehold.co/512x256/FFE4B5/8B4513?text=Venus",
+                texturePrompt: "A high-resolution, seamless, equirectangular texture map of the planet Venus. Photorealistic, showing thick, swirling clouds of sulfuric acid in shades of yellow, white, and tan.",
+                description: "Venus spins slowly in the opposite direction from most planets. Its thick atmosphere traps heat in a runaway greenhouse effect.",
+                facts: ["Diameter: 12,104 km", "Day Length: 243 Earth days", "Year Length: 225 Earth days"],
+                textureStatus: 'loading'
+            },
+            earth: {
+                name: "Earth",
+                radius: 1,
+                distance: 25,
+                color: 0x4682B4,
+                orbitSpeed: 0.001,
+                rotationSpeed: 0.005,
+                fallbackTexture: "https://placehold.co/512x256/4682B4/FFFFFF?text=Earth",
+                texturePrompt: "A high-resolution, seamless, equirectangular texture map of the planet Earth. Photorealistic, showing deep blue oceans, green and brown continents, and swirling white clouds. Minimal ice caps.",
+                description: "Our home planet is the only place we know of so far that’s inhabited by living things. It's also the only planet in our solar system with liquid water on the surface.",
+                facts: ["Diameter: 12,742 km", "Day Length: 24 hours", "Year Length: 365.25 days"],
+                textureStatus: 'loading'
+            },
+            mars: {
+                name: "Mars",
+                radius: 0.53,
+                distance: 35,
+                color: 0xCC6633,
+                orbitSpeed: 0.0008,
+                rotationSpeed: 0.0048,
+                fallbackTexture: "https://placehold.co/512x256/CC6633/FFFFFF?text=Mars",
+                texturePrompt: "A high-resolution, seamless, equirectangular texture map of the planet Mars. Photorealistic, focusing on its iconic red iron-oxide deserts, dark volcanic rock, craters, and white polar ice caps.",
+                description: "Mars is a dusty, cold, desert world with a very thin atmosphere. There is strong evidence Mars was—billions of years ago—a wetter and warmer planet.",
+                facts: ["Diameter: 6,779 km", "Day Length: 24.6 hours", "Year Length: 687 Earth days"],
+                textureStatus: 'loading'
+            },
+            jupiter: {
+                name: "Jupiter",
+                radius: 4,
+                distance: 55,
+                color: 0xD2B48C,
+                orbitSpeed: 0.0004,
+                rotationSpeed: 0.01,
+                fallbackTexture: "https://placehold.co/512x256/D2B48C/8B4513?text=Jupiter",
+                texturePrompt: "A high-resolution, seamless, equirectangular texture map of the planet Jupiter. Photorealistic, showing its characteristic swirling bands of clouds in shades of orange, yellow, and white, and including the Great Red Spot.",
+                description: "Jupiter is more than twice as massive as all the other planets combined. The giant planet's Great Red Spot is a centuries-old storm bigger than Earth.",
+                facts: ["Diameter: 139,820 km", "Day Length: 9.9 Earth hours", "Year Length: 11.9 Earth years"],
+                textureStatus: 'loading'
+            },
+            saturn: {
+                name: "Saturn",
+                radius: 3.5,
+                distance: 80,
+                color: 0xF4A460,
+                orbitSpeed: 0.0002,
+                rotationSpeed: 0.009,
+                fallbackTexture: "https://placehold.co/512x256/F4A460/FFFFFF?text=Saturn",
+                texturePrompt: "A high-resolution, seamless, equirectangular texture map of the planet Saturn. Photorealistic, showing its hazy, pale yellow and gold bands. Do not include the rings in the texture map itself.",
+                description: "Adorned with thousands of beautiful ringlets, Saturn is unique. The other giant planets have rings, but none are as spectacular as Saturn's.",
+                facts: ["Diameter: 116,460 km", "Day Length: 10.7 Earth hours", "Year Length: 29.5 Earth years"],
+                textureStatus: 'loading'
+            },
+            uranus: {
+                name: "Uranus",
+                radius: 2.5,
+                distance: 110,
+                color: 0x7FFFD4,
+                orbitSpeed: 0.0001,
+                rotationSpeed: 0.007,
+                fallbackTexture: "",
+                texturePrompt: "",
+                description: "An ice giant with a unique sideways rotation, giving it extreme seasons that last over 20 years.",
+                facts: ["Diameter: 50,724 km", "Day Length: 17.3 Earth hours", "Year Length: 84 Earth years"],
+                textureStatus: 'loading'
+            },
+            neptune: {
+                name: "Neptune",
+                radius: 2.4,
+                distance: 135,
+                color: 0x4169E1,
+                orbitSpeed: 0.00008,
+                rotationSpeed: 0.006,
+                fallbackTexture: "",
+                texturePrompt: "",
+                description: "The windiest planet in the solar system, Neptune is a deep blue ice giant farthest from the Sun.",
+                facts: ["Diameter: 49,244 km", "Day Length: 16.1 Earth hours", "Year Length: 165 Earth years"],
+                textureStatus: 'loading'
+            }
+        };
+
+        // --- Initialization Function ---
+        function init() {
+            // 1. Get DOM Elements
+            mainCanvas = document.getElementById('main-canvas');
+            warpCanvas = document.getElementById('warp-canvas');
+            infoCard = document.getElementById('info-card');
+            backButton = document.getElementById('back-button');
+            titleScreen = document.getElementById('title-screen');
+            startButton = document.getElementById('start-button');
+            globalStatus = document.getElementById('global-status');
+            globalStatusText = document.getElementById('global-status-text');
+
+            // 2. Setup 3D Scene
+            scene = new THREE.Scene();
+
+            // 3. Setup Camera
+            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 2000);
+            camera.position.set(0, systemCameraHeight, 0);
+            camera.lookAt(0, 0, 0);
+
+            // 4. Setup Renderer
+            renderer = new THREE.WebGLRenderer({ canvas: mainCanvas, antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setClearColor(0x000000, 0); // Transparent background
+
+            // 5. Setup Lighting
+            const ambientLight = new THREE.AmbientLight(0x404040, 2);
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0xFFFFFF, 3, 300);
+            scene.add(pointLight);
+
+            // 6. Setup Raycaster
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            // 7. Create the Solar System
+            createSolarSystem();
+            // Set camera height so all orbits stay in view
+            const maxDistance = Math.max(...Object.values(planetData).map(p => p.distance));
+            systemCameraHeight = maxDistance * 1.6;
+            camera.position.set(0, systemCameraHeight, 0);
+            camera.lookAt(0, 0, 0);
+
+            // 8. Add Event Listeners
+            startButton.addEventListener('click', startApp);
+            backButton.addEventListener('click', onBackButtonClick);
+            document.addEventListener('mousedown', onDocumentMouseDown);
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        // --- Start the Application ---
+        function startApp() {
+            titleScreen.style.display = 'none';
+            globalStatus.classList.remove('hidden');
+            globalStatus.classList.add('flex');
+            
+            // Start the 3D animation loop
+            animate();
+            
+            // Start generating all planet textures in the background
+            planets.forEach(p => {
+                texturesLoading++;
+                generatePlanetTexture(p.data, p.mesh);
+            });
+            updateGlobalStatus();
+        }
+
+        // --- Create 3D Solar System ---
+        function createSolarSystem() {
+            // Create Sun
+            const sunGeometry = new THREE.SphereGeometry(5, 32, 32);
+            // Sun is emissive, it's a light source
+            const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xFFF4A3 });
+            const sunMesh = new THREE.Mesh(sunGeometry, sunMaterial);
+            scene.add(sunMesh);
+
+            // Add a lens flare effect to the sun
+            const sunGlow = new THREE.SpriteMaterial({
+                map: new THREE.CanvasTexture(generateGlowTexture()),
+                color: 0xFFF4A3,
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+            });
+            const sunSprite = new THREE.Sprite(sunGlow);
+            sunSprite.scale.set(30, 30, 1.0);
+            sunMesh.add(sunSprite);
+
+            // Create Planets
+            for (const key in planetData) {
+                const data = planetData[key];
+
+                // 1. Planet Geometry
+                const geometry = new THREE.SphereGeometry(data.radius, 32, 32);
+                
+                // 2. Initial Material (Emissive Color)
+                // The planet will glow with its base color until the texture loads
+                const material = new THREE.MeshStandardMaterial({
+                    color: data.color,
+                    emissive: data.color,
+                    emissiveIntensity: 0.7
+                });
+                
+                const planetMesh = new THREE.Mesh(geometry, material);
+                planetMesh.userData = data;
+
+                // 3. Orbit Pivot
+                const pivot = new THREE.Object3D();
+                planetMesh.position.set(data.distance, 0, 0);
+                pivot.add(planetMesh);
+                scene.add(pivot);
+
+                // 4. Orbit Path (visual ring)
+                const orbitGeometry = new THREE.RingGeometry(data.distance - 0.05, data.distance + 0.05, 128);
+                const orbitMaterial = new THREE.MeshBasicMaterial({ 
+                    color: 0x00f2ff, 
+                    side: THREE.DoubleSide, 
+                    opacity: 0.15, 
+                    transparent: true 
+                });
+                const orbitRing = new THREE.Mesh(orbitGeometry, orbitMaterial);
+                orbitRing.rotation.x = Math.PI / 2;
+                scene.add(orbitRing);
+                
+                // 5. Special case: Saturn's Rings
+                if (data.name === "Saturn") {
+                    const ringGeometry = new THREE.RingGeometry(data.radius + 1, data.radius + 4, 64);
+                    // Use a simple procedural texture for the rings
+                    const ringMaterial = new THREE.MeshBasicMaterial({
+                        map: new THREE.CanvasTexture(generateRingTexture()),
+                        side: THREE.DoubleSide,
+                        transparent: true,
+                        opacity: 0.8
+                    });
+                    const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
+                    ringMesh.rotation.x = Math.PI * 0.45; // Tilt the rings
+                    planetMesh.add(ringMesh); // Add rings to the planet mesh
+                }
+
+                // 6. Store for animation and raycasting
+                planets.push({ mesh: planetMesh, pivot: pivot, data: data });
+            }
+        }
+        
+        // --- Texture Generation Functions ---
+
+        function generateGlowTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 128;
+            canvas.height = 128;
+            const context = canvas.getContext('2d');
+            const gradient = context.createRadialGradient(
+                canvas.width / 2, canvas.height / 2, 0,
+                canvas.width / 2, canvas.height / 2, canvas.width / 2
+            );
+            gradient.addColorStop(0.1, 'rgba(255, 255, 255, 1)');
+            gradient.addColorStop(0.4, 'rgba(255, 255, 200, 0.8)');
+            gradient.addColorStop(1.0, 'rgba(255, 255, 200, 0)');
+            context.fillStyle = gradient;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            return canvas;
+        }
+        
+        function generateRingTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 1;
+            const context = canvas.getContext('2d');
+            for (let i = 0; i < 256; i++) {
+                let alpha = Math.sin(i * 0.1) * 0.2 + (Math.random() * 0.3 + 0.2);
+                context.fillStyle = `rgba(210, 190, 160, ${Math.max(0, Math.min(1, alpha))})`;
+                context.fillRect(i, 0, 1, 1);
+            }
+            return canvas;
+        }
+
+        // --- Texture Generation ---
+
+        function generateProceduralTexture(planetData) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            
+            const color = new THREE.Color(planetData.color);
+            const hsl = {};
+            color.getHSL(hsl);
+            const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
+            const hslString = (h, s, l, a = 1) => `hsla(${Math.round(h * 360)}, ${Math.round(clamp(s) * 100)}%, ${Math.round(clamp(l) * 100)}%, ${a})`;
+
+            // Base gradient across the planet
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, hslString(hsl.h, clamp(hsl.s * 0.9), clamp(hsl.l * 1.05)));
+            gradient.addColorStop(1, hslString(hsl.h + 0.02, clamp(hsl.s * 1.1), clamp(hsl.l * 0.75)));
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Add banding for gas giants; subtle streaks for rocky planets
+            const bandCount = 80;
+            for (let i = 0; i < bandCount; i++) {
+                const y = (canvas.height / bandCount) * i;
+                const variation = Math.sin(i * 0.25) * 0.08;
+                ctx.fillStyle = hslString(
+                    hsl.h + Math.sin(i * 0.05) * 0.03,
+                    clamp(hsl.s + Math.cos(i * 0.18) * 0.06),
+                    clamp(hsl.l + variation),
+                    0.35
+                );
+                ctx.fillRect(0, y, canvas.width, canvas.height / bandCount + 2);
+            }
+
+            // Add storms/craters/highlights
+            const spotCount = 25;
+            for (let i = 0; i < spotCount; i++) {
+                const radius = Math.random() * 18 + 6;
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const spotGradient = ctx.createRadialGradient(x, y, 2, x, y, radius);
+                spotGradient.addColorStop(0, hslString(hsl.h + Math.random() * 0.05, clamp(hsl.s * 1.2), clamp(hsl.l * 1.2), 0.6));
+                spotGradient.addColorStop(1, hslString(hsl.h, clamp(hsl.s * 0.6), clamp(hsl.l * 0.6), 0));
+                ctx.fillStyle = spotGradient;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Edge vignetting to add depth
+            const vignette = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, canvas.height / 3, canvas.width / 2, canvas.height / 2, canvas.height / 1.5);
+            vignette.addColorStop(0, 'rgba(0,0,0,0)');
+            vignette.addColorStop(1, 'rgba(0,0,0,0.2)');
+            ctx.fillStyle = vignette;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            return canvas.toDataURL('image/png');
+        }
+
+        async function generatePlanetTexture(planetData, planetMesh) {
+            try {
+                const imageUrl = generateProceduralTexture(planetData);
+                applyTexture(planetMesh, imageUrl);
+                planetData.textureStatus = 'loaded';
+                planetData.generatedTexture = imageUrl;
+                planetData.fallbackTexture = imageUrl;
+            } catch (error) {
+                console.error(`Failed to generate texture for ${planetData.name}:`, error);
+                planetData.textureStatus = 'failed';
+                const fallback = planetData.fallbackTexture || generateProceduralTexture(planetData);
+                applyTexture(planetMesh, fallback);
+            } finally {
+                texturesLoading--;
+                updateGlobalStatus();
+            }
+        }
+
+        function applyTexture(planetMesh, imageUrl) {
+            const textureLoader = new THREE.TextureLoader();
+            textureLoader.load(
+                imageUrl,
+                (texture) => {
+                    // Success: Apply the new texture
+                    planetMesh.material.map = texture;
+                    planetMesh.material.color.set(0xffffff); // Use texture's full color
+                    planetMesh.material.emissive.set(0x000000); // Stop glowing
+                    planetMesh.material.emissiveIntensity = 0;
+                    planetMesh.material.needsUpdate = true;
+                },
+                undefined, // onProgress
+                (err) => {
+                    // Error loading texture
+                    console.error(`Error *loading* texture for ${planetMesh.userData.name}:`, err);
+                    planetMesh.userData.textureStatus = 'failed';
+                }
+            );
+        }
+
+        function updateGlobalStatus() {
+            if (texturesLoading > 0) {
+                globalStatusText.textContent = `Painting ${texturesLoading} planetary textures...`;
+            } else {
+                globalStatus.style.display = 'none';
+            }
+        }
+
+        // --- Animation Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (currentView === 'system') {
+                planets.forEach(p => {
+                    p.pivot.rotation.y += p.data.orbitSpeed;
+                    p.mesh.rotation.y += p.data.rotationSpeed;
+                });
+            }
+            
+            if (currentView === 'planet' && targetPlanet) {
+                targetPlanet.mesh.rotation.y += 0.005;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // --- Event Handlers ---
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            warpCanvas.width = window.innerWidth;
+            warpCanvas.height = window.innerHeight;
+        }
+
+        function onDocumentMouseDown(event) {
+            if (currentView !== 'system') return;
+            
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(planets.map(p => p.mesh));
+
+            if (intersects.length > 0) {
+                const intersectedMesh = intersects[0].object;
+                targetPlanet = planets.find(p => p.mesh === intersectedMesh);
+                if (targetPlanet) {
+                    showPlanetView(targetPlanet);
+                }
+            }
+        }
+
+        function onBackButtonClick() {
+            showSolarSystemView();
+        }
+        
+        // --- View Switching Logic ---
+        function showPlanetView(planet) {
+            currentView = 'planet';
+            
+            startWarp(() => {
+                populateInfoCard(planet.data);
+                infoCard.classList.remove('hidden');
+                setTimeout(() => infoCard.classList.remove('opacity-0'), 10); // Fade in
+                
+                backButton.classList.remove('hidden');
+                
+                const targetPos = new THREE.Vector3();
+                planet.mesh.getWorldPosition(targetPos);
+                
+                const cameraOffset = planet.data.radius * 3.5;
+                camera.position.set(targetPos.x, targetPos.y + cameraOffset / 3, targetPos.z + cameraOffset);
+                camera.lookAt(targetPos);
+            });
+        }
+
+        function showSolarSystemView() {
+            currentView = 'system';
+            targetPlanet = null;
+
+            infoCard.classList.add('opacity-0');
+            setTimeout(() => infoCard.classList.add('hidden'), 500); // Wait for fade
+            backButton.classList.add('hidden');
+            
+            startWarp(() => {
+                camera.position.set(0, systemCameraHeight, 0);
+                camera.lookAt(0, 0, 0);
+            });
+        }
+
+        function populateInfoCard(data) {
+            document.getElementById('info-title').textContent = data.name;
+            document.getElementById('info-description').textContent = data.description;
+            
+            const factsList = document.getElementById('info-facts');
+            factsList.innerHTML = '';
+            data.facts.forEach(fact => {
+                const li = document.createElement('li');
+                li.textContent = `• ${fact}`;
+                factsList.appendChild(li);
+            });
+            
+            // Populate texture status
+            const statusEl = document.getElementById('texture-status');
+            if (data.textureStatus === 'loading') {
+                statusEl.innerHTML = `<div class="flex items-center space-x-2 text-cyan-300">
+                                          <div class="loader"></div>
+                                          <span>Painting surface texture...</span>
+                                      </div>`;
+            } else if (data.textureStatus === 'loaded') {
+                statusEl.innerHTML = `<span class="text-green-400">✓ Procedural texture applied.</span>`;
+            } else {
+                statusEl.innerHTML = `<span class="text-yellow-400">! Texture generation failed. Using fallback.</span>`;
+            }
+        }
+
+        // --- Warp Speed Animation (Unchanged) ---
+        let stars = [];
+        const warpSpeed = 10;
+        const numStars = 800;
+        let warpAnimationId;
+
+        function startWarp(onCompleteCallback) {
+            warpCanvas.style.display = 'block';
+            const ctx = warpCanvas.getContext('2d');
+            
+            warpCanvas.width = window.innerWidth;
+            warpCanvas.height = window.innerHeight;
+            
+            stars = [];
+            for (let i = 0; i < numStars; i++) {
+                stars.push({
+                    x: Math.random() * warpCanvas.width - warpCanvas.width / 2,
+                    y: Math.random() * warpCanvas.height - warpCanvas.height / 2,
+                    z: Math.random() * warpCanvas.width,
+                    pz: 0
+                });
+            }
+            
+            const duration = 1500;
+            const startTime = Date.now();
+
+            function animateWarp() {
+                const elapsed = Date.now() - startTime;
+                
+                if (elapsed > duration) {
+                    cancelAnimationFrame(warpAnimationId);
+                    warpCanvas.style.display = 'none';
+                    if (onCompleteCallback) onCompleteCallback();
+                    return;
+                }
+
+                const currentSpeed = warpSpeed + (elapsed / duration) * 40;
+
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.fillRect(0, 0, warpCanvas.width, warpCanvas.height);
+                ctx.save();
+                ctx.translate(warpCanvas.width / 2, warpCanvas.height / 2);
+
+                for (let star of stars) {
+                    star.pz = star.z;
+                    star.z -= currentSpeed;
+
+                    if (star.z < 1) {
+                        star.z = warpCanvas.width;
+                        star.x = Math.random() * warpCanvas.width - warpCanvas.width / 2;
+                        star.y = Math.random() * warpCanvas.height - warpCanvas.height / 2;
+                        star.pz = star.z;
+                    }
+
+                    const sx = (star.x / star.z) * warpCanvas.width;
+                    const sy = (star.y / star.z) * warpCanvas.height;
+                    const px = (star.x / star.pz) * warpCanvas.width;
+                    const py = (star.y / star.pz) * warpCanvas.height;
+                    const radius = Math.max(0.1, (1 - star.z / warpCanvas.width) * 2);
+
+                    ctx.beginPath();
+                    ctx.moveTo(sx, sy);
+                    ctx.lineTo(px, py);
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${1 - star.z / warpCanvas.width})`;
+                    ctx.lineWidth = radius;
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+                warpAnimationId = requestAnimationFrame(animateWarp);
+            }
+            animateWarp();
+        }
+
+        // --- Start everything ---
+        init();
+
+    </script>
+</body>
+</html>

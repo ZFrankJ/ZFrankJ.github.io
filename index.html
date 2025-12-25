@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fujia Zhang | Personal Website</title>
+  <script>
+    (function () {
+      const saved = localStorage.getItem("fz-theme");
+      const prefers = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+      const theme = saved || (prefers ? "light" : "dark");
+      document.documentElement.classList.toggle("theme-light", theme === "light");
+      window.__fzPreferredTheme = theme;
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="./assets/css/site.css?v=4" />
+</head>
+<body>
+  <div class="page">
+    <div class="breadcrumbs" aria-label="Home">
+      <span>Home</span>
+    </div>
+
+    <header class="hero" data-lens>
+      <div class="hero__content">
+        <span class="eyebrow">Science · Finance · Everything in between</span>
+        <h1>Fujia Zhang (张孚嘉)</h1>
+        <p class="lede">
+          High school student exploring brain-inspired AI and quantitative trading.
+        </p>
+        <div class="hero__top">
+          <div>
+            <div class="pill-row">
+              <a class="pill" href="./pages/science/">Science</a>
+              <a class="pill" href="./pages/finance/">Finance</a>
+              <a class="pill" href="./pages/others/">Others</a>
+              <a class="pill" href="./pages/profile/">Profile</a>
+            </div>
+          </div>
+          <div class="hero__meta">
+            <div class="meta-row">
+              <span class="muted">Name</span>
+              <span>Fujia Zhang (张孚嘉)</span>
+            </div>
+            <div class="meta-row">
+              <span class="muted">GitHub</span>
+              <a href="https://github.com/ZFrankJ">ZFrankJ</a>
+            </div>
+            <div class="meta-row">
+              <span class="muted">Email</span>
+              <a href="mailto:zfrankj0927@gmail.com">zfrankj0927@gmail.com</a>
+            </div>
+            <div class="meta-row">
+              <span class="muted">Current focus</span>
+              <span class="align-right">Brain-inspired AI and quantitative trading</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="content highlights highlights--spaced" id="highlights">
+      <h2>Highlights</h2>
+      <div class="highlight-list">
+        <a class="highlight" href="https://github.com/ZFrankJ/neo-neuron">
+          <div class="highlight__title">Science · Reboot mature cortical models</div>
+          <p class="muted">Invent a neuron definition that successfully achieved higher efficiency compared with LSTM cell in language modeling tasks.</p>
+        </a>
+        <a class="highlight" href="https://mp.weixin.qq.com/s/XrYHb8aLtg_3tfZobHhR4Q" target="_blank" rel="noopener noreferrer">
+          <div class="highlight__title">Finance · My own investing outlook --after reading <cite>High returns from low risk</div>
+          <p class="muted">Building a theory that fits to predict all financial products in revenue and risk.</p>
+        </a>
+        <a class="highlight" href="./pages/others/particle-interaction/" target="_blank" rel="noopener noreferrer">
+          <div class="highlight__title">Others · Particle interaction</div>
+          <p class="muted">3D particle interaction using hand gestures.</p>
+        </a>
+        <a class="highlight" href="mailto:zfrankj0927@gmail.com">
+          <div class="highlight__title">Profile · Contact</div>
+          <p class="muted">Reach out for research chats, mentorship, or to share papers.</p>
+        </a>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="control-bubbles" aria-label="Display controls">
+    <button class="bubble" data-toggle="theme" aria-pressed="false" title="Switch theme">☀</button>
+    <button class="bubble bubble--ghost" data-toggle="lens" aria-pressed="true" title="Disable liquid lens">FX</button>
+  </div>
+
+  <script type="module" src="./assets/js/site.js?v=4"></script>
+</body>
+</html>

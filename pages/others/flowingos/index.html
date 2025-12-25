@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flowing OS · Liquid Lens Control</title>
+    <style>
+        :root { color-scheme: dark; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at 18% 10%, rgba(56, 189, 248, 0.22), transparent 32%),
+                        radial-gradient(circle at 82% 12%, rgba(76, 29, 149, 0.22), transparent 28%),
+                        linear-gradient(135deg, #05060c 0%, #080b1a 45%, #0a0b11 100%);
+            color: #e5e7eb;
+            overflow: hidden;
+            transition: filter 0.35s ease;
+        }
+        a { color: inherit; }
+
+        body.panel-open #overview {
+            opacity: 0;
+            pointer-events: none;
+            filter: blur(6px);
+            transform: scale(0.995);
+        }
+
+        #backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 7, 18, 0.55);
+            backdrop-filter: blur(16px) saturate(125%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+            z-index: 1;
+        }
+        #backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #overview {
+            position: relative;
+            z-index: 1;
+            padding: 48px 28px 120px 28px;
+            max-width: 1180px;
+            margin: 0 auto;
+            display: grid;
+            gap: 18px;
+        }
+        #overview .headline {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 24px 22px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 14px 60px rgba(0, 0, 0, 0.35);
+        }
+        #overview h1 {
+            margin: 0 0 10px 0;
+            font-size: 32px;
+        }
+        #overview h2 {
+            margin: 0 0 8px 0;
+            letter-spacing: 0.08em;
+            font-size: 16px;
+            text-transform: uppercase;
+            color: #9ca3af;
+        }
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 14px;
+        }
+        .app-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 14px;
+            min-height: 130px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+        }
+        .app-card strong { color: #e0f2fe; }
+
+        #panel {
+            position: fixed;
+            inset: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            z-index: 2;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(16px) scale(0.99);
+            transition: opacity 0.35s ease, transform 0.35s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+        #panel.open {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 18px 22px;
+            backdrop-filter: blur(14px);
+            box-shadow: 0 12px 60px rgba(0, 0, 0, 0.45);
+        }
+
+        #header {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.2), rgba(59, 130, 246, 0.15));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 13px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 12px 0 8px 0;
+            font-size: 34px;
+            letter-spacing: 0.15px;
+        }
+        h2 {
+            margin: 0 0 8px 0;
+            font-size: 18px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #9ca3af;
+        }
+
+        .badge-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 10px 0 4px 0;
+        }
+        .badge {
+            padding: 8px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.04);
+            font-size: 13px;
+        }
+
+        .hero-visual {
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .photo {
+            position: relative;
+            height: 200px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: radial-gradient(circle at 30% 30%, rgba(34, 211, 238, 0.2), transparent 50%),
+                        radial-gradient(circle at 70% 60%, rgba(147, 51, 234, 0.25), transparent 45%),
+                        linear-gradient(145deg, #0d1b2a, #0b1020);
+        }
+        .photo::after {
+            content: attr(data-title);
+            position: absolute;
+            left: 14px;
+            bottom: 12px;
+            padding: 6px 10px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            font-size: 12px;
+            letter-spacing: 0.04em;
+        }
+        .photo.stretch {
+            grid-column: span 2;
+            height: 180px;
+            background: radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.28), transparent 50%),
+                        radial-gradient(circle at 60% 60%, rgba(16, 185, 129, 0.25), transparent 50%),
+                        linear-gradient(125deg, #0b1224, #07101c);
+        }
+
+        #main-grid {
+            display: grid;
+            grid-template-columns: 1.4fr 0.8fr;
+            gap: 16px;
+        }
+        #description {
+            line-height: 1.6;
+            font-size: 15px;
+            color: #cbd5e1;
+        }
+        #description ul { padding-left: 18px; margin: 8px 0; }
+        #description li { margin: 4px 0; }
+
+        #status-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .status-tile {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 12px;
+            min-height: 90px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .status-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #a5b4fc;
+        }
+        .status-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fefefe;
+        }
+        #video-preview {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: #000;
+            transform: scaleX(-1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+        }
+
+        #hint-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 10px;
+        }
+        #hint-list li {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-size: 14px;
+            color: #cbd5e1;
+        }
+        #hint-list span {
+            width: 8px;
+            height: 8px;
+            display: inline-flex;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #22d3ee, #0ea5e9);
+            box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.12);
+        }
+
+        #launcher {
+            position: fixed;
+            right: 22px;
+            bottom: 22px;
+            width: 70px;
+            height: 70px;
+            border-radius: 18px;
+            display: grid;
+            place-items: center;
+            background: radial-gradient(circle at 30% 30%, rgba(56, 189, 248, 0.35), rgba(37, 99, 235, 0.25)),
+                        linear-gradient(145deg, #0f172a, #0b1220);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
+            z-index: 3;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        #launcher:hover { transform: translateY(-3px); box-shadow: 0 18px 38px rgba(0, 0, 0, 0.5); }
+        #launcher svg { width: 46px; height: 46px; }
+
+        #video-input { display: none; }
+
+        @media (max-width: 1080px) {
+            #panel { inset: 20px; }
+            #header { grid-template-columns: 1fr; }
+            #main-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="liquid-lens-use.js"></script>
+</head>
+<body>
+    <div id="backdrop"></div>
+    <main id="overview">
+        <div class="headline">
+            <h2>Flowing OS · Overview</h2>
+            <h1>Wave-first operating layer that bends UI like water</h1>
+            <p style="margin:6px 0 0 0;color:#cbd5e1;line-height:1.6;">
+                Flowing OS overlays a liquid lens on the page. Your hand anchors focus, pinch depth becomes pressure, and
+                scrolls bloom into wavefronts. Use it as a playground for hands-free navigation, reactive art, or soft
+                glass dashboards.
+            </p>
+            <p style="margin:10px 0 0 0;color:#cbd5e1;line-height:1.6;">
+                The canvas behaves like a sheet of water: every gesture leaves a trace. Hover to see the lens glide,
+                press to dent the surface, and ride long, slow scrolls that pour content past the wavefront. You can
+                stay on this very page and practice: skim the extended brief below, scroll through the scenario cards,
+                and nudge the wave just to feel its weight.
+            </p>
+        </div>
+        <div class="headline">
+            <h2>Example scenes & apps</h2>
+            <div class="app-grid">
+                <div class="app-card">
+                    <strong>Wave Reader</strong>
+                    <span>Read long-form with wave-based scrolling—slide up/down to sheet content under the lens.</span>
+                </div>
+                <div class="app-card">
+                    <strong>Liquid Launcher</strong>
+                    <span>Pinch to press shimmering tiles; the lens magnifies the icon under your fingertip.</span>
+                </div>
+                <div class="app-card">
+                    <strong>Flow Desk</strong>
+                    <span>Arrange widgets that flex under distortion, perfect for media dashboards or ambient boards.</span>
+                </div>
+                <div class="app-card">
+                    <strong>Sculpt Mode</strong>
+                    <span>Paint ripples and refractions with your fingertip, using zoom to widen or narrow the brush.</span>
+                </div>
+            </div>
+        </div>
+        <div class="headline">
+            <h2>Long-form walkthrough</h2>
+            <p style="margin:4px 0 0 0;color:#cbd5e1;line-height:1.7;">
+                Start at the top, extend your index finger, and hover over the text—notice the refraction and
+                magnification pull. Bend your index to click: the panel should flash “Pressing” then “Click”, and the
+                surface snaps back. Hold the bend longer to see “Holding” persist. Move down the page and try a slow
+                two-finger slide; the wavefront should stay level while the content scrolls underneath. This block is
+                intentionally wordy so you can test gentle, continuous scroll without running out of text.
+            </p>
+            <p style="margin:10px 0 0 0;color:#cbd5e1;line-height:1.7;">
+                Imagine reading a dense brief here: a product pitch, a research summary, or design notes. Flowing OS
+                lets you skim by drifting your hand instead of spinning a wheel. If you pause, the water calms; if you
+                accelerate, the lens flares into a taller wave. Try tracing back up to the top to feel the resistance,
+                then bending to “click” a headline and release.
+            </p>
+            <ul style="margin:12px 0 0 0;color:#cbd5e1;line-height:1.6;padding-left:18px;">
+                <li>Hover: one finger extended, watch the highlight stay steady.</li>
+                <li>Click: bend and release—panel should read “Click”.</li>
+                <li>Long-hold: bend and keep bent—panel should read “Holding”.</li>
+                <li>Scroll wave: extend index + middle, move vertically; the wave stays level.</li>
+            </ul>
+        </div>
+    </main>
+
+    <div id="panel" class="glass">
+        <div id="header">
+            <div>
+                <div class="pill">Flowing OS · Liquid UI</div>
+                <h1>Gesture-driven, lens-deformed operating canvas</h1>
+                <div id="description">
+                    Flowing OS fuses spatial hand input with a living liquid lens. Your fingertip guides focus,
+                    single-finger bends become clicks or holds, and two-finger drifts launch scroll waves. Below is the
+                    live spec, media, and gesture map—double-tap the wave icon to hide/show this panel.
+                    <ul>
+                        <li>Always-on lens: distortion and wavefront overlay pinned to the entire page.</li>
+                        <li>Hand-tracked controls: hover, click/hold (index bend), scroll waves (index + middle), zoom.</li>
+                        <li>Camera insight: mirrored preview to calibrate distance and rotation.</li>
+                    </ul>
+                </div>
+                <div class="badge-row">
+                    <div class="badge">Double-tap the wave icon to open</div>
+                    <div class="badge">Index bend/release → click</div>
+                    <div class="badge">Index bend & hold → hold</div>
+                    <div class="badge">Index+middle drift → scroll wave</div>
+                    <div class="badge">Zoom footprint follows finger spread</div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="photo" data-title="Lens splash · click ripple"></div>
+                <div class="photo" data-title="Scroll wavefront · vertical slide"></div>
+                <div class="photo stretch" data-title="Flowing OS · liquid desktop view"></div>
+            </div>
+        </div>
+
+        <div id="main-grid">
+            <div class="glass">
+                <h2>Live Gesture Telemetry</h2>
+                <div id="status-grid">
+                    <div class="status-tile">
+                        <div class="status-label">Hand</div>
+                        <div class="status-value" id="gesture-main">Waiting for camera...</div>
+                        <div style="font-size:13px;color:#9ca3af;" id="gesture-details">Show your palm to wake the system.</div>
+                    </div>
+                    <div class="status-tile">
+                        <div class="status-label">Scroll / Move</div>
+                        <div class="status-value" id="scroll-status">—</div>
+                        <div style="font-size:13px;color:#9ca3af;" id="move-status">Two fingers: bend down → scroll up, bend up → scroll down.</div>
+                    </div>
+                    <div class="status-tile">
+                        <div class="status-label">Zoom</div>
+                        <div class="status-value" id="zoom-status">1.0x</div>
+                        <div style="font-size:13px;color:#9ca3af;">Pinch distance controls lens size.</div>
+                    </div>
+                    <div class="status-tile">
+                        <div class="status-label">Click / Hold</div>
+                        <div class="status-value" id="click-status">Idle</div>
+                        <div style="font-size:13px;color:#9ca3af;">Index bend/release → click; keep bent → hold.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass">
+                <h2>Camera Preview</h2>
+                <canvas id="video-preview" width="320" height="240"></canvas>
+                <p style="margin:10px 0 0 0;color:#9ca3af;font-size:13px;">Mirrored to match your point of view. Keep the palm inside the frame.</p>
+            </div>
+        </div>
+
+        <div class="glass">
+            <h2>Gesture Map → Lens Effect</h2>
+            <ul id="hint-list">
+                <li><span></span> Index fingertip drives the lens focus across the screen.</li>
+                <li><span></span> Index bend + release → splash click ripple.</li>
+                <li><span></span> Index bend + hold → sustained pressure on the lens.</li>
+                <li><span></span> Index + middle drift down → scroll up; drift up → scroll down.</li>
+                <li><span></span> Finger spread widens/narrows the lens footprint for zooming.</li>
+                <li><span></span> Two quick clicks near the wave icon → toggle this panel.</li>
+            </ul>
+        </div>
+
+        <div class="glass">
+            <h2>What is Flowing OS?</h2>
+            <p style="margin:0 0 12px 0;color:#cdd6f4;line-height:1.6;">
+                Flowing OS is a spatial, wave-reactive interface layer. It treats the screen as a liquid canvas where
+                hand intent ripples through displacement, depth, and motion. No buttons—just waves, pinches, and slides.
+            </p>
+            <div class="hero-visual">
+                <div class="photo" data-title="Command palette · liquid tiles"></div>
+                <div class="photo" data-title="Dashboard · layered blur"></div>
+                <div class="photo stretch" data-title="Immersive desktop · blue glass strata"></div>
+            </div>
+        </div>
+
+        <div class="glass">
+            <h2>Pillars of the experience</h2>
+            <div class="badge-row" style="margin:0 0 10px 0;">
+                <div class="badge">Lens physics first</div>
+                <div class="badge">Camera-native gestures</div>
+                <div class="badge">Wave-based navigation</div>
+                <div class="badge">No chrome, just flow</div>
+            </div>
+            <ul style="margin:0;color:#cbd5e1;line-height:1.6;">
+                <li><strong style="color:#e0f2fe;">Adaptive lens</strong> — deforms UI depth based on pressure (pinch) and footprint (zoom).</li>
+                <li><strong style="color:#c7d2fe;">Wavefront scroll</strong> — vertical slides launch a sheet of distortion that carries content.</li>
+                <li><strong style="color:#a5b4fc;">Focus steering</strong> — fingertip position magnetizes the highest refraction area.</li>
+                <li><strong style="color:#befae0;">Haptic via visuals</strong> — click/hold visuals mimic physical depression and rebound.</li>
+            </ul>
+        </div>
+
+        <div class="glass">
+            <h2>Scenes & modes</h2>
+            <div class="hero-visual">
+                <div class="photo" data-title="Creation mode · drag to sculpt waves"></div>
+                <div class="photo" data-title="Reading mode · soft scroll sheets"></div>
+                <div class="photo stretch" data-title="Navigation · map through refraction"></div>
+            </div>
+            <p style="margin:10px 0 0 0;color:#9ca3af;font-size:13px;">
+                Suggested modes show how the lens could wrap different tasks: drafting in fluid panes, browsing with
+                scroll waves, or navigating spatial maps through refracted focus.
+            </p>
+        </div>
+    </div>
+
+    <div id="launcher" title="Double-tap with a single finger to open Flowing OS">
+        <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="waveGrad" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#7dd3fc"/>
+                    <stop offset="0.5" stop-color="#38bdf8"/>
+                    <stop offset="1" stop-color="#0ea5e9"/>
+                </linearGradient>
+            </defs>
+            <path d="M10 48 C 35 62, 65 34, 110 52" stroke="url(#waveGrad)" stroke-width="10" stroke-linecap="round"/>
+            <path d="M10 66 C 35 80, 65 52, 110 70" stroke="url(#waveGrad)" stroke-width="10" stroke-linecap="round" opacity="0.8"/>
+            <path d="M10 84 C 35 98, 65 70, 110 88" stroke="url(#waveGrad)" stroke-width="10" stroke-linecap="round" opacity="0.6"/>
+        </svg>
+    </div>
+
+    <video id="video-input" playsinline></video>
+
+    <script>
+        // --- Helper utilities and DOM refs ---
+        const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
+        const panel = document.getElementById('panel');
+        const backdrop = document.getElementById('backdrop');
+        const launcher = document.getElementById('launcher');
+
+        const gestureMain = document.getElementById('gesture-main');
+        const gestureDetails = document.getElementById('gesture-details');
+        const scrollStatus = document.getElementById('scroll-status');
+        const moveStatus = document.getElementById('move-status');
+        const zoomStatus = document.getElementById('zoom-status');
+        const clickStatus = document.getElementById('click-status');
+        let clickLabelHoldUntil = 0;
+
+        let panelOpen = true;
+        const setPanelState = (open) => {
+            panelOpen = open;
+            panel.classList.toggle('open', open);
+            backdrop.classList.toggle('open', open);
+            document.body.classList.toggle('panel-open', open);
+        };
+        launcher.addEventListener('dblclick', () => setPanelState(!panelOpen));
+        // Ensure panel is visible on load in case launcher is missed
+        setPanelState(true);
+
+        // Liquid lens bridge state
+        const lensBridge = {
+            x: window.innerWidth / 2,
+            y: window.innerHeight / 2,
+            zoom: 1,
+            hold: false,
+            tap: false,
+            scrollPulse: 0
+        };
+
+        const inputProvider = () => {
+            const payload = {
+                x: lensBridge.x,
+                y: lensBridge.y,
+                zoom: lensBridge.zoom,
+                hold: lensBridge.hold
+            };
+            if (lensBridge.tap) {
+                payload.tap = true;
+                lensBridge.tap = false;
+            }
+            if (lensBridge.scrollPulse > 0) {
+                payload.scroll = { duration: 300 };
+                lensBridge.scrollPulse -= 1;
+            }
+            return payload;
+        };
+
+        LiquidLens.init({ targetSelector: 'body', allowPointer: true, inputProvider });
+
+        // --- MediaPipe Hands setup ---
+        const videoElement = document.getElementById('video-input');
+        const canvasElement = document.getElementById('video-preview');
+        const canvasCtx = canvasElement.getContext('2d');
+        canvasElement.width = 320;
+        canvasElement.height = 240;
+
+        let lastTip = null;
+        let lastTimestamp = 0;
+        let isPressing = false;
+        let pressStartedAt = 0;
+        let lastQuickTapTime = 0;
+        let lastQuickTapPos = null;
+        let lastTwoFingerY = null;
+        let pointerDownSent = false;
+
+        const holdThresholdMs = 700;
+        const bendClickWindow = 450;
+        const scrollMoveDelta = 0.01;
+        const doubleTapWindow = 450;
+        const doubleTapDistance = 90;
+
+        const fingerJoints = {
+            thumb: { tip: 4, dip: 3, pip: 2, mcp: 1 },
+            index: { tip: 8, dip: 7, pip: 6, mcp: 5 },
+            middle: { tip: 12, dip: 11, pip: 10, mcp: 9 },
+            ring: { tip: 16, dip: 15, pip: 14, mcp: 13 },
+            pinky: { tip: 20, dip: 19, pip: 18, mcp: 17 }
+        };
+
+        function angleBetween(v1, v2) {
+            const dot = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+            const mag1 = Math.hypot(v1.x, v1.y, v1.z);
+            const mag2 = Math.hypot(v2.x, v2.y, v2.z);
+            if (mag1 === 0 || mag2 === 0) return 0;
+            const cos = clamp(dot / (mag1 * mag2), -1, 1);
+            return Math.acos(cos);
+        }
+
+        function curlAngle(landmarks, joint) {
+            const tip = landmarks[joint.tip];
+            const pip = landmarks[joint.pip];
+            const mcp = landmarks[joint.mcp];
+            const v1 = { x: tip.x - pip.x, y: tip.y - pip.y, z: tip.z - pip.z };
+            const v2 = { x: mcp.x - pip.x, y: mcp.y - pip.y, z: mcp.z - pip.z };
+            return angleBetween(v1, v2); // radians
+        }
+
+        function fingerAngles(landmarks) {
+            return {
+                index: curlAngle(landmarks, fingerJoints.index),
+                middle: curlAngle(landmarks, fingerJoints.middle),
+                ring: curlAngle(landmarks, fingerJoints.ring),
+                pinky: curlAngle(landmarks, fingerJoints.pinky),
+                thumb: curlAngle(landmarks, fingerJoints.thumb)
+            };
+        }
+
+        function labelAction(text) { gestureDetails.innerText = text; }
+        function labelScroll(text) { scrollStatus.innerText = text; }
+        function labelMove(text) { moveStatus.innerText = text; }
+        function labelClickTemporary(text, ms = 800) {
+            clickLabelHoldUntil = Date.now() + ms;
+            clickStatus.innerText = text;
+        }
+        function labelClickBaseline(text) {
+            if (Date.now() > clickLabelHoldUntil) {
+                clickStatus.innerText = text;
+            }
+        }
+        function clearClickHold() { clickLabelHoldUntil = 0; }
+        function labelZoom(factor) { zoomStatus.innerText = factor.toFixed(2) + 'x'; }
+
+        function insideLauncher(x, y) {
+            const rect = launcher.getBoundingClientRect();
+            return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+        }
+
+        // Dispatch real pointer events so clicks/holds interact with the page
+        function dispatchPointer(type, x, y) {
+            const target = document.elementFromPoint(x, y);
+            if (!target) return;
+            const evt = new PointerEvent(type, {
+                bubbles: true,
+                cancelable: true,
+                clientX: x,
+                clientY: y,
+                pointerType: 'touch',
+                isPrimary: true
+            });
+            target.dispatchEvent(evt);
+            if (type === 'click' && typeof target.click === 'function') {
+                target.click();
+            }
+        }
+
+        function onResults(results) {
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0];
+                drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, { color: '#22d3ee', lineWidth: 2 });
+                drawLandmarks(canvasCtx, landmarks, { color: '#f472b6', lineWidth: 1 });
+
+                const tip = landmarks[8];
+                const now = Date.now();
+
+                lensBridge.x = (1 - tip.x) * window.innerWidth;
+                lensBridge.y = tip.y * window.innerHeight;
+
+                const curls = fingerAngles(landmarks);
+                const extendThresh = 2.3; // extended when finger is mostly straight
+                const relaxedThresh = 2.2; // consider folded when below this
+                const indexExt = curls.index > extendThresh;
+                const middleExt = curls.middle > extendThresh;
+
+                const oneFingerGroup = curls.middle < relaxedThresh && curls.ring < relaxedThresh && curls.pinky < relaxedThresh;
+                const singleFingerMode = (indexExt || isPressing) && oneFingerGroup;
+                const twoFingerMode = indexExt && middleExt; // relax ring/pinky to make scroll easier
+
+                // Hover baseline
+                if (singleFingerMode && indexExt && !isPressing) {
+                    labelClickBaseline('Hover');
+                    labelAction('Index extended → hover');
+                }
+
+                // Single finger click / hold detection based on bend
+                const bendStart = 1.95; // start pressing once index curls below this
+                const bendRelease = 2.35; // release when index extends back past this
+
+                if (singleFingerMode) {
+                    if (curls.index < bendStart && !isPressing) {
+                        isPressing = true;
+                        pressStartedAt = now;
+                        lensBridge.hold = true;
+                        pointerDownSent = true;
+                        dispatchPointer('pointerdown', lensBridge.x, lensBridge.y);
+                        labelClickTemporary('Pressing', 1000);
+                        labelAction('Index bent');
+                    } else if (curls.index < bendStart && isPressing) {
+                        if ((now - pressStartedAt) >= holdThresholdMs) {
+                            lensBridge.hold = true;
+                            labelClickTemporary('Holding', 1200);
+                            labelAction('Hold: keep finger bent');
+                        }
+                    } else if (curls.index > bendRelease && isPressing) {
+                        const heldFor = now - pressStartedAt;
+                        lensBridge.hold = false;
+                        isPressing = false;
+                        if (pointerDownSent) {
+                            dispatchPointer('pointerup', lensBridge.x, lensBridge.y);
+                            pointerDownSent = false;
+                        }
+
+                        if (heldFor < holdThresholdMs) {
+                            lensBridge.tap = true;
+                            labelClickTemporary('Click', 900);
+                            dispatchPointer('click', lensBridge.x, lensBridge.y);
+                            labelAction('Bend and release → click');
+
+                            const nearIcon = insideLauncher(lensBridge.x, lensBridge.y);
+                            const timeDelta = now - lastQuickTapTime;
+                            const distDelta = lastQuickTapPos
+                                ? Math.hypot(lensBridge.x - lastQuickTapPos.x, lensBridge.y - lastQuickTapPos.y)
+                                : Infinity;
+                            if (nearIcon && timeDelta < doubleTapWindow && distDelta < doubleTapDistance) {
+                                setPanelState(!panelOpen);
+                            }
+                            if (nearIcon) {
+                                lastQuickTapTime = now;
+                                lastQuickTapPos = { x: lensBridge.x, y: lensBridge.y };
+                            }
+                        } else {
+                            labelClickTemporary('Hold released', 800);
+                            labelAction('Long hold ended');
+                        }
+                    }
+                } else {
+                    lensBridge.hold = false;
+                    if (pointerDownSent) {
+                        dispatchPointer('pointerup', lensBridge.x, lensBridge.y);
+                        pointerDownSent = false;
+                    }
+                    isPressing = false;
+                    labelClickBaseline('Idle');
+                }
+
+                // Two finger scroll (index + middle)
+                if (twoFingerMode) {
+                    if (lastTwoFingerY === null) {
+                        labelScroll('Scroll ready');
+                        labelAction('Two fingers extended: move down/up to scroll');
+                    }
+                    const avgY = (landmarks[fingerJoints.index.tip].y + landmarks[fingerJoints.middle.tip].y) / 2;
+                    if (lastTwoFingerY !== null) {
+                        const dy = avgY - lastTwoFingerY;
+                        if (Math.abs(dy) > scrollMoveDelta) {
+                            lensBridge.scrollPulse = 28;
+                            const scrollAmount = dy > 0 ? -180 : 180; // reverse: hand down -> scroll up
+                            window.scrollBy({ top: scrollAmount, behavior: 'smooth' });
+                            if (dy > 0) {
+                                labelScroll('Scroll Up');
+                                labelAction('Two-finger move down → scroll up');
+                            } else {
+                                labelScroll('Scroll Down');
+                                labelAction('Two-finger move up → scroll down');
+                            }
+                        }
+                    }
+                    lastTwoFingerY = avgY;
+                } else {
+                    lastTwoFingerY = null;
+                    labelScroll('—');
+                }
+
+                // Movement hint (horizontal drift) when single finger mode
+                if (singleFingerMode && lastTip) {
+                    const dx = tip.x - lastTip.x;
+                    const elapsed = now - lastTimestamp;
+                    if (elapsed < 150 && Math.abs(dx) > 0.07) {
+                        const direction = dx < 0 ? 'Move Right' : 'Move Left';
+                        labelMove(direction);
+                    }
+                }
+
+                gestureMain.innerText = 'Hand detected';
+                lastTip = { x: tip.x, y: tip.y };
+                lastTimestamp = now;
+            } else {
+                gestureMain.innerText = 'No hand';
+                labelAction('Show your hand to steer the lens');
+                clearClickHold();
+                labelClickBaseline('Idle');
+                labelScroll('—');
+                lensBridge.hold = false;
+                lastTip = null;
+                lastTwoFingerY = null;
+            }
+
+            canvasCtx.restore();
+        }
+
+        const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+        hands.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+        hands.onResults(onResults);
+
+        const camera = new Camera(videoElement, {
+            onFrame: async () => { await hands.send({ image: videoElement }); },
+            width: 320,
+            height: 240
+        });
+
+        camera.start().then(() => {
+            gestureMain.innerText = 'Camera ready';
+            labelAction('Raise your hand to begin');
+        }).catch((err) => {
+            console.error(err);
+            gestureMain.innerText = 'Camera blocked';
+            labelAction('Camera permission is required.');
+        });
+    </script>
+</body>
+</html>

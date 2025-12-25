@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TXT → MD Matrix Uplink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --matrix-green: #7af78a;
+            --matrix-strong: #26ff80;
+            --matrix-dim: #0c1c12;
+            --matrix-bg: #030a05;
+            --matrix-lines: rgba(122, 247, 138, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background-color: var(--matrix-bg);
+            background-image:
+                radial-gradient(circle at 18% 18%, rgba(122, 247, 138, 0.09), transparent 28%),
+                radial-gradient(circle at 80% 12%, rgba(52, 211, 153, 0.08), transparent 25%),
+                radial-gradient(circle at 64% 72%, rgba(16, 185, 129, 0.08), transparent 28%);
+            color: #c9f8d2;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(var(--matrix-lines) 1px, transparent 1px),
+                linear-gradient(90deg, var(--matrix-lines) 1px, transparent 1px);
+            background-size: 34px 34px, 34px 34px;
+            mix-blend-mode: screen;
+            opacity: 0.4;
+            animation: drift 26s linear infinite;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(180deg, rgba(38, 255, 128, 0.25), rgba(3, 10, 5, 0));
+            mix-blend-mode: screen;
+            opacity: 0.15;
+            animation: scan 12s linear infinite;
+        }
+
+        .terminal-shell {
+            background: linear-gradient(140deg, rgba(5, 17, 9, 0.92), rgba(6, 26, 14, 0.86));
+            border: 1px solid rgba(122, 247, 138, 0.35);
+            box-shadow:
+                0 25px 70px rgba(0, 0, 0, 0.65),
+                0 0 40px rgba(74, 222, 128, 0.15),
+                inset 0 0 30px rgba(20, 255, 140, 0.06);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .panel {
+            background: rgba(5, 17, 9, 0.7);
+            border: 1px solid rgba(122, 247, 138, 0.22);
+            box-shadow:
+                inset 0 0 0 1px rgba(12, 252, 105, 0.06),
+                0 10px 35px rgba(0, 0, 0, 0.4),
+                0 0 25px rgba(74, 222, 128, 0.08);
+        }
+
+        .file-drop {
+            display: block;
+            width: 100%;
+            border: 1px dashed rgba(122, 247, 138, 0.4);
+            border-radius: 0.75rem;
+            padding: 1.3rem;
+            background: linear-gradient(135deg, rgba(12, 252, 105, 0.08), rgba(3, 10, 5, 0.9));
+            color: var(--matrix-green);
+            transition: all 0.25s ease;
+            box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.08);
+        }
+
+        .file-drop:hover {
+            border-color: var(--matrix-strong);
+            color: #defbe5;
+            box-shadow:
+                0 10px 35px rgba(74, 222, 128, 0.18),
+                inset 0 0 0 1px rgba(38, 255, 128, 0.18);
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(90deg, #16a34a, #26ff80);
+            color: #031007;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            border: 1px solid rgba(38, 255, 128, 0.7);
+            padding: 0.95rem;
+            border-radius: 0.75rem;
+            text-transform: uppercase;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+            box-shadow: 0 12px 35px rgba(38, 255, 128, 0.16);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-1px);
+            filter: brightness(1.02);
+            box-shadow: 0 14px 36px rgba(38, 255, 128, 0.22);
+        }
+
+        .btn-primary:disabled {
+            background: #0c1810;
+            color: #4c6d58;
+            border-color: rgba(122, 247, 138, 0.16);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .download-link {
+            padding: 0.75rem 1.25rem;
+            background: rgba(14, 179, 109, 0.15);
+            border: 1px solid rgba(122, 247, 138, 0.45);
+            border-radius: 0.6rem;
+            color: var(--matrix-green);
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .download-link:hover {
+            background: rgba(38, 255, 128, 0.15);
+            color: #defbe5;
+            box-shadow: 0 8px 25px rgba(38, 255, 128, 0.16);
+        }
+
+        .preview-block {
+            background: #020b05;
+            border: 1px dashed rgba(122, 247, 138, 0.26);
+            border-radius: 0.65rem;
+            padding: 1rem;
+            color: #c9f8d2;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            min-height: 180px;
+            box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.35);
+        }
+
+        .capsule {
+            border: 1px solid rgba(122, 247, 138, 0.26);
+            background: rgba(24, 44, 32, 0.45);
+            padding: 0.35rem 0.65rem;
+            border-radius: 0.5rem;
+            color: #9afcb9;
+            font-size: 0.85rem;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        @keyframes drift {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-30px, -20px, 0); }
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(-40%); }
+            100% { transform: translateY(40%); }
+        }
+    </style>
+</head>
+<body class="min-h-screen w-full flex items-center justify-center px-4 py-10">
+    <div class="terminal-shell w-full max-w-6xl rounded-xl p-6 md:p-8 space-y-6 relative overflow-hidden">
+        <div class="absolute inset-0 pointer-events-none opacity-30" aria-hidden="true">
+            <div class="absolute -left-10 top-12 h-24 w-24 rounded-full bg-emerald-500 blur-3xl"></div>
+            <div class="absolute right-0 -bottom-10 h-32 w-32 rounded-full bg-emerald-400 blur-3xl"></div>
+        </div>
+
+        <header class="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div class="space-y-2">
+                <p class="text-xs md:text-sm uppercase tracking-[0.3em] text-emerald-300/70">Matrix protocol uplink</p>
+                <h1 class="text-3xl md:text-4xl text-emerald-100 font-semibold">TXT → MD Transcoder</h1>
+                <p id="status-text" class="text-sm text-emerald-200/80">Awaiting plain text signal.</p>
+            </div>
+            <div class="flex items-center gap-2 text-emerald-100">
+                <span class="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(74,222,128,0.9)] animate-pulse"></span>
+                <span class="text-xs uppercase tracking-[0.35em]">Live link</span>
+            </div>
+        </header>
+
+        <div class="relative grid gap-6 lg:grid-cols-3">
+            <div class="space-y-4 lg:col-span-1">
+                <label for="file-upload" class="file-drop">
+                    <div class="flex items-start justify-between">
+                        <div class="space-y-2">
+                            <p class="text-xs uppercase tracking-[0.22em] text-emerald-200/80">Upload .txt</p>
+                            <p class="text-lg text-emerald-50 font-semibold" id="file-name">Drop or select a .txt file</p>
+                            <p class="text-xs text-emerald-200/70">Content will show in the preview grid.</p>
+                        </div>
+                        <div class="capsule">Browse</div>
+                    </div>
+                </label>
+                <input id="file-upload" type="file" accept=".txt">
+
+                <div class="flex items-center justify-between text-xs text-emerald-200/70">
+                    <span>File info</span>
+                    <span id="file-info" class="text-emerald-100/80">No file detected</span>
+                </div>
+
+                <button id="transform-btn" class="btn-primary" disabled>Convert to Markdown</button>
+
+                <div id="output-area" class="panel hidden rounded-lg p-4 flex flex-col gap-3">
+                    <div class="flex items-center gap-2 text-sm text-emerald-50">
+                        <span class="h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_10px_rgba(74,222,128,0.7)]"></span>
+                        <span>Markdown compiled. Dispatch when ready.</span>
+                    </div>
+                    <div>
+                        <a id="download-link" href="#" download="converted.md" class="download-link">Download .md</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <section class="panel rounded-lg p-4 space-y-3 h-full">
+                    <div class="flex items-center justify-between text-sm text-emerald-200/80">
+                        <div class="flex items-center gap-2">
+                            <span class="capsule">Source</span>
+                            <span>Original .txt preview</span>
+                        </div>
+                        <span class="text-xs text-emerald-200/60">Live as soon as a file is loaded</span>
+                    </div>
+                    <pre id="original-preview" class="preview-block">No file loaded. Drop a .txt file to inspect its content here.</pre>
+                </section>
+
+                <section class="panel rounded-lg p-4 space-y-3 h-full">
+                    <div class="flex items-center justify-between text-sm text-emerald-200/80">
+                        <div class="flex items-center gap-2">
+                            <span class="capsule">Output</span>
+                            <span>Markdown preview</span>
+                        </div>
+                        <span class="text-xs text-emerald-200/60">Appears after conversion</span>
+                    </div>
+                    <pre id="markdown-preview" class="preview-block">Conversion output will render here once you run the transcoder.</pre>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('file-upload');
+        const fileNameEl = document.getElementById('file-name');
+        const transformBtn = document.getElementById('transform-btn');
+        const outputArea = document.getElementById('output-area');
+        const downloadLink = document.getElementById('download-link');
+        const originalPreview = document.getElementById('original-preview');
+        const markdownPreview = document.getElementById('markdown-preview');
+        const statusText = document.getElementById('status-text');
+        const fileInfo = document.getElementById('file-info');
+
+        let fileContent = null;
+        let originalFilename = 'converted.txt';
+
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+
+            if (file && file.name.toLowerCase().endsWith('.txt')) {
+                originalFilename = file.name;
+                fileNameEl.textContent = `Loaded: ${file.name}`;
+                fileInfo.textContent = `${formatBytes(file.size)} | Modified ${formatTimestamp(file.lastModified)}`;
+                statusText.textContent = 'Reading plaintext signal...';
+                transformBtn.disabled = true;
+                markdownPreview.textContent = 'Conversion output will render here once you run the transcoder.';
+                outputArea.classList.add('hidden');
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    fileContent = e.target.result;
+                    originalPreview.textContent = getPreview(fileContent);
+                    transformBtn.disabled = false;
+                    statusText.textContent = 'Ready. Run conversion to generate Markdown.';
+                };
+                reader.readAsText(file);
+            } else if (file) {
+                fileNameEl.textContent = 'Unsupported file. Please choose a .txt file.';
+                fileInfo.textContent = 'No file detected';
+                fileContent = null;
+                transformBtn.disabled = true;
+                statusText.textContent = 'File rejected: only .txt is accepted.';
+                originalPreview.textContent = 'No file loaded. Drop a .txt file to inspect its content here.';
+                markdownPreview.textContent = 'Conversion output will render here once you run the transcoder.';
+                outputArea.classList.add('hidden');
+            }
+        });
+
+        transformBtn.addEventListener('click', () => {
+            if (!fileContent) return;
+
+            statusText.textContent = 'Generating Markdown preview...';
+            const markdownContent = processTextToMarkdown(fileContent);
+            markdownPreview.textContent = getPreview(markdownContent);
+
+            const blob = new Blob([markdownContent], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+
+            downloadLink.href = url;
+            downloadLink.download = originalFilename.replace(/\.txt$/, '.md');
+            outputArea.classList.remove('hidden');
+            statusText.textContent = 'Conversion complete. Dispatch or download when ready.';
+
+            downloadLink.onclick = () => {
+                setTimeout(() => URL.revokeObjectURL(url), 150);
+            };
+        });
+
+        function processTextToMarkdown(text) {
+            if (!text) return '';
+            const lines = text.trim().split(/\r?\n/);
+            if (lines.length === 0) return '';
+
+            const title = `# ${lines[0].trim()}`;
+            const body = lines
+                .slice(1)
+                .map((line) => line.trim())
+                .join('\n')
+                .split(/\n{2,}/)
+                .filter((p) => p.length > 0)
+                .join('\n\n');
+
+            return `${title}\n\n${body}`;
+        }
+
+        function getPreview(text, limit = 3200) {
+            if (!text) return 'No content available.';
+            if (text.length <= limit) return text;
+            return `${text.slice(0, limit)}\n...\n[preview truncated]`;
+        }
+
+        function formatBytes(bytes) {
+            const units = ['B', 'KB', 'MB', 'GB'];
+            if (bytes === 0) return '0 B';
+            const pow = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+            const value = bytes / Math.pow(1024, pow);
+            return `${value.toFixed(value >= 10 ? 0 : 1)} ${units[pow]}`;
+        }
+
+        function formatTimestamp(ms) {
+            return new Date(ms).toISOString().replace('T', ' ').replace('Z', ' UTC');
+        }
+    </script>
+</body>
+</html>

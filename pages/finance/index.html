@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fujia Zhang | Finance</title>
+  <script>
+    (function () {
+      const saved = localStorage.getItem("fz-theme");
+      const prefers = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+      const theme = saved || (prefers ? "light" : "dark");
+      document.documentElement.classList.toggle("theme-light", theme === "light");
+      window.__fzPreferredTheme = theme;
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../../assets/css/site.css?v=4" />
+</head>
+<body>
+  <div class="page">
+    <div class="breadcrumbs">
+      <a href="../../index.html">Home</a>
+      <span>·</span>
+      <span>Finance</span>
+    </div>
+
+    <header class="sub-hero" data-lens>
+      <h1>Finance</h1>
+      <p class="lede">Use quantified analysis to assess current market conditions and apply quantitative trading method into real market.</p>
+    </header>
+
+    <div class="back-row">
+      <a class="pill pill--ghost" href="../../index.html">← Back to home</a>
+    </div>
+
+    <main class="content timeline">
+      <div class="timeline-item">
+        <div class="timeline-item__date">2025/12</div>
+        <div class="timeline-item__body">
+          <h3>My latest quantitative trading achievement</h3>
+          <p class="muted">Combining three ultimate trading methods to benefit from both bullish and bearish.</p>
+          <p class="muted">Source: <a href="../../assets/img/finance-latest.png" target="_blank" rel="noopener noreferrer">Early Test Leak</a></p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-item__date">2025/07</div>
+        <div class="timeline-item__body">
+          <h3>My own investing outlook --after reading <cite>High returns from low risk</cite></h3>
+          <p class="muted">Building a theory that fits to predict all financial products in revenue and risk.</p>
+          <p class="muted">Source: <a href="https://mp.weixin.qq.com/s/XrYHb8aLtg_3tfZobHhR4Q" target="_blank" rel="noopener noreferrer">My Wechat Blog (need English translation)</a></p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-item__date">2025/02</div>
+        <div class="timeline-item__body">
+          <h3>Early quantitative trading&Compound interest</h3>
+          <p class="muted">Based on ETFs to do quantitative tradings and realize the benefit of compound interest in long-term.</p>
+          <p class="muted">Source: <a href="https://mp.weixin.qq.com/s/PW-SXBLqdOArLep672wlBw" target="_blank" rel="noopener noreferrer">My Wechat Blog (need English translation)</a></p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-item__date">2024/10</div>
+        <div class="timeline-item__body">
+          <h3>Normal distribution and other analysis after reading <cite>Thinking, fast and slow</cite></h3>
+          <p class="muted">Predict the downturn of A stock market based on normal distribution and objective assessment from the book.</p>
+          <p class="muted">Source: <a href="https://mp.weixin.qq.com/s/YxIkqZoiHotOS75QS8krcw" target="_blank" rel="noopener noreferrer">My Wechat Blog (need English translation)</a></p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-item__date">2024/09</div>
+        <div class="timeline-item__body">
+          <h3>Opportunity in bearish --US bond</h3>
+          <p class="muted">Predict the soar in US bond price and give analysis.</p>
+          <p class="muted">Source: <a href="https://mp.weixin.qq.com/s/QkND7IwyHI-Jrv2nL0obsA" target="_blank" rel="noopener noreferrer">My Wechat Blog (need English translation)</a></p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-item__date">2024/08</div>
+        <div class="timeline-item__body">
+          <h3>Prophet Prediction --SP500</h3>
+          <p class="muted">Use Transformer model to predict the future of SP500 index and hint of future bearish.</p>
+          <p class="muted">Source: <a href="https://mp.weixin.qq.com/s/VqwA2UYeS0o9cM-SiGWOkQ" target="_blank" rel="noopener noreferrer">My Wechat Blog (need English translation)</a></p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-item__date">Origin</div>
+        <div class="timeline-item__body">
+          <h3>Chat with ChatGPT</h3>
+          <p class="muted">AI introduce quantified analysis to me and start my journey in quantitative trading.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="control-bubbles" aria-label="Display controls">
+    <button class="bubble" data-toggle="theme" aria-pressed="false" title="Switch theme">☀</button>
+    <button class="bubble bubble--ghost" data-toggle="lens" aria-pressed="true" title="Disable liquid lens">FX</button>
+  </div>
+
+  <script type="module" src="../../assets/js/site.js?v=4"></script>
+</body>
+</html>

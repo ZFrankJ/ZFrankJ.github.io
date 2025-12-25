@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Lightweight Airplane Sim — Cockpit/Chase + Voxel World</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  html, body { margin:0; padding:0; height:100%; overflow:hidden; background:#87ceeb; }
+  #hud {
+    position: absolute; top: 10px; left: 10px; font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color:#071821; background:rgba(255,255,255,.85); padding:10px 12px; border-radius:10px; box-shadow:0 4px 18px rgba(0,0,0,.15);
+  }
+  #hud h1 { margin: 0 0 6px 0; font-size: 14px; }
+  #stats { white-space: pre; }
+  #help {
+    position: absolute; right: 10px; top: 10px; max-width: 360px;
+    font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color:#071821; background:rgba(255,255,255,.85); padding:10px 12px; border-radius:10px; box-shadow:0 4px 18px rgba(0,0,0,.15);
+  }
+  #gameover {
+    position: absolute; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column;
+    background: rgba(0,0,0,.45); color: #fff; text-align:center; font: 700 28px/1.2 Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  }
+  #gameover small { font-weight:500; font-size:14px; margin-top:10px; opacity:.9 }
+  #credit {
+    position:absolute; bottom:8px; right:10px; font: 11px/1.4 ui-monospace, Menlo, Consolas, monospace;
+    color:#0b1330; background:rgba(255,255,255,.7); padding:4px 8px; border-radius:8px;
+  }
+</style>
+</head>
+<body>
+<div id="hud">
+  <h1>Flight HUD</h1>
+  <div id="stats">Loading…</div>
+</div>
+
+<div id="help">
+  <b>Controls</b><br/>
+  Throttle: ↑ / ↓<br/>
+  Yaw (turn): ← / →<br/>
+  Pitch: W / S<br/>
+  Roll: A / D<br/>
+  Camera: C (Cockpit ↔ Chase)<br/>
+  Reset after crash: Space<br/><br/>
+  <b>Notes</b><br/>
+  • Controls act in the plane’s local frame (relative axes).<br/>
+  • Camera & HUD stats are aligned with the plane’s motion.<br/>
+  • Lightweight voxel scene for smooth performance.
+</div>
+
+<div id="gameover">
+  <div>GAME OVER</div>
+  <small>Press SPACE to restart</small>
+</div>
+
+<div id="credit">Voxel world • Three.js</div>
+
+<script>
+// Non-module loader for maximum compatibility (file:// safe)
+async function loadThree() {
+  if (window.THREE) return window.THREE;
+  const sources = [
+    "./three.min.js", // local-first if present
+    "https://unpkg.com/three@0.160.0/build/three.min.js",
+    "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"
+  ];
+  let lastErr = null;
+  for (const url of sources) {
+    try {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = url;
+        s.async = true;
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error("Failed to load " + url));
+        document.head.appendChild(s);
+      });
+      if (window.THREE) return window.THREE;
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error("Failed to load three.min.js from any source");
+}
+
+(async () => {
+  const THREE = await loadThree().catch(err => {
+    const stats = document.getElementById("stats");
+    if (stats) stats.textContent = "Failed to load Three.js. Check network/CDN.";
+    console.error(err);
+    return null;
+  });
+  if (!THREE) return; // Abort if we couldn't load three
+
+  // Polyfill MathUtils.damp if missing
+  if (!THREE.MathUtils.damp) {
+    THREE.MathUtils.damp = function (x, y, lambda, dt) {
+      return y + (x - y) * Math.exp(-lambda * dt);
+    };
+  }
+
+let scene, camera, renderer;
+let plane, planeBody, worldRoot;
+let buildings = [];
+let buildingBoxes = [];
+let groundY = 0;
+let mode = "chase"; // "cockpit" | "chase"
+let gameOver = false;
+
+// Flight state
+let throttle = 0.35;     // 0..1
+let speed = 10;          // m/s (logical units/s)
+const minSpeed = 2;
+const maxSpeed = 70;
+const throttleRate = 0.35; // /s
+const accel = 22;        // m/s^2 max accel at full throttle
+const drag = 0.015;      // simple quadratic-like drag factor
+
+// Angular control (radians per second)
+const yawRate   = THREE.MathUtils.degToRad(45);
+const pitchRate = THREE.MathUtils.degToRad(35);
+const rollRate  = THREE.MathUtils.degToRad(60);
+
+// Keys
+const keys = new Set();
+
+// HUD
+const statsEl = document.getElementById("stats");
+const gameoverEl = document.getElementById("gameover");
+
+// Init
+init();
+animate(0);
+
+function init() {
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x87ceeb);
+  scene.fog = new THREE.Fog(0x87ceeb, 60, 450);
+
+  camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.05, 2000);
+
+  try {
+    renderer = new THREE.WebGLRenderer({ antialias:true, powerPreference:"high-performance" });
+  } catch (e) {
+    const stats = document.getElementById('stats');
+    if (stats) stats.textContent = 'WebGL not available: ' + (e && e.message ? e.message : e);
+    console.error(e);
+    return;
+  }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  // Lights: sun + ambient
+  const ambient = new THREE.AmbientLight(0xffffff, 0.55);
+  scene.add(ambient);
+
+  const sunLight = new THREE.DirectionalLight(0xfff0c0, 0.95);
+  sunLight.position.set(80, 120, 100);
+  sunLight.castShadow = false;
+  scene.add(sunLight);
+
+  // Voxel "sun"
+  const sunGeom = new THREE.BoxGeometry(6,6,6);
+  const sunMat  = new THREE.MeshBasicMaterial({ color: 0xfff07a });
+  const sun = new THREE.Mesh(sunGeom, sunMat);
+  sun.position.set(120, 160, -180);
+  scene.add(sun);
+
+  // Root for world content
+  worldRoot = new THREE.Group();
+  scene.add(worldRoot);
+
+  // Ground (voxel tiles for Minecraft-ish vibe)
+  createGround();
+  createClouds();
+  createBuildings();
+
+  // Plane
+  createPlane();
+
+  // Events
+  window.addEventListener('resize', onResize);
+  window.addEventListener('keydown', (e) => {
+    if (e.repeat) return;
+    keys.add(e.key.toLowerCase());
+    if (e.key === 'c' || e.key === 'C') toggleCameraMode();
+    if (e.code === 'Space') { if (gameOver) resetGame(); }
+  });
+  window.addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
+}
+
+function createGround() {
+  // Green ground plane + voxel bumps
+  const base = new THREE.Mesh(
+    new THREE.PlaneGeometry(800, 800),
+    new THREE.MeshLambertMaterial({ color: 0x55aa55 })
+  );
+  base.rotation.x = -Math.PI/2;
+  base.position.y = groundY;
+  base.receiveShadow = false;
+  worldRoot.add(base);
+
+  // Gentle hills via sparse boxes
+  const tile = new THREE.BoxGeometry(6, 1, 6);
+  const greens = [0x4da64d, 0x5eb35e, 0x6bc06b, 0x79cc79];
+  for (let x = -180; x <= 180; x += 12) {
+    for (let z = -180; z <= 180; z += 12) {
+      if (Math.random() < 0.08) {
+        const h = 1 + Math.floor(Math.random()*3);
+        const mat = new THREE.MeshLambertMaterial({ color: greens[(h-1) % greens.length] });
+        const box = new THREE.Mesh(tile, mat);
+        box.scale.y = h;
+        box.position.set(x, groundY + (h/2), z);
+        worldRoot.add(box);
+      }
+    }
+  }
+}
+
+function createClouds() {
+  const cloudMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
+  for (let i=0; i<18; i++) {
+    const g = new THREE.Group();
+    const chunks = 3 + Math.floor(Math.random()*4);
+    for (let j=0; j<chunks; j++) {
+      const geom = new THREE.BoxGeometry(6+Math.random()*6, 4+Math.random()*3, 6+Math.random()*6);
+      const p = new THREE.Mesh(geom, cloudMat);
+      p.position.set((j-1.5)*5 + (Math.random()*2-1), (Math.random()*2-1), (Math.random()*2-1));
+      g.add(p);
+    }
+    g.position.set(
+      -200 + Math.random()*400,
+      25 + Math.random()*50,
+      -200 + Math.random()*400
+    );
+    worldRoot.add(g);
+  }
+}
+
+function createBuildings() {
+  // Simple voxel city blocks with AABBs for collision
+  const palette = [0xc0392b, 0x2980b9, 0x8e44ad, 0x16a085, 0xf39c12, 0x2c3e50, 0x95a5a6];
+  const block = new THREE.BoxGeometry(6, 6, 6);
+
+  const positions = [];
+  // Populate in rings around origin, leaving a corridor for takeoff
+  for (let r=60; r<=200; r+=40) {
+    for (let a=0; a<Math.PI*2; a += Math.PI/12) {
+      const x = Math.cos(a) * (r + (Math.random()*10-5));
+      const z = Math.sin(a) * (r + (Math.random()*10-5));
+      // leave a “runway” corridor near +Z
+      if (Math.abs(x) < 15 && z > -40 && z < 140) continue;
+      positions.push([x, z]);
+    }
+  }
+
+  buildingBoxes = [];
+  buildings = [];
+  positions.forEach(([x,z]) => {
+    const levels = 2 + Math.floor(Math.random()*8);
+    for (let i=0;i<levels;i++) {
+      const mat = new THREE.MeshLambertMaterial({ color: palette[(i + Math.floor(Math.random()*palette.length)) % palette.length] });
+      const cube = new THREE.Mesh(block, mat);
+      cube.position.set(x, groundY + 3 + i*6, z);
+      worldRoot.add(cube);
+      buildings.push(cube);
+    }
+
+    // One combined box per column (wider to be safe)
+    const box = new THREE.Box3().setFromCenterAndSize(
+      new THREE.Vector3(x, groundY + 3*positions.length, z), // temp center, fix below
+      new THREE.Vector3(8, 8*levels+2, 8)
+    );
+    // Properly compute from objects
+    const columnGroup = new THREE.Group();
+    // clone to avoid re-parenting meshes out of the scene
+    buildings.slice(-levels).forEach(b => columnGroup.add(b.clone()));
+    const finalBox = new THREE.Box3().setFromObject(columnGroup).expandByScalar(0.3);
+    buildingBoxes.push(finalBox);
+  });
+}
+
+function createPlane() {
+  const group = new THREE.Group();
+
+  // Fuselage (boxy to keep voxel style)
+  const body = new THREE.Mesh(
+    new THREE.BoxGeometry(0.5, 0.25, 1.8),
+    new THREE.MeshLambertMaterial({ color: 0xeeeeee })
+  );
+  body.position.set(0, 0, 0);
+  group.add(body);
+
+  // Nose
+  const nose = new THREE.Mesh(
+    new THREE.BoxGeometry(0.45, 0.22, 0.4),
+    new THREE.MeshLambertMaterial({ color: 0xff4444 })
+  );
+  nose.position.set(0, 0, -1.1);
+  group.add(nose);
+
+  // Tail
+  const tail = new THREE.Mesh(
+    new THREE.BoxGeometry(0.2, 0.2, 0.6),
+    new THREE.MeshLambertMaterial({ color: 0xeeeeee })
+  );
+  tail.position.set(0, 0.05, 1.2);
+  group.add(tail);
+
+  // Vertical stabilizer
+  const vstab = new THREE.Mesh(
+    new THREE.BoxGeometry(0.06, 0.3, 0.3),
+    new THREE.MeshLambertMaterial({ color: 0x4444ff })
+  );
+  vstab.position.set(0, 0.25, 1.0);
+  group.add(vstab);
+
+  // Wings
+  const wingL = new THREE.Mesh(
+    new THREE.BoxGeometry(1.6, 0.06, 0.4),
+    new THREE.MeshLambertMaterial({ color: 0xdddddd })
+  );
+  wingL.position.set(-0.9, 0, 0.1);
+  group.add(wingL);
+
+  const wingR = wingL.clone();
+  wingR.position.x *= -1;
+  group.add(wingR);
+
+  plane = new THREE.Group();
+  plane.add(group);
+  plane.position.set(0, 3.5, 60); // start above “runway”
+  plane.rotation.order = "ZYX"; // roll (Z), pitch (X), yaw (Y) stability
+  worldRoot.add(plane);
+
+  planeBody = group;
+}
+
+function onResize() {
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+// Helpers
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+function toggleCameraMode() {
+  mode = (mode === "chase") ? "cockpit" : "chase";
+}
+
+function setCameras() {
+  if (mode === "chase") {
+    // Behind and slightly above the plane (positive Z is behind in local space)
+    const offset = new THREE.Vector3(0, 1.2, 6);
+    camera.position.copy(plane.localToWorld(offset));
+    // Align camera orientation exactly with aircraft to avoid lookAt singularities
+    camera.quaternion.copy(plane.quaternion);
+  } else {
+    // Cockpit — slightly forward toward the nose (negative Z is forward)
+    const offset = new THREE.Vector3(0, 0.12, -0.55);
+    camera.position.copy(plane.localToWorld(offset));
+    camera.quaternion.copy(plane.quaternion);
+  }
+}
+
+function updateHUD(dt) {
+  // Compute aircraft-style attitude from basis vectors
+  const xAxis = new THREE.Vector3(); // right
+  const yAxis = new THREE.Vector3(); // up
+  const zAxis = new THREE.Vector3(); // +z (back)
+  plane.matrixWorld.extractBasis(xAxis, yAxis, zAxis);
+  const f = zAxis.clone().negate().normalize();
+  const u = yAxis.clone().normalize();
+  const r = xAxis.clone().normalize();
+
+  // Yaw: angle around world up (0 when facing -Z)
+  const yawRad = Math.atan2(f.x, -f.z);
+  // Pitch: standard aircraft convention in ±90° (decoupled from yaw)
+  const pitchRad = Math.atan2(f.y, Math.hypot(f.x, f.z));
+  // Roll: relative twist around forward compared to world up
+  const upProj = u.clone().sub(f.clone().multiplyScalar(u.dot(f))).normalize();
+  const worldUp = new THREE.Vector3(0,1,0);
+  const worldUpProj = worldUp.clone().sub(f.clone().multiplyScalar(worldUp.dot(f))).normalize();
+  let rollRad = Math.acos(THREE.MathUtils.clamp(upProj.dot(worldUpProj), -1, 1));
+  const sign = new THREE.Vector3().crossVectors(worldUpProj, upProj).dot(f) < 0 ? -1 : 1;
+  rollRad *= sign;
+
+  const altitude = plane.position.y - groundY;
+  const lines = [
+    `Mode    : ${mode.toUpperCase()}`,
+    `Speed   : ${speed.toFixed(1)} u/s`,
+    `Throttle: ${(throttle*100).toFixed(0)} %`,
+    `Alt     : ${altitude.toFixed(1)} u`,
+    `Pitch   : ${THREE.MathUtils.radToDeg(pitchRad).toFixed(1)}°`,
+    `Yaw     : ${THREE.MathUtils.radToDeg(yawRad).toFixed(1)}°`,
+    `Roll    : ${THREE.MathUtils.radToDeg(rollRad).toFixed(1)}°`,
+  ];
+  statsEl.textContent = lines.join("\n");
+}
+
+function handleInput(dt) {
+  // Throttle (ArrowUp/Down)
+  if (keys.has("arrowup"))   throttle += throttleRate * dt;
+  if (keys.has("arrowdown")) throttle -= throttleRate * dt;
+  throttle = clamp(throttle, 0, 1);
+
+  // Yaw (left/right) in WORLD space so left/right always turn horizontally
+  let yawDelta = 0;
+  if (keys.has("arrowleft"))  yawDelta += yawRate * dt;  // CCW around +Y when viewed from above
+  if (keys.has("arrowright")) yawDelta -= yawRate * dt;  // CW around +Y
+  if (yawDelta !== 0) {
+    const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), yawDelta);
+    plane.quaternion.premultiply(q);
+    plane.quaternion.normalize();
+  }
+
+  // Pitch (W/S) around plane's local right axis
+  if (keys.has("w")) plane.rotateOnAxis(new THREE.Vector3(1,0,0), +pitchRate * dt);
+  if (keys.has("s")) plane.rotateOnAxis(new THREE.Vector3(1,0,0), -pitchRate * dt);
+
+  // Roll (A/D) around plane's LOCAL forward axis to keep pivot tight
+  if (keys.has("a")) plane.rotateOnAxis(new THREE.Vector3(0,0,-1), +rollRate * dt);
+  if (keys.has("d")) plane.rotateOnAxis(new THREE.Vector3(0,0,-1), -rollRate * dt);
+
+  // Normalize quaternion to avoid numerical drift and unintended flips
+  plane.quaternion.normalize();
+}
+
+function integrateMotion(dt) {
+  // Update speed from throttle with simple accel & drag
+  const targetSpeed = minSpeed + throttle * (maxSpeed - minSpeed);
+  speed = THREE.MathUtils.damp(speed, targetSpeed, 1.8, dt);
+  speed = clamp(speed - speed*speed*drag*dt*0.02, 0, maxSpeed);
+
+  // Move along the plane's forward direction (-Z in local space)
+  const dir = new THREE.Vector3();
+  plane.getWorldDirection(dir); // returns world-space forward (-Z)
+  // Use negative scale so visual motion is forward relative to the nose
+  plane.position.addScaledVector(dir, -speed * dt);
+
+  // Keep within world bounds (soft wrap on X/Z)
+  const lim = 350;
+  if (plane.position.x > lim) plane.position.x = -lim;
+  if (plane.position.x < -lim) plane.position.x = lim;
+  if (plane.position.z > lim) plane.position.z = -lim;
+  if (plane.position.z < -lim) plane.position.z = lim;
+}
+
+function checkCollision() {
+  // Ground
+  if (plane.position.y <= groundY + 0.5) return true;
+
+  // Buildings (AABB vs plane bounding box)
+  const pbox = new THREE.Box3().setFromObject(planeBody).expandByScalar(0.05);
+  for (const bbox of buildingBoxes) {
+    if (bbox.intersectsBox(pbox)) return true;
+  }
+  return false;
+}
+
+function setGameOver() {
+  gameOver = true;
+  gameoverEl.style.display = "flex";
+}
+
+function resetGame() {
+  gameOver = false;
+  gameoverEl.style.display = "none";
+  // Reset plane
+  plane.position.set(0, 3.5, 60);
+  plane.rotation.set(0, 0, 0);
+  throttle = 0.35;
+  speed = 10;
+  mode = "chase";
+}
+
+let last = 0;
+function animate(t) {
+  try {
+    requestAnimationFrame(animate);
+    const dt = Math.min((t - last) / 1000, 0.05); // clamp big frame gaps
+    last = t;
+
+    if (!gameOver) {
+      handleInput(dt);
+      integrateMotion(dt);
+      if (checkCollision()) setGameOver();
+    }
+
+    // Camera and HUD always reflect the current plane state
+    setCameras();
+    updateHUD(dt);
+
+    if (renderer) renderer.render(scene, camera);
+  } catch (e) {
+    const stats = document.getElementById('stats');
+    if (stats) stats.textContent = 'Runtime error: ' + (e && e.message ? e.message : e);
+    console.error(e);
+  }
+}
+})();
+</script>
+</body>
+</html>
