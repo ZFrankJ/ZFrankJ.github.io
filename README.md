@@ -10,4 +10,4 @@ Personal site for Fujia Zhang with a simple structure:
 
 Light/dark and the liquid-lens FX can be toggled from the floating bubbles on any page; a one-time note explains the FX control the first time you visit.
 
-Local preview: use a server so ES modules load (browsers block `file://` imports). From the repo root: `python -m http.server 4000` then open `http://localhost:4000/`.
+© 2025 <Fujia Zhang>. All rights reserved.
