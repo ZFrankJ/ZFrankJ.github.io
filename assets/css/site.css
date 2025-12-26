@@ -520,13 +520,37 @@ h3 {
 }
 
 .timeline-thumb {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  object-fit: cover;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.timeline-media-grid {
+    display: grid;
+    gap: 10px;
+    margin-top: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.timeline-media-grid--three {
+    grid-template-columns: repeat(3, minmax(120px, 1fr));
+}
+
+.timeline-media-grid--stack {
+    grid-template-columns: 1fr;
+}
+
+.timeline-media {
     width: 100%;
-    border-radius: 12px;
+    height: auto;
+    border-radius: 10px;
     border: 1px solid var(--border);
-    background: var(--panel);
     object-fit: cover;
     display: block;
-    margin-bottom: 10px;
 }
 
 .box-grid {
@@ -750,5 +774,14 @@ h3 {
 
     .profile-hero {
         grid-template-columns: 1fr;
+    }
+
+    .timeline-media-grid,
+    .timeline-media-grid--three {
+        grid-template-columns: 1fr;
+    }
+
+    .timeline-media {
+        object-fit: contain;
     }
 }
