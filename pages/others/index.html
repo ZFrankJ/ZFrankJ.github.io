@@ -7,10 +7,12 @@
   <script>
     (function () {
       const saved = localStorage.getItem("fz-theme");
-      const prefers = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
-      const theme = saved || (prefers ? "light" : "dark");
+      const prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+      const mode = saved || "system";
+      const theme = mode === "system" ? (prefersLight ? "light" : "dark") : mode;
       document.documentElement.classList.toggle("theme-light", theme === "light");
       window.__fzPreferredTheme = theme;
+      window.__fzThemeMode = mode;
     })();
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -94,6 +96,9 @@
         </div>
       </section>
     </main>
+    <footer class="site-footer">
+      <p class="muted">© 2025 Fujia Zhang. All rights reserved.</p>
+    </footer>
   </div>
 
   <div class="control-bubbles" aria-label="Display controls">

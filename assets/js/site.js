@@ -21,6 +21,10 @@ const storage = createStorage();
 
 let themeButton = null;
 let lensButton = null;
+let themeMode = "system";
+const systemQuery =
+  typeof window.matchMedia === "function" ? window.matchMedia("(prefers-color-scheme: light)") : null;
+let themeMenu = null;
 let timelineSpineRaf = 0;
 let timelineResizeObserver = null;
 
@@ -42,34 +46,45 @@ function createStorage() {
   }
 }
 
-function applyTheme(theme) {
-  const isLight = theme === "light";
+function getSystemTheme() {
+  return systemQuery && systemQuery.matches ? "light" : "dark";
+}
+
+function applyTheme(mode) {
+  const effectiveTheme = mode === "system" ? getSystemTheme() : mode;
+  const isLight = effectiveTheme === "light";
   const root = document.documentElement;
 
   root.classList.toggle("theme-light", isLight);
   root.style.colorScheme = isLight ? "light" : "dark";
 
   if (themeButton) {
-    themeButton.textContent = isLight ? "☾" : "☀";
-    themeButton.title = isLight ? "Switch to dark theme" : "Switch to light theme";
-    themeButton.setAttribute("aria-pressed", String(isLight));
+    if (mode === "system") {
+      themeButton.textContent = "🖥";
+      themeButton.title = "System theme";
+      themeButton.setAttribute("aria-pressed", "mixed");
+    } else {
+      themeButton.textContent = isLight ? "☀" : "☾";
+      themeButton.title = isLight ? "Light theme" : "Dark theme";
+      themeButton.setAttribute("aria-pressed", String(isLight));
+    }
   }
-  storage.setItem(THEME_KEY, isLight ? "light" : "dark");
+  if (themeMenu) {
+    themeMenu.querySelectorAll("[data-theme-option]").forEach((button) => {
+      const active = button.getAttribute("data-theme-option") === mode;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
+  }
+  storage.setItem(THEME_KEY, mode);
 }
 
-function getInitialTheme() {
-  const savedTheme =
-    window.__fzPreferredTheme ||
-    storage.getItem(THEME_KEY) ||
-    (typeof window.matchMedia === "function" && window.matchMedia("(prefers-color-scheme: light)").matches
-      ? "light"
-      : "dark");
-
-  if (savedTheme === "light" || savedTheme === "dark") {
+function getInitialThemeMode() {
+  const savedTheme = window.__fzThemeMode || storage.getItem(THEME_KEY) || "system";
+  if (savedTheme === "light" || savedTheme === "dark" || savedTheme === "system") {
     return savedTheme;
   }
-
-  return "dark";
+  return "system";
 }
 
 function applyLens(enabled) {
@@ -182,14 +197,82 @@ function initTimelineSpines() {
 }
 
 function initTheme() {
-  applyTheme(getInitialTheme());
+  themeMode = getInitialThemeMode();
+  applyTheme(themeMode);
 
-  if (themeButton) {
-    themeButton.addEventListener("click", () => {
-      const next = document.documentElement.classList.contains("theme-light") ? "dark" : "light";
-      applyTheme(next);
+  if (systemQuery) {
+    systemQuery.addEventListener("change", () => {
+      if (themeMode === "system") applyTheme("system");
     });
   }
+
+  if (themeButton) {
+    buildThemeMenu();
+    themeButton.setAttribute("aria-haspopup", "true");
+    themeButton.addEventListener("click", () => {
+      toggleThemeMenu();
+    });
+  }
+}
+
+function buildThemeMenu() {
+  if (themeMenu || !themeButton) return;
+
+  themeMenu = document.createElement("div");
+  themeMenu.className = "theme-menu";
+  themeMenu.setAttribute("data-open", "false");
+  themeMenu.innerHTML = `
+    <button class="theme-menu__item" data-theme-option="system" aria-pressed="false" title="System">🖥</button>
+    <button class="theme-menu__item" data-theme-option="light" aria-pressed="false" title="Light">☀</button>
+    <button class="theme-menu__item" data-theme-option="dark" aria-pressed="false" title="Dark">☾</button>
+  `;
+  document.body.appendChild(themeMenu);
+
+  themeMenu.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-theme-option]");
+    if (!button) return;
+    themeMode = button.getAttribute("data-theme-option") || "system";
+    applyTheme(themeMode);
+    setThemeMenuOpen(false);
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!themeMenu || themeMenu.getAttribute("data-open") !== "true") return;
+    if (themeMenu.contains(event.target) || event.target === themeButton) return;
+    setThemeMenuOpen(false);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    setThemeMenuOpen(false);
+  });
+
+  applyTheme(themeMode);
+}
+
+function toggleThemeMenu() {
+  if (!themeMenu) return;
+  const isOpen = themeMenu.getAttribute("data-open") === "true";
+  setThemeMenuOpen(!isOpen);
+}
+
+function setThemeMenuOpen(open) {
+  if (!themeMenu || !themeButton) return;
+  themeMenu.setAttribute("data-open", open ? "true" : "false");
+  themeButton.setAttribute("aria-expanded", open ? "true" : "false");
+  if (open) {
+    requestAnimationFrame(positionThemeMenu);
+  }
+}
+
+function positionThemeMenu() {
+  if (!themeMenu || !themeButton) return;
+  const rect = themeButton.getBoundingClientRect();
+  const menuWidth = themeMenu.offsetWidth || 48;
+  const left = Math.max(8, rect.left + rect.width / 2 - menuWidth / 2);
+  const top = rect.bottom + 8;
+  themeMenu.style.left = `${left}px`;
+  themeMenu.style.top = `${top}px`;
 }
 
 function initLens() {
