@@ -10,4 +10,4 @@ Personal site for Fujia Zhang with a simple structure:
 
 Light/dark and the liquid-lens FX can be toggled from the floating bubbles on any page; a one-time note explains the FX control the first time you visit.
 
-© 2025 <Fujia Zhang>. All rights reserved.
+© 2025 Fujia Zhang. All rights reserved.
