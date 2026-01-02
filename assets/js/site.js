@@ -87,7 +87,7 @@ function getInitialThemeMode() {
   return "system";
 }
 
-function applyLens(enabled) {
+function applyLens(enabled, { persist = true } = {}) {
   try {
     if (enabled) {
       LiquidLens.init("body");
@@ -105,7 +105,9 @@ function applyLens(enabled) {
     lensButton.classList.toggle("bubble--ghost", !enabled);
   }
 
-  storage.setItem(LENS_KEY, enabled ? "on" : "off");
+  if (persist) {
+    storage.setItem(LENS_KEY, enabled ? "on" : "off");
+  }
 }
 
 function showLensNoteOnce() {
@@ -276,6 +278,19 @@ function positionThemeMenu() {
 }
 
 function initLens() {
+  const isCoarsePointer =
+    (typeof window.matchMedia === "function" && window.matchMedia("(pointer: coarse)").matches) ||
+    navigator.maxTouchPoints > 0;
+  if (isCoarsePointer) {
+    applyLens(false, { persist: false });
+    if (lensButton) {
+      lensButton.disabled = true;
+      lensButton.setAttribute("aria-disabled", "true");
+      lensButton.title = "FX disabled on touch devices";
+    }
+    return;
+  }
+
   const savedLens = storage.getItem(LENS_KEY);
   const shouldEnable = savedLens !== "off";
   applyLens(shouldEnable);
