@@ -161,7 +161,7 @@
                     <div id="hp-bar-fill" class="hp-bar-fill"></div>
                 </div>
             </div>
-            <div class="hud-item">AMMO: <span id="ammo-display">100</span></div>
+            <div class="hud-item">AMMO: <span id="ammo-display">30</span></div>
             <div class="hud-item">SCORE: <span id="score-display">0</span></div>
         </div>
         <div id="damage-overlay" class="damage-overlay"></div>
@@ -189,7 +189,7 @@
 
         // Game State
         let hp = 100;
-        let ammo = 100;
+        let ammo = 30;
         let score = 0;
         let isDead = false;
         let totalEnemiesSpawned = 0;
@@ -801,6 +801,8 @@
             if (index > -1) enemies.splice(index, 1);
 
             score++;
+            ammo += 5;
+            hp = Math.min(100, hp + 5);
             updateHUD();
 
             if (!bossSpawned && (MAX_ENEMIES - score <= BOSS_SPAWN_THRESHOLD)) {
@@ -992,7 +994,7 @@
         function resetGame() {
             // Reset Game State
             hp = 100;
-            ammo = 100;
+            ammo = 30;
             score = 0;
             isDead = false;
             totalEnemiesSpawned = 0;
