@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Focus Sprint Neo</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="command-panel">
+      <p class="eyebrow">Vision Rhythm Trainer</p>
+      <h1>Focus Sprint Neo</h1>
+      <p class="subtitle">Minimal, distraction-controlled visual reaction drills.</p>
+      <p class="disclaimer">Not a medical treatment and not a cure for myopia. Use as a habit tool for comfort and break discipline.</p>
+
+      <div class="actions">
+        <button id="start-btn" class="primary">Start</button>
+        <button id="pause-btn">Pause</button>
+        <button id="reset-btn">Reset</button>
+      </div>
+
+      <div class="settings-grid">
+        <label class="field">
+          Session length
+          <select id="session-seconds">
+            <option value="60">1 min</option>
+            <option value="120" selected>2 min</option>
+            <option value="180">3 min</option>
+          </select>
+        </label>
+
+        <label class="field">
+          Difficulty
+          <select id="difficulty-mode">
+            <option value="easy">Easy</option>
+            <option value="hard">Hard</option>
+            <option value="extreme" selected>Extreme</option>
+          </select>
+        </label>
+      </div>
+
+      <label class="toggle">
+        <input type="checkbox" id="distance-breaks">
+        <span>Enable 20-second distance break prompts</span>
+      </label>
+
+      <section class="stat-grid" aria-label="live stats">
+        <article><span>Score</span><strong id="score-value">0</strong></article>
+        <article><span>Lives</span><strong id="lives-value">5</strong></article>
+        <article><span>Streak</span><strong id="streak-value">0</strong></article>
+        <article><span>Accuracy</span><strong id="accuracy-value">0%</strong></article>
+        <article><span>Level</span><strong id="level-value">1</strong></article>
+        <article><span>Time Left</span><strong id="time-value">120s</strong></article>
+      </section>
+
+      <section class="help">
+        <h2>Controls</h2>
+        <p><kbd>W A S D</kbd> or <kbd>Arrow keys</kbd> match the E direction.</p>
+        <p><kbd>Space</kbd> quick start/pause. <kbd>B</kbd> during blink prompt for bonus. <kbd>P</kbd> pause. <kbd>F</kbd> fullscreen.</p>
+      </section>
+
+      <p id="status-text" class="status">Press Start to begin.</p>
+    </section>
+
+    <section class="play-area">
+      <canvas id="game-canvas" width="1000" height="800" aria-label="Focus Sprint Neo game canvas"></canvas>
+    </section>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>

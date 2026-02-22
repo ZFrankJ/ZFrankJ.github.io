@@ -1,0 +1,1886 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Voxel Dogfight — 3D Plane Fighting</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root {
+    --hud-bg-top: rgba(10, 24, 34, 0.82);
+    --hud-bg-bottom: rgba(8, 18, 30, 0.94);
+    --hud-border: rgba(128, 208, 250, 0.34);
+    --hud-text: #d8f4ff;
+    --hud-subtle: rgba(216, 244, 255, 0.72);
+    --menu-a: rgba(9, 24, 40, 0.84);
+    --menu-b: rgba(5, 14, 24, 0.92);
+    --menu-border: rgba(114, 200, 250, 0.42);
+    --menu-glow: rgba(108, 194, 255, 0.18);
+  }
+  html, body { margin:0; padding:0; height:100%; overflow:hidden; background:#87ceeb; }
+  #view { position:relative; width:100%; height:100%; overflow:hidden; }
+  #dashboard {
+    position:absolute; left:0; right:0; bottom:0;
+    width:100%; height:178px; display:flex; align-items:flex-end; justify-content:space-evenly;
+    padding:12px 26px 10px;
+    background: linear-gradient(180deg, var(--hud-bg-top) 0%, var(--hud-bg-bottom) 100%);
+    border-top: 1px solid var(--hud-border);
+    border-radius: 14px 14px 0 0;
+    box-shadow: 0 -10px 24px rgba(0,0,0,.35);
+    backdrop-filter: blur(1.8px);
+  }
+  .dashboard-duo {
+    position:absolute; bottom:0;
+    width:calc(50% - 6px); height:178px; display:none; align-items:flex-end; justify-content:space-evenly;
+    padding:12px 12px 10px;
+    background: linear-gradient(180deg, var(--hud-bg-top) 0%, var(--hud-bg-bottom) 100%);
+    border-top: 1px solid var(--hud-border);
+    border-radius: 14px 14px 0 0;
+    box-shadow: 0 -10px 22px rgba(0,0,0,.35);
+    box-sizing: border-box;
+    backdrop-filter: blur(1.8px);
+  }
+  #dashboard-left { left: 0; border-right: 1px solid rgba(120,190,230,0.25); }
+  #dashboard-right { right: 0; border-left: 1px solid rgba(120,190,230,0.25); }
+  .panel {
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    min-width: 130px; color:var(--hud-text);
+  }
+  .panel-title {
+    font: 600 11px/1.1 "JetBrains Mono", "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    letter-spacing:0.12em; text-transform:uppercase; margin-bottom:4px; color:#cdeeff;
+    text-shadow: 0 0 8px rgba(130, 210, 255, 0.16);
+  }
+  .panel-caption {
+    font: 10px/1.1 "JetBrains Mono", "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: var(--hud-subtle);
+    margin-top:4px;
+  }
+  .dashboard-duo .panel { min-width: 112px; }
+  .dashboard-duo .status-readout { min-width: 118px; }
+  canvas[id^="radar-"], canvas[id^="attitude-"] {
+    background: radial-gradient(circle at 50% 35%, #10273c 0%, #091a2a 75%, #081523 100%);
+    border-radius: 50%;
+    border: 1px solid rgba(120,190,230,0.25);
+    box-shadow: inset 0 0 0 1px rgba(140,220,255,0.09);
+  }
+  #altitude-panel { min-width: 160px; }
+  #status-panel-single, #status-panel-p1, #status-panel-p2 { min-width: 170px; }
+  #altitude-readout-single,
+  #altitude-readout-p1,
+  #altitude-readout-p2 {
+    font: 12px/1.35 "JetBrains Mono", "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: rgba(6,16,24,0.64);
+    border: 1px solid rgba(120,190,230,0.3);
+    border-radius: 10px;
+    padding: 6px 8px;
+    min-width: 124px;
+    text-align: left;
+    white-space: pre;
+    box-shadow: inset 0 0 12px rgba(90, 180, 255, 0.08);
+  }
+  .status-readout {
+    font: 11px/1.3 "JetBrains Mono", "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: rgba(6,16,24,0.64);
+    border: 1px solid rgba(120,190,230,0.3);
+    border-radius: 10px;
+    padding: 6px 8px;
+    min-width: 148px;
+    text-align: left;
+    white-space: pre;
+    box-shadow: inset 0 0 12px rgba(90, 180, 255, 0.08);
+  }
+  #radar-single { width: 132px; height: 132px; }
+  #attitude-single { width: 176px; height: 132px; }
+  #radar-p1, #radar-p2 { width: 110px; height: 110px; }
+  #attitude-p1, #attitude-p2 { width: 132px; height: 108px; }
+  #menu {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+      radial-gradient(90% 100% at 50% 18%, rgba(110, 196, 255, 0.08) 0%, rgba(8, 20, 32, 0) 60%),
+      radial-gradient(120% 120% at 50% 20%, rgba(12, 24, 38, 0.82), rgba(6, 12, 20, 0.9));
+    color: #dff3ff;
+    z-index: 5;
+    text-align: center;
+    font: 16px/1.4 "JetBrains Mono", "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  #menu .card {
+    background: linear-gradient(160deg, var(--menu-a) 0%, var(--menu-b) 100%);
+    border: 1px solid var(--menu-border);
+    border-radius: 16px;
+    padding: 24px 28px;
+    min-width: 320px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35), 0 0 28px var(--menu-glow);
+  }
+  #menu h1 {
+    margin: 0 0 12px 0; font-size: 21px; letter-spacing: 0.12em; text-transform: uppercase;
+    text-shadow: 0 0 12px rgba(130, 210, 255, 0.22);
+  }
+  #menu .btns { display: flex; gap: 12px; justify-content: center; margin-top: 14px; }
+  #menu .btns.weather { margin-top: 10px; gap: 8px; }
+  #menu button {
+    background: linear-gradient(180deg, #15415f 0%, #12344f 100%);
+    color: #dff3ff;
+    border: 1px solid rgba(120,190,230,0.52);
+    border-radius: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font: 600 14px/1 "JetBrains Mono", "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    box-shadow: inset 0 0 10px rgba(130, 210, 255, 0.1);
+  }
+  #menu button.weather-btn { padding: 8px 10px; font-size: 12px; }
+  #menu button:hover { background: linear-gradient(180deg, #1b5479 0%, #164767 100%); }
+  #weather-label { margin-top: 8px; font-size: 12px; opacity: .85; }
+  .crosshair {
+    position: absolute;
+    width: 44px;
+    height: 28px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    filter: drop-shadow(0 0 8px rgba(80, 180, 255, 0.25));
+  }
+  #crosshair-single { left: 50%; top: 51%; }
+  #crosshair-left { left: 25%; top: 51%; }
+  #crosshair-right { left: 75%; top: 51%; }
+  .gun-line {
+    position: absolute;
+    top: 16px;
+    width: 17px;
+    height: 2px;
+    background: rgba(222, 246, 255, 0.88);
+    border-radius: 2px;
+  }
+  .gun-line.left {
+    left: 0px;
+    transform-origin: right center;
+    transform: rotate(-67deg);
+  }
+  .gun-line.right {
+    right: 0px;
+    transform-origin: left center;
+    transform: rotate(67deg);
+  }
+  .meet-point {
+    position: absolute;
+    left: 50%;
+    top: 10px;
+    width: 6px;
+    height: 6px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 1px solid rgba(222, 246, 255, 0.95);
+    background: rgba(140, 220, 255, 0.2);
+  }
+  .meet-point::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 2px;
+    height: 2px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: rgba(232, 250, 255, 1);
+  }
+  #gameover {
+    position: absolute; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column;
+    background: rgba(0,0,0,.45); color: #fff; text-align:center; font: 700 28px/1.2 Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  }
+  #gameover small { font-weight:500; font-size:14px; margin-top:10px; opacity:.9 }
+</style>
+</head>
+<body>
+<div id="view">
+  <div id="menu">
+    <div class="card">
+      <h1>Voxel Dogfight</h1>
+      <div>Choose mode</div>
+      <div class="btns">
+        <button id="btn-single">1 Player</button>
+        <button id="btn-duo">2 Players</button>
+      </div>
+      <div style="margin-top:12px;">Weather</div>
+      <div class="btns weather">
+        <button id="btn-sunny" class="weather-btn">Sunny</button>
+        <button id="btn-cloudy" class="weather-btn">Cloudy</button>
+        <button id="btn-rainy" class="weather-btn">Rainy</button>
+      </div>
+      <div id="weather-label">Current: Sunny</div>
+      <div style="margin-top:12px; font-size:12px; opacity:.8;">Press 1/2 for mode, 7/8/9 for weather</div>
+    </div>
+  </div>
+  <div id="gameover">
+    <div id="gameover-title">GAME OVER</div>
+    <small id="gameover-hint">Press R or Space to restart</small>
+  </div>
+
+  <div id="crosshair-single" class="crosshair" aria-hidden="true">
+    <span class="gun-line left"></span><span class="gun-line right"></span><span class="meet-point"></span>
+  </div>
+  <div id="crosshair-left" class="crosshair" aria-hidden="true" style="display:none">
+    <span class="gun-line left"></span><span class="gun-line right"></span><span class="meet-point"></span>
+  </div>
+  <div id="crosshair-right" class="crosshair" aria-hidden="true" style="display:none">
+    <span class="gun-line left"></span><span class="gun-line right"></span><span class="meet-point"></span>
+  </div>
+  <div id="dashboard">
+    <div class="panel" id="radar-panel">
+      <div class="panel-title">Radar</div>
+      <canvas id="radar-single" width="160" height="160"></canvas>
+      <div class="panel-caption">Enemy relative position</div>
+    </div>
+    <div class="panel" id="status-panel-single">
+      <div class="panel-title">Status</div>
+      <div id="status-readout-single" class="status-readout">Score : 0
+HP    : ME 280 / ENY 220
+Fuel  : ME 300 / ENY 300
+Ammo  : ME 320 / ENY 220
+Speed : 0.0 u/s
+Thr   : 50 %
+Hit   : -</div>
+      <div class="panel-caption">Score / HP / Fuel / Ammo</div>
+    </div>
+    <div class="panel" id="altitude-panel">
+      <div class="panel-title">Alt / HP</div>
+      <div id="altitude-readout-single">GL  : 0.0 u
+ME  : 0.0 u
+ENY : 0.0 u</div>
+      <div class="panel-caption">Ground / Mine / Enemy</div>
+    </div>
+    <div class="panel" id="attitude-panel">
+      <div class="panel-title">Attitude</div>
+      <canvas id="attitude-single" width="200" height="160"></canvas>
+      <div class="panel-caption">Pitch / Roll</div>
+    </div>
+  </div>
+  <div id="dashboard-left" class="dashboard-duo">
+    <div class="panel">
+      <div class="panel-title">Radar</div>
+      <canvas id="radar-p1" width="160" height="160"></canvas>
+      <div class="panel-caption">P1 view</div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">P1 Status</div>
+      <div id="status-readout-p1" class="status-readout">HP    : 280
+Fuel  : 300
+Ammo  : 320
+Speed : 0.0 u/s
+Hit   : -</div>
+      <div class="panel-caption">WASD + Space</div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Alt</div>
+      <div id="altitude-readout-p1">GL  : 0.0 u
+ME  : 0.0 u
+ENY : 0.0 u</div>
+      <div class="panel-caption">P1 altitude</div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Att</div>
+      <canvas id="attitude-p1" width="180" height="160"></canvas>
+    </div>
+  </div>
+  <div id="dashboard-right" class="dashboard-duo">
+    <div class="panel">
+      <div class="panel-title">Radar</div>
+      <canvas id="radar-p2" width="160" height="160"></canvas>
+      <div class="panel-caption">P2 view</div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">P2 Status</div>
+      <div id="status-readout-p2" class="status-readout">HP    : 220
+Fuel  : 300
+Ammo  : 220
+Speed : 0.0 u/s
+Hit   : -</div>
+      <div class="panel-caption">Arrows + Enter</div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Alt</div>
+      <div id="altitude-readout-p2">GL  : 0.0 u
+ME  : 0.0 u
+ENY : 0.0 u</div>
+      <div class="panel-caption">P2 altitude</div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Att</div>
+      <canvas id="attitude-p2" width="180" height="160"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+// Non-module loader for maximum compatibility (file:// safe)
+async function loadThree() {
+  if (window.THREE) return window.THREE;
+  const sources = [
+    "./three.min.js", // local-first if present
+    "https://unpkg.com/three@0.160.0/build/three.min.js",
+    "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"
+  ];
+  let lastErr = null;
+  for (const url of sources) {
+    try {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = url;
+        s.async = true;
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error("Failed to load " + url));
+        document.head.appendChild(s);
+      });
+      if (window.THREE) return window.THREE;
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error("Failed to load three.min.js from any source");
+}
+
+(async () => {
+  const THREE = await loadThree().catch(err => {
+    const status = document.getElementById("status-readout");
+    if (status) status.textContent = "Failed to load Three.js.\nCheck network/CDN.";
+    console.error(err);
+    return null;
+  });
+  if (!THREE) return; // Abort if we couldn't load three
+
+  // Polyfill MathUtils.damp if missing
+  if (!THREE.MathUtils.damp) {
+    THREE.MathUtils.damp = function (x, y, lambda, dt) {
+      return y + (x - y) * Math.exp(-lambda * dt);
+    };
+  }
+
+let scene, camera, camera2, renderer;
+let plane, planeBody, enemy, enemyBody, worldRoot;
+let buildings = [];
+let buildingBoxes = [];
+let groundY = 0;
+let mode = "chase"; // "cockpit" | "chase"
+let gameOver = false;
+let outcome = "";
+let last = 0;
+let gameMode = "single";
+let modeState = "menu";
+let enemyHitTimer = 0;
+let playerHitTimer = 0;
+let sunLight = null;
+let sunMesh = null;
+let cloudGroup = null;
+let rainGroup = null;
+let weather = "sunny";
+
+let bullets = [];
+let enemyBullets = [];
+let fireHeld = false;
+let fireHeld2 = false;
+let bulletGeom, bulletMat, enemyBulletMat;
+
+// Flight state
+let throttle = 0.5;     // adjustable throttle (0..1), 0.5 = baseline
+let speed = 10;          // m/s (logical units/s)
+let speedP2 = 10;
+const minSpeed = 8;
+const maxSpeed = 70;
+const playerBaseSpeed = 24;
+const enemyBaseSpeed = 28;
+const baseSpeed = playerBaseSpeed;
+const throttleRate = 0.25; // /s
+const p1FixedSpeed = 22;
+const p2FixedSpeed = 28;
+const singleThrottleSpeedScaleMin = 0.72;
+const singleThrottleSpeedScaleMax = 1.28;
+const fuelBurnRate = 1.5; // units per second at full throttle
+const accel = 22;        // m/s^2 max accel at full throttle
+const drag = 0.015;      // simple quadratic-like drag factor
+
+// Dogfight state
+let playerHP = 280;
+let enemyHP = 220;
+let playerMaxHP = 280;
+let enemyMaxHP = 220;
+let playerFuel = 300;
+let enemyFuel = 300;
+let playerAmmo = 320;
+let enemyAmmo = 220;
+let score = 0;
+const bulletSpeed = 120;
+const bulletLife = 2.2;
+const fireCooldown = 0.22;
+let playerFireTimer = 0;
+let enemyFireTimer = 0;
+const enemySpeed = enemyBaseSpeed;
+const enemyTurnRate = 2.4;
+let enemyYaw = 0;
+let enemyPitch = 0;
+const WORLD_LIMIT = 450;
+const renderScaleSingle = Math.min(window.devicePixelRatio || 1, 1.35);
+const renderScaleDuo = Math.min(window.devicePixelRatio || 1, 1.2);
+const weatherProfiles = {
+  sunny: {
+    label: "Sunny",
+    sky: 0x87ceeb,
+    fog: 0x87ceeb,
+    fogNear: 120,
+    fogFar: 900,
+    ambient: 0.68,
+    sunIntensity: 1.65,
+    sunVisible: true,
+    deckCount: 24,
+    deckAltitude: 74,
+    deckThickness: 10,
+    deckChunksMin: 2,
+    deckChunksVar: 2,
+    deckHoleChance: 0.35,
+    highCloudCount: 20,
+    highAltitudeMin: 112,
+    highAltitudeSpan: 52,
+    highChunksMin: 2,
+    highChunksVar: 2,
+    cloudColor: 0xffffff,
+    rain: false,
+    rainCount: 0
+  },
+  cloudy: {
+    label: "Cloudy",
+    sky: 0x93afbf,
+    fog: 0x93afbf,
+    fogNear: 100,
+    fogFar: 640,
+    ambient: 0.72,
+    sunIntensity: 0.58,
+    sunVisible: false,
+    deckCount: 56,
+    deckAltitude: 66,
+    deckThickness: 7,
+    deckChunksMin: 3,
+    deckChunksVar: 3,
+    deckHoleChance: 0.08,
+    highCloudCount: 12,
+    highAltitudeMin: 116,
+    highAltitudeSpan: 40,
+    highChunksMin: 2,
+    highChunksVar: 2,
+    cloudColor: 0xd8e3ea,
+    rain: false,
+    rainCount: 0
+  },
+  rainy: {
+    label: "Rainy",
+    sky: 0x6f8797,
+    fog: 0x6f8797,
+    fogNear: 70,
+    fogFar: 430,
+    ambient: 0.6,
+    sunIntensity: 0.22,
+    sunVisible: false,
+    deckCount: 68,
+    deckAltitude: 62,
+    deckThickness: 6,
+    deckChunksMin: 3,
+    deckChunksVar: 3,
+    deckHoleChance: 0.03,
+    highCloudCount: 8,
+    highAltitudeMin: 110,
+    highAltitudeSpan: 32,
+    highChunksMin: 2,
+    highChunksVar: 2,
+    cloudColor: 0xbecad2,
+    rain: true,
+    rainCount: 460
+  }
+};
+
+// Angular control (radians per second)
+const yawRate   = THREE.MathUtils.degToRad(24);
+const pitchRate = THREE.MathUtils.degToRad(20);
+const rollRate  = THREE.MathUtils.degToRad(30);
+const p2YawRate = THREE.MathUtils.degToRad(30);
+const p2PitchRate = THREE.MathUtils.degToRad(26);
+
+// Keys
+const keys = new Set();
+
+// HUD
+const statusReadoutSingleEl = document.getElementById("status-readout-single");
+const statusReadoutP1El = document.getElementById("status-readout-p1");
+const statusReadoutP2El = document.getElementById("status-readout-p2");
+const statusPanelSingleEl = document.getElementById("status-panel-single");
+const dashboardSingleEl = document.getElementById("dashboard");
+const dashboardLeftEl = document.getElementById("dashboard-left");
+const dashboardRightEl = document.getElementById("dashboard-right");
+const gameoverEl = document.getElementById("gameover");
+const gameoverTitleEl = document.getElementById("gameover-title");
+const gameoverHintEl = document.getElementById("gameover-hint");
+const viewEl = document.getElementById("view");
+const radarCanvasSingle = document.getElementById("radar-single");
+const radarCanvasP1 = document.getElementById("radar-p1");
+const radarCanvasP2 = document.getElementById("radar-p2");
+const attitudeCanvasSingle = document.getElementById("attitude-single");
+const attitudeCanvasP1 = document.getElementById("attitude-p1");
+const attitudeCanvasP2 = document.getElementById("attitude-p2");
+const altitudeReadoutSingleEl = document.getElementById("altitude-readout-single");
+const altitudeReadoutP1El = document.getElementById("altitude-readout-p1");
+const altitudeReadoutP2El = document.getElementById("altitude-readout-p2");
+const crosshairSingle = document.getElementById("crosshair-single");
+const crosshairLeft = document.getElementById("crosshair-left");
+const crosshairRight = document.getElementById("crosshair-right");
+const menuEl = document.getElementById("menu");
+const btnSingle = document.getElementById("btn-single");
+const btnDuo = document.getElementById("btn-duo");
+const btnSunny = document.getElementById("btn-sunny");
+const btnCloudy = document.getElementById("btn-cloudy");
+const btnRainy = document.getElementById("btn-rainy");
+const weatherLabelEl = document.getElementById("weather-label");
+const radarCtxSingle = radarCanvasSingle ? radarCanvasSingle.getContext("2d") : null;
+const radarCtxP1 = radarCanvasP1 ? radarCanvasP1.getContext("2d") : null;
+const radarCtxP2 = radarCanvasP2 ? radarCanvasP2.getContext("2d") : null;
+const attitudeCtxSingle = attitudeCanvasSingle ? attitudeCanvasSingle.getContext("2d") : null;
+const attitudeCtxP1 = attitudeCanvasP1 ? attitudeCanvasP1.getContext("2d") : null;
+const attitudeCtxP2 = attitudeCanvasP2 ? attitudeCanvasP2.getContext("2d") : null;
+
+// Init
+init();
+animate(0);
+
+function init() {
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x87ceeb);
+  scene.fog = new THREE.Fog(0x87ceeb, 120, 900);
+
+  camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.12, 2000);
+  camera2 = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.12, 2000);
+
+  try {
+    renderer = new THREE.WebGLRenderer({ antialias:true, powerPreference:"high-performance" });
+  } catch (e) {
+    const stats = document.getElementById('stats');
+    if (stats) stats.textContent = 'WebGL not available: ' + (e && e.message ? e.message : e);
+    console.error(e);
+    return;
+  }
+  renderer.setPixelRatio(renderScaleSingle);
+  const viewW = viewEl ? viewEl.clientWidth : window.innerWidth;
+  const viewH = viewEl ? viewEl.clientHeight : window.innerHeight;
+  renderer.setSize(viewW, viewH);
+  if (viewEl) {
+    viewEl.insertBefore(renderer.domElement, viewEl.firstChild);
+  } else {
+    document.body.appendChild(renderer.domElement);
+  }
+
+  // Lights: sun + ambient
+  const ambient = new THREE.AmbientLight(0xffffff, weatherProfiles.sunny.ambient);
+  ambient.name = "ambient-main";
+  scene.add(ambient);
+
+  sunLight = new THREE.DirectionalLight(0xfff4d6, weatherProfiles.sunny.sunIntensity);
+  sunLight.position.set(80, 120, 100);
+  sunLight.castShadow = false;
+  scene.add(sunLight);
+
+  // Voxel "sun"
+  const sunGeom = new THREE.BoxGeometry(8,8,8);
+  const sunMat  = new THREE.MeshBasicMaterial({ color: 0xfff07a });
+  sunMesh = new THREE.Mesh(sunGeom, sunMat);
+  sunMesh.position.set(120, 160, -180);
+  scene.add(sunMesh);
+
+  // Root for world content
+  worldRoot = new THREE.Group();
+  scene.add(worldRoot);
+
+  // Ground (voxel tiles for Minecraft-ish vibe)
+  createGround();
+  createBuildings();
+  applyWeather(weather);
+
+  // Planes
+  const playerColors = {
+    body: 0x5e7b4f,
+    nose: 0xe3edd7,
+    tail: 0x5e7b4f,
+    vstab: 0x5e7b4f,
+    wing: 0x7f9f6d
+  };
+  const player = createPlane(playerColors, new THREE.Vector3(0, 3.5, 140));
+  plane = player.plane;
+  planeBody = player.body;
+  plane.userData.propeller = player.propeller;
+
+  const enemyColors = {
+    body: 0x79b6d8,
+    nose: 0xf0f8ff,
+    tail: 0x79b6d8,
+    vstab: 0x79b6d8,
+    wing: 0x9bcfe8
+  };
+  const foe = createPlane(enemyColors, new THREE.Vector3(40, 8, -60));
+  enemy = foe.plane;
+  enemyBody = foe.body;
+  enemy.userData.propeller = foe.propeller;
+  enemy.rotation.y = Math.PI;
+  enemyYaw = enemy.rotation.y;
+  enemyPitch = 0;
+
+  // Small round tracer-like bullets.
+  bulletGeom = new THREE.CylinderGeometry(0.03, 0.03, 0.2, 8);
+  bulletMat = new THREE.MeshBasicMaterial({
+    color: 0x9dff86,
+    transparent: true,
+    opacity: 0.95,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+  enemyBulletMat = new THREE.MeshBasicMaterial({
+    color: 0x9eddff,
+    transparent: true,
+    opacity: 0.95,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+
+  // Events
+  window.addEventListener('resize', onResize);
+  document.addEventListener('fullscreenchange', onResize);
+  window.addEventListener('keydown', (e) => {
+    if (e.repeat) return;
+    keys.add(e.key.toLowerCase());
+    if (e.key === 'c' || e.key === 'C') toggleCameraMode();
+    if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+    if (e.key === '1') { setGameMode("single"); setModeState("playing"); }
+    if (e.key === '2') { setGameMode("duo"); setModeState("playing"); }
+    if (e.key === '7') applyWeather("sunny");
+    if (e.key === '8') applyWeather("cloudy");
+    if (e.key === '9') applyWeather("rainy");
+    if (e.key === 'r' || e.key === 'R') { if (gameOver) resetGame(); }
+    if (e.code === 'Space') {
+      if (gameOver) { resetGame(); return; }
+      fireHeld = true;
+    }
+    if (e.code === 'Enter' || e.code === 'NumpadEnter') fireHeld2 = true;
+  });
+  window.addEventListener('keyup', (e) => {
+    keys.delete(e.key.toLowerCase());
+    if (e.code === 'Space') fireHeld = false;
+    if (e.code === 'Enter' || e.code === 'NumpadEnter') fireHeld2 = false;
+  });
+
+  if (btnSingle) btnSingle.addEventListener('click', () => { setGameMode("single"); setModeState("playing"); });
+  if (btnDuo) btnDuo.addEventListener('click', () => { setGameMode("duo"); setModeState("playing"); });
+  if (btnSunny) btnSunny.addEventListener('click', () => applyWeather("sunny"));
+  if (btnCloudy) btnCloudy.addEventListener('click', () => applyWeather("cloudy"));
+  if (btnRainy) btnRainy.addEventListener('click', () => applyWeather("rainy"));
+
+  setModeState("menu");
+  setGameMode(gameMode);
+}
+
+function createGround() {
+  // Green ground plane + voxel bumps
+  const base = new THREE.Mesh(
+    new THREE.PlaneGeometry(1000, 1000),
+    new THREE.MeshLambertMaterial({ color: 0x55aa55 })
+  );
+  base.rotation.x = -Math.PI/2;
+  base.position.y = groundY;
+  base.receiveShadow = false;
+  worldRoot.add(base);
+
+  // Gentle hills via sparse boxes
+  const tile = new THREE.BoxGeometry(6, 1, 6);
+  const greens = [0x4da64d, 0x5eb35e, 0x6bc06b, 0x79cc79];
+  for (let x = -300; x <= 300; x += 12) {
+    for (let z = -300; z <= 300; z += 12) {
+      // Keep a wider clear corridor around runway to avoid green patches intruding.
+      const inRunway = Math.abs(x) < 40 && z > -120 && z < 200;
+      if (!inRunway && Math.random() < 0.045) {
+        const h = 1 + Math.floor(Math.random()*3);
+        const mat = new THREE.MeshLambertMaterial({ color: greens[(h-1) % greens.length] });
+        const box = new THREE.Mesh(tile, mat);
+        box.scale.y = h;
+        box.position.set(x, groundY + (h/2), z);
+        worldRoot.add(box);
+      }
+    }
+  }
+}
+
+function createClouds(cfg) {
+  if (cloudGroup) worldRoot.remove(cloudGroup);
+  cloudGroup = new THREE.Group();
+  const cloudMat = new THREE.MeshLambertMaterial({ color: cfg.cloudColor });
+  const addCloudCluster = (altitude, chunksMin, chunksVar, flatness) => {
+    const g = new THREE.Group();
+    const chunks = chunksMin + Math.floor(Math.random() * chunksVar);
+    for (let j=0; j<chunks; j++) {
+      const geom = new THREE.BoxGeometry(
+        9 + Math.random() * 10,
+        2 + Math.random() * 2.2 * flatness,
+        9 + Math.random() * 10
+      );
+      const p = new THREE.Mesh(geom, cloudMat);
+      p.position.set((j-1.5)*5 + (Math.random()*2-1), (Math.random()*2-1), (Math.random()*2-1));
+      g.add(p);
+    }
+    g.position.set(
+      -350 + Math.random()*700,
+      altitude,
+      -350 + Math.random()*700
+    );
+    cloudGroup.add(g);
+  };
+
+  for (let i = 0; i < cfg.deckCount; i++) {
+    if (Math.random() < cfg.deckHoleChance) continue;
+    const y = cfg.deckAltitude + (Math.random() - 0.5) * cfg.deckThickness;
+    addCloudCluster(y, cfg.deckChunksMin, cfg.deckChunksVar, 0.75);
+  }
+  for (let i = 0; i < cfg.highCloudCount; i++) {
+    const y = cfg.highAltitudeMin + Math.random() * cfg.highAltitudeSpan;
+    addCloudCluster(y, cfg.highChunksMin, cfg.highChunksVar, 1.0);
+  }
+  worldRoot.add(cloudGroup);
+}
+
+function createRain(count) {
+  if (rainGroup) worldRoot.remove(rainGroup);
+  rainGroup = new THREE.Group();
+  const rainGeom = new THREE.CylinderGeometry(0.012, 0.012, 0.9, 6);
+  const rainMat = new THREE.MeshBasicMaterial({
+    color: 0xbfe8ff,
+    transparent: true,
+    opacity: 0.42
+  });
+  for (let i = 0; i < count; i++) {
+    const drop = new THREE.Mesh(rainGeom, rainMat);
+    drop.position.set(
+      -430 + Math.random() * 860,
+      8 + Math.random() * 200,
+      -430 + Math.random() * 860
+    );
+    drop.userData.fall = 28 + Math.random() * 24;
+    rainGroup.add(drop);
+  }
+  worldRoot.add(rainGroup);
+}
+
+function applyWeather(nextWeather) {
+  const cfg = weatherProfiles[nextWeather];
+  if (!cfg || !scene || !worldRoot) return;
+  weather = nextWeather;
+  scene.background = new THREE.Color(cfg.sky);
+  if (scene.fog) {
+    scene.fog.color.setHex(cfg.fog);
+    scene.fog.near = cfg.fogNear;
+    scene.fog.far = cfg.fogFar;
+  }
+  const ambient = scene.getObjectByName("ambient-main");
+  if (ambient) ambient.intensity = cfg.ambient;
+  if (sunLight) sunLight.intensity = cfg.sunIntensity;
+  if (sunMesh) sunMesh.visible = cfg.sunVisible;
+  createClouds(cfg);
+  if (cfg.rain) {
+    if (!rainGroup || rainGroup.children.length !== cfg.rainCount) createRain(cfg.rainCount);
+    if (rainGroup) rainGroup.visible = true;
+  } else if (rainGroup) {
+    rainGroup.visible = false;
+  }
+  if (weatherLabelEl) weatherLabelEl.textContent = `Current: ${cfg.label}`;
+}
+
+function updateWeatherEffects(dt) {
+  if (!rainGroup || !rainGroup.visible) return;
+  for (const drop of rainGroup.children) {
+    drop.position.y -= drop.userData.fall * dt;
+    drop.position.x += 1.4 * dt;
+    if (drop.position.y < groundY + 1) {
+      drop.position.y = 120 + Math.random() * 90;
+      drop.position.x = -430 + Math.random() * 860;
+      drop.position.z = -430 + Math.random() * 860;
+    } else if (drop.position.x > 430) {
+      drop.position.x = -430;
+    }
+  }
+}
+
+function createBuildings() {
+  // Sparse military base layout (fewer buildings, clearer sightlines)
+  buildingBoxes = [];
+  buildings = [];
+
+  const addBuilding = (mesh) => {
+    worldRoot.add(mesh);
+    buildings.push(mesh);
+    buildingBoxes.push(new THREE.Box3().setFromObject(mesh).expandByScalar(0.4));
+  };
+
+  // Runway
+  // Use a thin box instead of a coplanar plane to remove distance flicker (z-fighting).
+  const runwayMat = new THREE.MeshLambertMaterial({ color: 0x2b333a, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -3 });
+  const runway = new THREE.Mesh(
+    new THREE.BoxGeometry(46, 0.28, 260),
+    runwayMat
+  );
+  runway.position.set(0, groundY + 0.34, 40);
+  worldRoot.add(runway);
+
+  const stripeMat = new THREE.MeshLambertMaterial({ color: 0xd9d9d9, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -4 });
+  for (let i = -5; i <= 5; i++) {
+    const stripe = new THREE.Mesh(new THREE.BoxGeometry(3, 0.2, 8), stripeMat);
+    stripe.position.set(0, groundY + 0.56, 40 + i * 22);
+    worldRoot.add(stripe);
+  }
+
+  // Hangars
+  const hangarMat = new THREE.MeshLambertMaterial({ color: 0x6f7b88 });
+  const hangarGeom = new THREE.BoxGeometry(18, 6, 12);
+  const hangarPositions = [
+    [-72, 3, -10],
+    [-72, 3, 20],
+    [-72, 3, 50],
+    [72, 3, -10],
+    [72, 3, 20]
+  ];
+  hangarPositions.forEach(([x, y, z]) => {
+    const h = new THREE.Mesh(hangarGeom, hangarMat);
+    h.position.set(x, groundY + y, z);
+    addBuilding(h);
+  });
+
+  // Control tower
+  const towerBase = new THREE.Mesh(
+    new THREE.BoxGeometry(8, 10, 8),
+    new THREE.MeshLambertMaterial({ color: 0x4c5865 })
+  );
+  towerBase.position.set(-60, groundY + 5, -70);
+  addBuilding(towerBase);
+  const towerTop = new THREE.Mesh(
+    new THREE.BoxGeometry(10, 4, 10),
+    new THREE.MeshLambertMaterial({ color: 0x8da2b8 })
+  );
+  towerTop.position.set(-60, groundY + 12, -70);
+  addBuilding(towerTop);
+
+  // Barracks + storage
+  const barracksMat = new THREE.MeshLambertMaterial({ color: 0x55614d });
+  const barracks = new THREE.Mesh(new THREE.BoxGeometry(20, 4, 8), barracksMat);
+  barracks.position.set(70, groundY + 2, -60);
+  addBuilding(barracks);
+
+  const storage = new THREE.Mesh(new THREE.BoxGeometry(10, 5, 14), new THREE.MeshLambertMaterial({ color: 0x796650 }));
+  storage.position.set(-80, groundY + 2.5, 90);
+  addBuilding(storage);
+}
+
+function createPlane(colors, position) {
+  const group = new THREE.Group();
+  const bodyMat = new THREE.MeshLambertMaterial({ color: colors.body });
+  const wingMat = new THREE.MeshLambertMaterial({ color: colors.wing });
+  const tailMat = new THREE.MeshLambertMaterial({ color: colors.tail });
+  const noseMat = new THREE.MeshLambertMaterial({ color: colors.nose });
+  const vstabMat = new THREE.MeshLambertMaterial({ color: colors.vstab });
+
+  // Single tapered fuselage cylinder (thicker nose -> thinner tail)
+  const fuselage = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.09, 0.24, 2.7, 18),
+    bodyMat
+  );
+  fuselage.rotation.x = Math.PI / 2;
+  fuselage.position.set(0, 0.03, 0.18);
+  group.add(fuselage);
+
+  // Engine cowling + spinner
+  const cowling = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.23, 0.22, 0.34, 14),
+    noseMat
+  );
+  cowling.rotation.x = Math.PI / 2;
+  cowling.position.set(0, 0.04, -1.2);
+  group.add(cowling);
+
+  const spinner = new THREE.Mesh(
+    new THREE.ConeGeometry(0.16, 0.36, 14),
+    noseMat
+  );
+  spinner.rotation.x = -Math.PI / 2;
+  spinner.position.set(0, 0.04, -1.56);
+  group.add(spinner);
+
+  // Canopy bubble
+  const canopy = new THREE.Mesh(
+    new THREE.SphereGeometry(0.16, 10, 8),
+    new THREE.MeshLambertMaterial({ color: 0x9ec7ff })
+  );
+  canopy.scale.set(1.05, 0.72, 1.55);
+  canopy.position.set(0, 0.2, -0.2);
+  group.add(canopy);
+
+  // Elliptical wings/tailplanes
+  const wingMain = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 12), wingMat);
+  wingMain.scale.set(1.52, 0.05, 0.34);
+  wingMain.position.set(0, -0.02, 0.03);
+  group.add(wingMain);
+  const tailPlane = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 10), tailMat);
+  tailPlane.scale.set(0.56, 0.035, 0.16);
+  tailPlane.position.set(0, 0.08, 1.14);
+  group.add(tailPlane);
+
+  const vstab = new THREE.Mesh(new THREE.SphereGeometry(1, 14, 10), vstabMat);
+  vstab.scale.set(0.028, 0.31, 0.28);
+  vstab.position.set(0, 0.22, 1.16);
+  group.add(vstab);
+
+  // Fixed propeller pivot: hub remains centered, blades rotate around hub axis only.
+  const propGroup = new THREE.Group();
+  const propMat = new THREE.MeshLambertMaterial({ color: 0x2a2a2a });
+  const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.16, 10), propMat);
+  hub.rotation.x = Math.PI / 2;
+  propGroup.add(hub);
+
+  const bladeGeometry = new THREE.BoxGeometry(0.07, 0.42, 0.1);
+  for (let i = 0; i < 3; i++) {
+    const bladePivot = new THREE.Group();
+    bladePivot.rotation.z = (Math.PI * 2 * i) / 3;
+    const blade = new THREE.Mesh(bladeGeometry, propMat);
+    blade.position.set(0, 0.21, 0);
+    bladePivot.add(blade);
+    propGroup.add(bladePivot);
+  }
+  propGroup.position.set(0, 0.04, -1.72);
+  group.add(propGroup);
+
+  // Subtle wheel hints
+  const wheelMat = new THREE.MeshLambertMaterial({ color: 0x1c2229 });
+  const wheelL = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.03, 10), wheelMat);
+  wheelL.rotation.z = Math.PI / 2;
+  wheelL.position.set(-0.5, -0.15, -0.02);
+  group.add(wheelL);
+  const wheelR = wheelL.clone();
+  wheelR.position.x = 0.5;
+  group.add(wheelR);
+  const tailWheel = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.025, 10), wheelMat);
+  tailWheel.rotation.z = Math.PI / 2;
+  tailWheel.position.set(0, -0.12, 1.24);
+  group.add(tailWheel);
+
+  const planeGroup = new THREE.Group();
+  planeGroup.add(group);
+  planeGroup.position.copy(position);
+  planeGroup.rotation.order = "ZYX"; // roll (Z), pitch (X), yaw (Y) stability
+  worldRoot.add(planeGroup);
+
+  return { plane: planeGroup, body: group, propeller: propGroup };
+}
+
+function onResize() {
+  const w = viewEl ? viewEl.clientWidth : window.innerWidth;
+  const h = viewEl ? viewEl.clientHeight : window.innerHeight;
+  renderer.setPixelRatio(gameMode === "duo" ? renderScaleDuo : renderScaleSingle);
+  camera.aspect = (gameMode === "duo") ? (w / 2) / h : w / h;
+  camera.updateProjectionMatrix();
+  if (camera2) {
+    camera2.aspect = (w / 2) / h;
+    camera2.updateProjectionMatrix();
+  }
+  renderer.setSize(w, h);
+}
+
+// Helpers
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+function wrapDelta(from, to) {
+  let d = to - from;
+  const span = WORLD_LIMIT * 2;
+  if (d > WORLD_LIMIT) d -= span;
+  if (d < -WORLD_LIMIT) d += span;
+  return d;
+}
+
+function toggleCameraMode() {
+  mode = (mode === "chase") ? "cockpit" : "chase";
+}
+
+function setGameMode(nextMode) {
+  gameMode = nextMode;
+  if (crosshairSingle && crosshairLeft && crosshairRight) {
+    const duo = gameMode === "duo";
+    crosshairSingle.style.display = duo ? "none" : "block";
+    crosshairLeft.style.display = duo ? "block" : "none";
+    crosshairRight.style.display = duo ? "block" : "none";
+  }
+  if (dashboardSingleEl && dashboardLeftEl && dashboardRightEl) {
+    const duo = gameMode === "duo";
+    dashboardSingleEl.style.display = duo ? "none" : "flex";
+    dashboardLeftEl.style.display = duo ? "flex" : "none";
+    dashboardRightEl.style.display = duo ? "flex" : "none";
+  }
+  resetGame();
+  onResize();
+}
+
+function setModeState(nextState) {
+  modeState = nextState;
+  if (menuEl) menuEl.style.display = modeState === "menu" ? "flex" : "none";
+  if (crosshairSingle && crosshairLeft && crosshairRight) {
+    const duo = gameMode === "duo";
+    if (modeState === "menu") {
+      crosshairSingle.style.display = "none";
+      crosshairLeft.style.display = "none";
+      crosshairRight.style.display = "none";
+    } else {
+      crosshairSingle.style.display = duo ? "none" : "block";
+      crosshairLeft.style.display = duo ? "block" : "none";
+      crosshairRight.style.display = duo ? "block" : "none";
+    }
+  }
+}
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.body.requestFullscreen().catch(() => {});
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+function setCameras(targetPlane, cam) {
+  if (mode === "chase") {
+    // Behind and slightly above the plane (positive Z is behind in local space)
+    const offset = new THREE.Vector3(0, 1.2, 6);
+    cam.position.copy(targetPlane.localToWorld(offset));
+    cam.quaternion.copy(targetPlane.quaternion);
+  } else {
+    // Forward pilot view to avoid nose-only framing.
+    const camPos = targetPlane.localToWorld(new THREE.Vector3(0, 0.24, -1.95));
+    const lookAt = targetPlane.localToWorld(new THREE.Vector3(0, 0.18, -26));
+    cam.position.copy(camPos);
+    cam.up.set(0, 1, 0).applyQuaternion(targetPlane.quaternion);
+    cam.lookAt(lookAt);
+  }
+}
+
+function computeAttitude(targetPlane) {
+  const xAxis = new THREE.Vector3();
+  const yAxis = new THREE.Vector3();
+  const zAxis = new THREE.Vector3();
+  targetPlane.matrixWorld.extractBasis(xAxis, yAxis, zAxis);
+  const f = zAxis.clone().negate().normalize();
+  const u = yAxis.clone().normalize();
+
+  const yaw = Math.atan2(f.x, -f.z);
+  const pitchBase = Math.atan2(f.y, Math.hypot(f.x, f.z));
+  const upProj = u.clone().sub(f.clone().multiplyScalar(u.dot(f))).normalize();
+  const worldUp = new THREE.Vector3(0,1,0);
+  const worldUpProj = worldUp.clone().sub(f.clone().multiplyScalar(worldUp.dot(f))).normalize();
+  let roll = Math.acos(THREE.MathUtils.clamp(upProj.dot(worldUpProj), -1, 1));
+  const sign = new THREE.Vector3().crossVectors(worldUpProj, upProj).dot(f) < 0 ? -1 : 1;
+  roll *= sign;
+  const inverted = u.dot(worldUp) < 0;
+  let pitch = pitchBase;
+  if (inverted) {
+    pitch = pitchBase >= 0 ? (Math.PI - pitchBase) : (-Math.PI - pitchBase);
+  }
+  return { yaw, pitch, roll };
+}
+
+function updateHUD() {
+  if (gameMode === "duo") {
+    if (statusReadoutP1El) {
+      statusReadoutP1El.textContent = [
+        `HP    : ${playerHP.toFixed(0)}`,
+        `Fuel  : ${playerFuel.toFixed(0)}`,
+        `Ammo  : ${playerAmmo}`,
+        `Speed : ${speed.toFixed(1)} u/s`,
+        `Hit   : ${playerHitTimer > 0 ? "HIT" : "-"}`,
+      ].join("\n");
+    }
+    if (statusReadoutP2El) {
+      statusReadoutP2El.textContent = [
+        `HP    : ${enemyHP.toFixed(0)}`,
+        `Fuel  : ${enemyFuel.toFixed(0)}`,
+        `Ammo  : ${enemyAmmo}`,
+        `Speed : ${speedP2.toFixed(1)} u/s`,
+        `Hit   : ${enemyHitTimer > 0 ? "HIT" : "-"}`,
+      ].join("\n");
+    }
+  } else {
+    const lines = [
+      `Score : ${score}`,
+      `HP    : ME ${playerHP.toFixed(0)} / ENY ${enemyHP.toFixed(0)}`,
+      `Fuel  : ME ${playerFuel.toFixed(0)} / ENY ${enemyFuel.toFixed(0)}`,
+      `Ammo  : ME ${playerAmmo} / ENY ${enemyAmmo}`,
+      `Speed : ${speed.toFixed(1)} u/s`,
+      `Thr   : ${(throttle * 100).toFixed(0)} %`,
+      `Hit   : ${enemyHitTimer > 0 ? "ENEMY" : (playerHitTimer > 0 ? "YOU" : "-")}`,
+    ];
+    if (statusReadoutSingleEl) statusReadoutSingleEl.textContent = lines.join("\n");
+  }
+}
+
+function applyControls(targetPlane, yawInput, pitchInput, dt, yawRateValue = yawRate, pitchRateValue = pitchRate) {
+  let yawDelta = 0;
+  if (yawInput > 0) yawDelta += yawRateValue * dt;
+  if (yawInput < 0) yawDelta -= yawRateValue * dt;
+  if (yawDelta !== 0) {
+    const upAxis = new THREE.Vector3(0,1,0).applyQuaternion(targetPlane.quaternion).normalize();
+    targetPlane.rotateOnWorldAxis(upAxis, yawDelta);
+  }
+
+  if (pitchInput > 0) targetPlane.rotateOnAxis(new THREE.Vector3(1,0,0), +pitchRateValue * dt);
+  if (pitchInput < 0) targetPlane.rotateOnAxis(new THREE.Vector3(1,0,0), -pitchRateValue * dt);
+
+  const xAxis = new THREE.Vector3();
+  const yAxis = new THREE.Vector3();
+  const zAxis = new THREE.Vector3();
+  targetPlane.matrixWorld.extractBasis(xAxis, yAxis, zAxis);
+  const f = zAxis.clone().negate().normalize();
+  const u = yAxis.clone().normalize();
+  const upProj = u.clone().sub(f.clone().multiplyScalar(u.dot(f))).normalize();
+  const worldUp = new THREE.Vector3(0,1,0);
+  const worldUpProj = worldUp.clone().sub(f.clone().multiplyScalar(worldUp.dot(f))).normalize();
+  let rollRad = Math.acos(THREE.MathUtils.clamp(upProj.dot(worldUpProj), -1, 1));
+  const sign = new THREE.Vector3().crossVectors(worldUpProj, upProj).dot(f) < 0 ? -1 : 1;
+  rollRad *= sign;
+  const pitchBase = Math.atan2(f.y, Math.hypot(f.x, f.z));
+  const inverted = u.dot(worldUp) < 0;
+  const nearVertical = Math.abs(pitchBase) > THREE.MathUtils.degToRad(70);
+
+  if (!nearVertical && !inverted) {
+    const desiredRoll = -yawInput * THREE.MathUtils.degToRad(25);
+    const rollDiff = desiredRoll - rollRad;
+    const rollStep = clamp(rollDiff, -rollRate * dt, rollRate * dt);
+    if (Math.abs(rollStep) > 1e-5) {
+      targetPlane.rotateOnAxis(new THREE.Vector3(0,0,-1), rollStep);
+    }
+  }
+
+  targetPlane.quaternion.normalize();
+}
+
+function handleInput(dt) {
+  if (gameMode === "duo") {
+    const p1Yaw = (keys.has("a") ? 1 : 0) + (keys.has("d") ? -1 : 0);
+    const p1Pitch = (keys.has("w") ? 1 : 0) + (keys.has("s") ? -1 : 0);
+    const p2Yaw = (keys.has("arrowleft") ? 1 : 0) + (keys.has("arrowright") ? -1 : 0);
+    const p2Pitch = (keys.has("arrowup") ? 1 : 0) + (keys.has("arrowdown") ? -1 : 0);
+    applyControls(plane, p1Yaw, p1Pitch, dt);
+    applyControls(enemy, p2Yaw, p2Pitch, dt, p2YawRate, p2PitchRate);
+  } else {
+    const yawInput = (keys.has("arrowleft") ? 1 : 0) + (keys.has("arrowright") ? -1 : 0);
+    const pitchInput = (keys.has("arrowup") ? 1 : 0) + (keys.has("arrowdown") ? -1 : 0);
+
+    // Throttle (Q/E)
+    if (keys.has("q")) throttle -= throttleRate * dt;
+    if (keys.has("e")) throttle += throttleRate * dt;
+    throttle = clamp(throttle, 0.2, 1.0);
+
+    applyControls(plane, yawInput, pitchInput, dt);
+  }
+}
+
+function integrateMotion(dt) {
+  if (gameMode === "duo") {
+    const hpScale = clamp(playerHP / Math.max(1, playerMaxHP), 0.35, 1.0);
+    const targetSpeed = clamp(p1FixedSpeed * hpScale, minSpeed, maxSpeed);
+    speed = THREE.MathUtils.damp(speed, targetSpeed, 2.0, dt);
+    playerFuel = Math.max(0, playerFuel - 0.6 * fuelBurnRate * dt);
+  } else {
+    // Single-player speed is proportional to throttle (Q/E).
+    const t = clamp((throttle - 0.2) / 0.8, 0, 1); // throttle range 0.2..1.0
+    const throttleScale = singleThrottleSpeedScaleMin + (singleThrottleSpeedScaleMax - singleThrottleSpeedScaleMin) * t;
+    const hpScale = clamp(playerHP / Math.max(1, playerMaxHP), 0.35, 1.0);
+    const targetSpeed = clamp(p1FixedSpeed * throttleScale * hpScale, minSpeed, maxSpeed);
+    speed = THREE.MathUtils.damp(speed, targetSpeed, 2.0, dt);
+    playerFuel = Math.max(0, playerFuel - throttle * fuelBurnRate * dt);
+  }
+
+  // Move along the plane's forward direction (-Z in local space)
+  const dir = new THREE.Vector3();
+  plane.getWorldDirection(dir); // returns world-space forward (-Z)
+  plane.position.addScaledVector(dir, -speed * dt);
+
+  // Keep within world bounds (soft wrap on X/Z)
+  const lim = WORLD_LIMIT;
+  if (plane.position.x > lim) plane.position.x = -lim;
+  if (plane.position.x < -lim) plane.position.x = lim;
+  if (plane.position.z > lim) plane.position.z = -lim;
+  if (plane.position.z < -lim) plane.position.z = lim;
+}
+
+function updateEnemy(dt) {
+  if (!enemy) return;
+  if (gameMode === "duo") {
+    const dir = new THREE.Vector3();
+    enemy.getWorldDirection(dir);
+    const hpScale = clamp(enemyHP / Math.max(1, enemyMaxHP), 0.35, 1.0);
+    const targetEnemySpeed = clamp(p2FixedSpeed * hpScale, minSpeed, maxSpeed);
+    speedP2 = THREE.MathUtils.damp(speedP2, targetEnemySpeed, 2.0, dt);
+    enemy.position.addScaledVector(dir, -speedP2 * dt);
+    enemyFuel = Math.max(0, enemyFuel - 0.6 * fuelBurnRate * dt);
+    const lim = WORLD_LIMIT;
+    if (enemy.position.x > lim) enemy.position.x = -lim;
+    if (enemy.position.x < -lim) enemy.position.x = lim;
+    if (enemy.position.z > lim) enemy.position.z = -lim;
+    if (enemy.position.z < -lim) enemy.position.z = lim;
+  } else {
+    const lim = WORLD_LIMIT;
+    const dx = wrapDelta(enemy.position.x, plane.position.x);
+    const dz = wrapDelta(enemy.position.z, plane.position.z);
+    const horizontal = Math.max(0.001, Math.hypot(dx, dz));
+    const desiredAlt = clamp(plane.position.y + 12, groundY + 16, 120);
+    const dy = desiredAlt - enemy.position.y;
+
+    const yawTarget = Math.atan2(dx, -dz);
+    const pitchTarget = clamp(Math.atan2(dy, horizontal), THREE.MathUtils.degToRad(-25), THREE.MathUtils.degToRad(25));
+
+    const maxYaw = enemyTurnRate * dt;
+    const yawDiff = ((yawTarget - enemyYaw + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
+    enemyYaw += clamp(yawDiff, -maxYaw, maxYaw);
+
+    const maxPitch = enemyTurnRate * 0.7 * dt;
+    const pitchDiff = pitchTarget - enemyPitch;
+    enemyPitch += clamp(pitchDiff, -maxPitch, maxPitch);
+
+    enemy.quaternion.setFromEuler(new THREE.Euler(enemyPitch, enemyYaw, 0, "YXZ"));
+
+    const hpScale = clamp(enemyHP / Math.max(1, enemyMaxHP), 0.35, 1.0);
+    const targetEnemySpeed = clamp(p2FixedSpeed * hpScale, minSpeed, maxSpeed);
+    speedP2 = THREE.MathUtils.damp(speedP2, targetEnemySpeed, 2.0, dt);
+    const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(enemy.quaternion);
+    enemy.position.addScaledVector(dir, speedP2 * dt);
+    enemy.position.y = clamp(enemy.position.y, groundY + 12, 160);
+
+    // Enemy fuel consumption (proportional to its speed)
+    enemyFuel = Math.max(0, enemyFuel - fuelBurnRate * (speedP2 / baseSpeed) * dt);
+
+    if (enemy.position.x > lim) enemy.position.x = -lim;
+    if (enemy.position.x < -lim) enemy.position.x = lim;
+    if (enemy.position.z > lim) enemy.position.z = -lim;
+    if (enemy.position.z < -lim) enemy.position.z = lim;
+  }
+}
+
+function spawnBullet(fromPlane, collection, material) {
+  const muzzleOffsets = [
+    new THREE.Vector3(-0.5, -0.15, -0.04),
+    new THREE.Vector3(0.5, -0.15, -0.04),
+  ];
+  const convergencePoint = fromPlane.localToWorld(new THREE.Vector3(0, 0.02, -120));
+  for (const muzzleOffset of muzzleOffsets) {
+    const bullet = new THREE.Mesh(bulletGeom, material);
+    const muzzleWorld = fromPlane.localToWorld(muzzleOffset.clone());
+    const velocityDir = convergencePoint.clone().sub(muzzleWorld).normalize();
+    bullet.position.copy(muzzleWorld);
+    bullet.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), velocityDir);
+    bullet.userData.life = bulletLife;
+    bullet.userData.velocity = velocityDir.multiplyScalar(bulletSpeed);
+    collection.push(bullet);
+    worldRoot.add(bullet);
+  }
+}
+
+function updateBullets(dt, collection) {
+  for (let i = collection.length - 1; i >= 0; i--) {
+    const bullet = collection[i];
+    if (bullet.userData.velocity) {
+      bullet.position.addScaledVector(bullet.userData.velocity, dt);
+    } else {
+      const dir = new THREE.Vector3();
+      bullet.getWorldDirection(dir);
+      bullet.position.addScaledVector(dir, -bulletSpeed * dt);
+    }
+    bullet.userData.life -= dt;
+    if (bullet.userData.life <= 0) {
+      worldRoot.remove(bullet);
+      collection.splice(i, 1);
+    }
+  }
+}
+
+function checkBulletHits(collection, targetPlane, onHit) {
+  const targetPos = targetPlane.position;
+  for (let i = collection.length - 1; i >= 0; i--) {
+    const bullet = collection[i];
+    if (bullet.position.distanceTo(targetPos) < 1.2) {
+      worldRoot.remove(bullet);
+      collection.splice(i, 1);
+      onHit();
+    }
+  }
+}
+
+function updateCombat(dt) {
+  playerFireTimer = Math.max(0, playerFireTimer - dt);
+  enemyFireTimer = Math.max(0, enemyFireTimer - dt);
+  enemyHitTimer = Math.max(0, enemyHitTimer - dt);
+  playerHitTimer = Math.max(0, playerHitTimer - dt);
+
+  if (fireHeld && playerFireTimer <= 0 && playerAmmo >= 2) {
+    spawnBullet(plane, bullets, bulletMat);
+    playerFireTimer = fireCooldown;
+    playerAmmo = Math.max(0, playerAmmo - 2);
+  }
+
+  const dx = wrapDelta(enemy.position.x, plane.position.x);
+  const dz = wrapDelta(enemy.position.z, plane.position.z);
+  const dy = enemy.position.y - plane.position.y;
+  const enemyDistance = Math.hypot(dx, dy, dz);
+  // Single-player: enemy does not shoot
+  if (gameMode === "duo" && fireHeld2 && enemyFireTimer <= 0 && enemyAmmo >= 2) {
+    spawnBullet(enemy, enemyBullets, enemyBulletMat);
+    enemyFireTimer = fireCooldown;
+    enemyAmmo = Math.max(0, enemyAmmo - 2);
+  }
+
+  updateBullets(dt, bullets);
+  updateBullets(dt, enemyBullets);
+
+  checkBulletHits(bullets, enemy, () => {
+    enemyHP = Math.max(0, enemyHP - 12);
+    enemyHitTimer = 0.45;
+  });
+  checkBulletHits(enemyBullets, plane, () => {
+    playerHP = Math.max(0, playerHP - 10);
+    playerHitTimer = 0.45;
+  });
+
+  if (plane.position.distanceTo(enemy.position) < 1.4) {
+    playerHP = 0;
+    enemyHP = 0;
+  }
+}
+
+function updatePropellers(dt) {
+  const spin = 18 + speed * 0.6;
+  if (plane.userData.propeller) {
+    plane.userData.propeller.rotation.z += spin * dt;
+  }
+  if (enemy.userData.propeller) {
+    enemy.userData.propeller.rotation.z += (18 + (enemySpeed * 0.6)) * dt;
+  }
+}
+
+function updateRadar(ctx, canvas, originPlane, targetPlane, headingYaw) {
+  if (!ctx || !canvas || !originPlane || !targetPlane) return;
+  const w = canvas.width;
+  const h = canvas.height;
+  const cx = w / 2;
+  const cy = h / 2;
+  const r = Math.min(cx, cy) - 6;
+  const radarRange = 420;
+
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = "#0b1b2a";
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Compass ring (rotates with heading)
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(-headingYaw);
+  ctx.strokeStyle = "rgba(180, 220, 255, 0.4)";
+  ctx.lineWidth = 1;
+  for (let deg = 0; deg < 360; deg += 30) {
+    const ang = THREE.MathUtils.degToRad(deg - 90);
+    const inner = r - (deg % 90 === 0 ? 10 : 6);
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(ang) * inner, Math.sin(ang) * inner);
+    ctx.lineTo(Math.cos(ang) * r, Math.sin(ang) * r);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Heading pointer (fixed)
+  ctx.strokeStyle = "rgba(255,255,255,0.85)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - r + 6);
+  ctx.lineTo(cx - 6, cy - r + 16);
+  ctx.lineTo(cx + 6, cy - r + 16);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.strokeStyle = "rgba(120, 255, 160, 0.45)";
+  ctx.lineWidth = 1;
+  for (let i = 1; i <= 4; i++) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, (r * i) / 4, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.strokeStyle = "rgba(180, 240, 255, 0.35)";
+  ctx.beginPath();
+  ctx.moveTo(cx - r, cy);
+  ctx.lineTo(cx + r, cy);
+  ctx.moveTo(cx, cy - r);
+  ctx.lineTo(cx, cy + r);
+  ctx.stroke();
+
+  const toEnemy = new THREE.Vector3(
+    wrapDelta(originPlane.position.x, targetPlane.position.x),
+    targetPlane.position.y - originPlane.position.y,
+    wrapDelta(originPlane.position.z, targetPlane.position.z)
+  );
+  const inv = originPlane.quaternion.clone().invert();
+  const local = toEnemy.applyQuaternion(inv);
+  const relX = local.x;
+  const relZ = -local.z;
+  const relY = targetPlane.position.y - originPlane.position.y;
+  const dist = Math.hypot(relX, relZ);
+  const scale = r / radarRange;
+  const clamped = Math.min(dist, radarRange);
+  const factor = dist > 0 ? clamped / dist : 0;
+  const px = relX * scale * factor;
+  const py = -relZ * scale * factor;
+
+  ctx.fillStyle = "#7ee7ff";
+  ctx.beginPath();
+  ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#ff6b6b";
+  ctx.beginPath();
+  ctx.arc(cx + px, cy + py, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Enemy heading indicator (relative)
+  const enemyForward = new THREE.Vector3(0, 0, -1).applyQuaternion(targetPlane.quaternion);
+  const localEnemyDir = enemyForward.applyQuaternion(inv);
+  const headingX = localEnemyDir.x;
+  const headingZ = -localEnemyDir.z;
+  const headingLen = Math.hypot(headingX, headingZ) || 1;
+  const hx = (headingX / headingLen) * 10;
+  const hy = (-headingZ / headingLen) * 10;
+  ctx.strokeStyle = "#ff6b6b";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx + px, cy + py);
+  ctx.lineTo(cx + px + hx, cy + py + hy);
+  ctx.stroke();
+
+  ctx.strokeStyle = relY >= 0 ? "#7ee7ff" : "#ffb15a";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx + px, cy + py - 8);
+  ctx.lineTo(cx + px, cy + py + 8);
+  ctx.stroke();
+  ctx.beginPath();
+  if (relY >= 0) {
+    ctx.moveTo(cx + px - 4, cy + py - 6);
+    ctx.lineTo(cx + px, cy + py - 10);
+    ctx.lineTo(cx + px + 4, cy + py - 6);
+  } else {
+    ctx.moveTo(cx + px - 4, cy + py + 6);
+    ctx.lineTo(cx + px, cy + py + 10);
+    ctx.lineTo(cx + px + 4, cy + py + 6);
+  }
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(255,255,255,0.8)";
+  ctx.font = "10px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+  const altLabel = `${relY >= 0 ? "+" : ""}${relY.toFixed(0)}`;
+  ctx.fillText(altLabel, cx + px + 6, cy + py - 6);
+
+  // Vertical difference bar (always visible)
+  const barX = cx + r + 10;
+  const barH = r * 1.6;
+  const barY = cy - barH / 2;
+  ctx.strokeStyle = "rgba(180, 240, 255, 0.4)";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(barX, barY, 8, barH);
+  const vRange = 80;
+  const v = clamp(relY, -vRange, vRange);
+  const markerY = barY + (1 - (v + vRange) / (2 * vRange)) * barH;
+  ctx.fillStyle = relY >= 0 ? "#7ee7ff" : "#ffb15a";
+  ctx.fillRect(barX - 2, markerY - 3, 12, 6);
+
+  // Compass labels (rotated with heading so they stay visible)
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(-headingYaw);
+  ctx.fillStyle = "rgba(220, 245, 255, 0.95)";
+  ctx.font = "10px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+  const labels = [
+    ["N", 0],
+    ["E", 90],
+    ["S", 180],
+    ["W", 270],
+  ];
+  labels.forEach(([label, deg]) => {
+    const ang = THREE.MathUtils.degToRad(deg - 90);
+    ctx.fillText(label, Math.cos(ang) * (r - 8) - 3, Math.sin(ang) * (r - 8) + 3);
+  });
+  ctx.restore();
+}
+
+function updateAltitudePanel(readoutEl, originPlane, targetPlane, labels) {
+  if (!readoutEl || !originPlane || !targetPlane) return;
+  const selfLabel = labels && labels.self ? labels.self : "ME";
+  const enemyLabel = labels && labels.enemy ? labels.enemy : "ENY";
+  const altPlayer = Math.max(0, originPlane.position.y - groundY);
+  const altEnemy = Math.max(0, targetPlane.position.y - groundY);
+  readoutEl.textContent = `GL  : 0.0 u\n${selfLabel}  : ${altPlayer.toFixed(1)} u\n${enemyLabel} : ${altEnemy.toFixed(1)} u`;
+}
+
+function updateAttitudeIndicator(ctx, canvas, attitude) {
+  if (!ctx || !canvas || !attitude) return;
+  const w = canvas.width;
+  const h = canvas.height;
+  const cx = w / 2;
+  const cy = h / 2;
+  const r = Math.min(cx, cy) - 12;
+
+  ctx.clearRect(0, 0, w, h);
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.clip();
+
+  let pitchDisplay = attitude.pitch;
+  let rollDisplay = attitude.roll;
+  let invertedDisplay = false;
+  if (pitchDisplay > Math.PI / 2) {
+    pitchDisplay = Math.PI - pitchDisplay;
+    rollDisplay += Math.PI;
+    invertedDisplay = true;
+  } else if (pitchDisplay < -Math.PI / 2) {
+    pitchDisplay = -Math.PI - pitchDisplay;
+    rollDisplay += Math.PI;
+    invertedDisplay = true;
+  }
+  rollDisplay = ((rollDisplay + Math.PI) % (Math.PI * 2)) - Math.PI;
+
+  const maxPitchDisplay = THREE.MathUtils.degToRad(90);
+  const pitch = clamp(pitchDisplay, -maxPitchDisplay, maxPitchDisplay);
+  const pitchOffset = (pitch / maxPitchDisplay) * r * 0.9;
+
+  ctx.save();
+  ctx.rotate(-rollDisplay);
+  ctx.translate(0, pitchOffset);
+
+  ctx.fillStyle = "#82c9ff";
+  ctx.fillRect(-r, -r * 2, r * 2, r * 2);
+  ctx.fillStyle = "#8b5a2b";
+  ctx.fillRect(-r, 0, r * 2, r * 2);
+
+  const ladderMax = 90;
+  ctx.font = "10px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+  for (let deg = -ladderMax; deg <= ladderMax; deg += 30) {
+    if (deg === 0) continue;
+    const y = (-deg / ladderMax) * r * 0.9;
+    const half = 30;
+    ctx.strokeStyle = "rgba(255,255,255,0.9)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-half, y);
+    ctx.lineTo(half, y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-half, y);
+    ctx.lineTo(-half + 6, y + (deg > 0 ? 4 : -4));
+    ctx.moveTo(half, y);
+    ctx.lineTo(half - 6, y + (deg > 0 ? 4 : -4));
+    ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.fillText(Math.abs(deg).toString(), -half - 18, y + 4);
+    ctx.fillText(Math.abs(deg).toString(), half + 6, y + 4);
+  }
+
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  ctx.moveTo(-r, 0);
+  ctx.lineTo(r, 0);
+  ctx.stroke();
+
+  ctx.restore();
+  ctx.restore();
+
+  ctx.strokeStyle = "rgba(180, 240, 255, 0.6)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.strokeStyle = "rgba(255,255,255,0.85)";
+  ctx.lineWidth = 2;
+  const bankMarks = [-60, -30, 0, 30, 60];
+  bankMarks.forEach((deg) => {
+    const ang = THREE.MathUtils.degToRad(deg - 90);
+    const inner = r - (deg === 0 ? 10 : 6);
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(ang) * inner, cy + Math.sin(ang) * inner);
+    ctx.lineTo(cx + Math.cos(ang) * r, cy + Math.sin(ang) * r);
+    ctx.stroke();
+  });
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  if (invertedDisplay) ctx.rotate(Math.PI);
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-18, 0);
+  ctx.lineTo(18, 0);
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, 8);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function checkCollisionFor(body, planeGroup) {
+  if (!body || !planeGroup) return false;
+  // Ground
+  if (planeGroup.position.y <= groundY + 0.5) return true;
+
+  // Buildings (AABB vs plane bounding box)
+  const pbox = new THREE.Box3().setFromObject(body).expandByScalar(0.05);
+  for (const bbox of buildingBoxes) {
+    if (bbox.intersectsBox(pbox)) return true;
+  }
+  return false;
+}
+
+function setGameOver(message) {
+  gameOver = true;
+  outcome = message || "GAME OVER";
+  if (gameoverTitleEl) gameoverTitleEl.textContent = outcome;
+  if (gameoverHintEl) gameoverHintEl.textContent = "Press R or Space to restart";
+  gameoverEl.style.display = "flex";
+}
+
+function resetGame() {
+  gameOver = false;
+  outcome = "";
+  gameoverEl.style.display = "none";
+  // Reset player
+  plane.position.set(0, 3.5, 140);
+  plane.rotation.set(0, 0, 0);
+  throttle = 0.5;
+  speed = 10;
+  playerFuel = 300;
+  playerAmmo = 300;
+  fireHeld = false;
+  playerFireTimer = 0;
+
+  // Reset enemy
+  enemy.position.set(40, 8, -60);
+  enemy.rotation.set(0, Math.PI, 0);
+  enemyYaw = enemy.rotation.y;
+  enemyPitch = 0;
+  enemyFuel = 300;
+  enemyAmmo = 300;
+  enemyFireTimer = 0;
+
+  // Clear bullets
+  bullets.forEach(b => worldRoot.remove(b));
+  enemyBullets.forEach(b => worldRoot.remove(b));
+  bullets = [];
+  enemyBullets = [];
+
+  if (gameMode === "duo") {
+    playerHP = 280;
+    enemyHP = 220;
+    playerAmmo = 320;
+    enemyAmmo = 220;
+    playerMaxHP = playerHP;
+    enemyMaxHP = enemyHP;
+    speedP2 = 10;
+  } else {
+    playerHP = 280;
+    enemyHP = 220;
+    playerAmmo = 320;
+    enemyAmmo = 220;
+    playerMaxHP = playerHP;
+    enemyMaxHP = enemyHP;
+  }
+
+  mode = "chase";
+}
+
+function update(dt) {
+  if (modeState !== "playing") {
+    render();
+    return;
+  }
+  if (!gameOver) {
+    handleInput(dt);
+    integrateMotion(dt);
+    updateEnemy(dt);
+    updateCombat(dt);
+    updatePropellers(dt);
+    updateWeatherEffects(dt);
+
+    if (gameMode === "duo") {
+      if (playerFuel <= 0) {
+        setGameOver("P1 OUT OF FUEL");
+        return;
+      }
+      if (enemyFuel <= 0) {
+        setGameOver("P2 OUT OF FUEL");
+        return;
+      }
+      const p1Crash = checkCollisionFor(planeBody, plane);
+      const p2Crash = checkCollisionFor(enemyBody, enemy);
+      if (p1Crash && p2Crash) {
+        setGameOver("BOTH CRASHED");
+        return;
+      }
+      if (p1Crash) {
+        setGameOver("P1 CRASHED");
+        return;
+      }
+      if (p2Crash) {
+        setGameOver("P2 CRASHED");
+        return;
+      }
+      if (playerHP <= 0 && enemyHP <= 0) {
+        setGameOver("BOTH DOWN");
+        return;
+      }
+      if (playerHP <= 0) {
+        setGameOver("P1 DOWN");
+        return;
+      }
+      if (enemyHP <= 0) {
+        setGameOver("P2 DOWN");
+        return;
+      }
+    } else {
+      if (playerFuel <= 0) {
+        setGameOver("OUT OF FUEL");
+        return;
+      }
+      if (enemyFuel <= 0) {
+        score += 1;
+        setGameOver("ENEMY OUT OF FUEL");
+        return;
+      }
+      if (checkCollisionFor(planeBody, plane)) {
+        setGameOver("CRASHED");
+        return;
+      }
+      if (playerHP <= 0 && enemyHP <= 0) {
+        setGameOver("MID-AIR COLLISION");
+        return;
+      }
+      if (playerHP <= 0) {
+        setGameOver("YOU WERE SHOT DOWN");
+        return;
+      }
+      if (enemyHP <= 0) {
+        score += 1;
+        setGameOver("ENEMY DOWN");
+        return;
+      }
+    }
+  }
+}
+
+function render() {
+  plane.updateMatrixWorld(true);
+  enemy.updateMatrixWorld(true);
+  const p1Att = computeAttitude(plane);
+  const p2Att = computeAttitude(enemy);
+
+  updateHUD();
+  if (gameMode === "duo") {
+    updateRadar(radarCtxP1, radarCanvasP1, plane, enemy, p1Att.yaw);
+    updateRadar(radarCtxP2, radarCanvasP2, enemy, plane, p2Att.yaw);
+    updateAltitudePanel(altitudeReadoutP1El, plane, enemy, { self: "P1", enemy: "P2" });
+    updateAltitudePanel(altitudeReadoutP2El, enemy, plane, { self: "P2", enemy: "P1" });
+    updateAttitudeIndicator(attitudeCtxP1, attitudeCanvasP1, p1Att);
+    updateAttitudeIndicator(attitudeCtxP2, attitudeCanvasP2, p2Att);
+  } else {
+    updateRadar(radarCtxSingle, radarCanvasSingle, plane, enemy, p1Att.yaw);
+    updateAltitudePanel(altitudeReadoutSingleEl, plane, enemy, { self: "ME", enemy: "ENY" });
+    updateAttitudeIndicator(attitudeCtxSingle, attitudeCanvasSingle, p1Att);
+  }
+
+  const w = viewEl ? viewEl.clientWidth : window.innerWidth;
+  const h = viewEl ? viewEl.clientHeight : window.innerHeight;
+  if (!renderer) return;
+  if (gameMode === "duo") {
+    renderer.setScissorTest(true);
+    renderer.setViewport(0, 0, w / 2, h);
+    renderer.setScissor(0, 0, w / 2, h);
+    setCameras(plane, camera);
+    renderer.render(scene, camera);
+
+    renderer.setViewport(w / 2, 0, w / 2, h);
+    renderer.setScissor(w / 2, 0, w / 2, h);
+    setCameras(enemy, camera2);
+    renderer.render(scene, camera2);
+    renderer.setScissorTest(false);
+  } else {
+    renderer.setViewport(0, 0, w, h);
+    renderer.setScissorTest(false);
+    setCameras(plane, camera);
+    renderer.render(scene, camera);
+  }
+}
+
+function animate(t) {
+  try {
+    requestAnimationFrame(animate);
+    const dt = Math.min((t - last) / 1000, 0.05); // clamp big frame gaps
+    last = t;
+
+    update(dt);
+    render();
+  } catch (e) {
+    const stats = document.getElementById('stats');
+    if (stats) stats.textContent = 'Runtime error: ' + (e && e.message ? e.message : e);
+    console.error(e);
+  }
+}
+
+function renderGameToText() {
+  const round = (v) => Math.round(v * 10) / 10;
+  const payload = {
+    mode,
+    gameOver,
+    outcome,
+    coordinate_system: "Origin at world center; +Y up; +X right; +Z forward. Plane forward is -Z in local space.",
+    player: {
+      x: round(plane.position.x),
+      y: round(plane.position.y),
+      z: round(plane.position.z),
+      hp: Math.round(playerHP),
+      fuel: Math.round(playerFuel),
+      ammo: playerAmmo,
+      speed: round(speed)
+    },
+    enemy: {
+      x: round(enemy.position.x),
+      y: round(enemy.position.y),
+      z: round(enemy.position.z),
+      hp: Math.round(enemyHP),
+      fuel: Math.round(enemyFuel),
+      ammo: enemyAmmo
+    },
+    weather,
+    bullets: bullets.map(b => ({ x: round(b.position.x), y: round(b.position.y), z: round(b.position.z) })),
+    enemy_bullets: enemyBullets.map(b => ({ x: round(b.position.x), y: round(b.position.y), z: round(b.position.z) })),
+    score
+  };
+  return JSON.stringify(payload);
+}
+window.render_game_to_text = renderGameToText;
+
+window.advanceTime = (ms) => {
+  const step = 1000 / 60;
+  const steps = Math.max(1, Math.round(ms / step));
+  for (let i = 0; i < steps; i++) update(1 / 60);
+  render();
+};
+})();
+</script>
+</body>
+</html>
