@@ -19,6 +19,86 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="../../assets/css/site.css?v=4" />
+  <style>
+    .gallery-shell {
+      display: grid;
+      gap: 16px;
+    }
+
+    .gallery-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px 16px;
+    }
+
+    .gallery-head h2 {
+      margin: 0;
+    }
+
+    .gallery-nav {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .gallery-arrow {
+      width: 52px;
+      height: 52px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel-strong);
+      color: var(--text);
+      font-size: 1.25rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .gallery-arrow:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+
+    .gallery-arrow:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .gallery-stage {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel-strong);
+      min-height: clamp(260px, 56vh, 680px);
+      height: clamp(260px, 56vh, 680px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .gallery-stage img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    @media (max-width: 720px) {
+      .gallery-arrow {
+        width: 48px;
+        height: 48px;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="page">
@@ -36,39 +116,24 @@
     </header>
 
     <div class="back-row">
-      <a class="pill pill--ghost" href="./index.html">Back to Others</a>
+      <a class="pill pill--ghost" href="./index.html">← Back to Others</a>
     </div>
 
     <main class="content">
-      <section class="content-section" id="karate">
-        <h2>Karate</h2>
-        <p class="muted">3 images</p>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
-          <img src="../../assets/img/others-karate-1.png" alt="Karate image 1" style="width: 100%; border-radius: 12px; border: 1px solid var(--border); object-fit: cover;" />
-          <img src="../../assets/img/others-karate-2.png" alt="Karate image 2" style="width: 100%; border-radius: 12px; border: 1px solid var(--border); object-fit: cover;" />
-          <img src="../../assets/img/others-karate-3.png" alt="Karate image 3" style="width: 100%; border-radius: 12px; border: 1px solid var(--border); object-fit: cover;" />
+      <section class="content-section gallery-shell">
+        <div class="gallery-head">
+          <h2 id="gallery-title">Karate · 1 / 3</h2>
+          <p class="muted" id="gallery-meta">Image 1 of 10</p>
         </div>
-      </section>
 
-      <section class="content-section" id="calligraphy">
-        <h2>Calligraphy</h2>
-        <p class="muted">4 images</p>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
-          <img src="../../assets/img/others-calligraphy-1.png" alt="Calligraphy image 1" style="width: 100%; border-radius: 12px; border: 1px solid var(--border); object-fit: cover;" />
-          <img src="../../assets/img/others-calligraphy-2.png" alt="Calligraphy image 2" style="width: 100%; border-radius: 12px; border: 1px solid var(--border); object-fit: cover;" />
-          <img src="../../assets/img/others-calligraphy-3.png" alt="Calligraphy image 3" style="width: 100%; border-radius: 12px; border: 1px solid var(--border); object-fit: cover;" />
-          <img src="../../assets/img/others-calligraphy-4.png" alt="Calligraphy image 4" style="width: 100%; border-radius: 12px; border: 1px solid var(--border); object-fit: cover;" />
+        <div class="gallery-nav">
+          <button class="gallery-arrow" id="gallery-prev" aria-label="Previous image">←</button>
+          <div class="gallery-stage">
+            <img id="gallery-image" src="../../assets/img/others-karate-1.png" alt="Karate image 1" />
+          </div>
+          <button class="gallery-arrow" id="gallery-next" aria-label="Next image">→</button>
         </div>
-      </section>
 
-      <section class="content-section" id="duke-edinburgh">
-        <h2>Duke of Edinburgh</h2>
-        <p class="muted">3 images</p>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
-          <img src="../../assets/img/others-duke-edinburgh-1.png" alt="Duke of Edinburgh image 1" style="width: 100%; border-radius: 12px; border: 1px solid var(--border); object-fit: cover;" />
-          <img src="../../assets/img/others-duke-edinburgh-2.png" alt="Duke of Edinburgh image 2" style="width: 100%; border-radius: 12px; border: 1px solid var(--border); object-fit: cover;" />
-          <img src="../../assets/img/others-duke-edinburgh-3.png" alt="Duke of Edinburgh image 3" style="width: 100%; border-radius: 12px; border: 1px solid var(--border); object-fit: cover;" />
-        </div>
       </section>
     </main>
   </div>
@@ -77,6 +142,73 @@
     <button class="bubble" data-toggle="theme" aria-pressed="false" title="Switch theme">☀</button>
     <button class="bubble bubble--ghost" data-toggle="lens" aria-pressed="true" title="Disable liquid lens">FX</button>
   </div>
+
+  <script>
+    (function () {
+      const images = [
+        { src: "../../assets/img/others-karate-1.png", alt: "Karate image 1", group: "Karate", groupIndex: 1, groupTotal: 3 },
+        { src: "../../assets/img/others-karate-2.png", alt: "Karate image 2", group: "Karate", groupIndex: 2, groupTotal: 3 },
+        { src: "../../assets/img/others-karate-3.png", alt: "Karate image 3", group: "Karate", groupIndex: 3, groupTotal: 3 },
+        { src: "../../assets/img/others-calligraphy-1.png", alt: "Calligraphy image 1", group: "Calligraphy", groupIndex: 1, groupTotal: 4 },
+        { src: "../../assets/img/others-calligraphy-2.png", alt: "Calligraphy image 2", group: "Calligraphy", groupIndex: 2, groupTotal: 4 },
+        { src: "../../assets/img/others-calligraphy-3.png", alt: "Calligraphy image 3", group: "Calligraphy", groupIndex: 3, groupTotal: 4 },
+        { src: "../../assets/img/others-calligraphy-4.png", alt: "Calligraphy image 4", group: "Calligraphy", groupIndex: 4, groupTotal: 4 },
+        { src: "../../assets/img/others-duke-edinburgh-1.png", alt: "Duke of Edinburgh image 1", group: "Duke of Edinburgh", groupIndex: 1, groupTotal: 3 },
+        { src: "../../assets/img/others-duke-edinburgh-2.png", alt: "Duke of Edinburgh image 2", group: "Duke of Edinburgh", groupIndex: 2, groupTotal: 3 },
+        { src: "../../assets/img/others-duke-edinburgh-3.png", alt: "Duke of Edinburgh image 3", group: "Duke of Edinburgh", groupIndex: 3, groupTotal: 3 }
+      ];
+
+      const startByHash = {
+        "#karate": 0,
+        "#calligraphy": 3,
+        "#duke-edinburgh": 7
+      };
+
+      const imageEl = document.getElementById("gallery-image");
+      const titleEl = document.getElementById("gallery-title");
+      const metaEl = document.getElementById("gallery-meta");
+      const prevBtn = document.getElementById("gallery-prev");
+      const nextBtn = document.getElementById("gallery-next");
+
+      let index = startByHash[window.location.hash] ?? 0;
+
+      function render() {
+        const item = images[index];
+        imageEl.src = item.src;
+        imageEl.alt = item.alt;
+        titleEl.textContent = item.group + " · " + item.groupIndex + " / " + item.groupTotal;
+        metaEl.textContent = "Image " + (index + 1) + " of " + images.length;
+
+        prevBtn.disabled = index === 0;
+        nextBtn.disabled = index === images.length - 1;
+      }
+
+      prevBtn.addEventListener("click", () => {
+        if (index === 0) return;
+        index -= 1;
+        render();
+      });
+
+      nextBtn.addEventListener("click", () => {
+        if (index === images.length - 1) return;
+        index += 1;
+        render();
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowLeft" && index > 0) {
+          index -= 1;
+          render();
+        }
+        if (event.key === "ArrowRight" && index < images.length - 1) {
+          index += 1;
+          render();
+        }
+      });
+
+      render();
+    })();
+  </script>
 
   <script type="module" src="../../assets/js/site.js?v=4"></script>
 </body>
