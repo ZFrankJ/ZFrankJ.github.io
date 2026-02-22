@@ -69,11 +69,13 @@
     }
 
     .gallery-stage {
+      position: relative;
+      overflow: hidden;
       border: 1px solid var(--border);
       border-radius: 14px;
       background: var(--panel-strong);
-      min-height: clamp(260px, 56vh, 680px);
-      height: clamp(260px, 56vh, 680px);
+      min-height: clamp(220px, 48vh, 560px);
+      height: clamp(220px, 48vh, 560px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -90,6 +92,52 @@
       border-radius: 10px;
       border: 1px solid var(--border);
       background: var(--bg);
+      transition: opacity 0.2s ease;
+    }
+
+    .gallery-loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 8px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      background: var(--panel-strong);
+      color: var(--muted);
+      font-size: 0.92rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .gallery-loading-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      animation: gallery-spin 0.75s linear infinite;
+    }
+
+    .gallery-stage.is-loading .gallery-loading {
+      opacity: 1;
+    }
+
+    .gallery-stage.is-loading img {
+      opacity: 0.18;
+    }
+
+    @keyframes gallery-spin {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     @media (max-width: 720px) {
@@ -128,12 +176,15 @@
 
         <div class="gallery-nav">
           <button class="gallery-arrow" id="gallery-prev" aria-label="Previous image">←</button>
-          <div class="gallery-stage">
+          <div class="gallery-stage" id="gallery-stage">
             <img id="gallery-image" src="../../assets/img/others-karate-1.png" alt="Karate image 1" />
+            <div class="gallery-loading" id="gallery-loading" aria-live="polite">
+              <span class="gallery-loading-dot" aria-hidden="true"></span>
+              <span>Loading image</span>
+            </div>
           </div>
           <button class="gallery-arrow" id="gallery-next" aria-label="Next image">→</button>
         </div>
-
       </section>
     </main>
   </div>
@@ -165,44 +216,72 @@
       };
 
       const imageEl = document.getElementById("gallery-image");
+      const stageEl = document.getElementById("gallery-stage");
       const titleEl = document.getElementById("gallery-title");
       const metaEl = document.getElementById("gallery-meta");
       const prevBtn = document.getElementById("gallery-prev");
       const nextBtn = document.getElementById("gallery-next");
 
       let index = startByHash[window.location.hash] ?? 0;
+      let pendingLoadId = 0;
+
+      function updateButtons(isLoading) {
+        prevBtn.disabled = isLoading || index === 0;
+        nextBtn.disabled = isLoading || index === images.length - 1;
+      }
+
+      function setLoading(isLoading) {
+        stageEl.classList.toggle("is-loading", isLoading);
+        updateButtons(isLoading);
+      }
 
       function render() {
         const item = images[index];
-        imageEl.src = item.src;
-        imageEl.alt = item.alt;
+        const loadId = ++pendingLoadId;
+
         titleEl.textContent = item.group + " · " + item.groupIndex + " / " + item.groupTotal;
         metaEl.textContent = "Image " + (index + 1) + " of " + images.length;
 
-        prevBtn.disabled = index === 0;
-        nextBtn.disabled = index === images.length - 1;
+        setLoading(true);
+        imageEl.alt = item.alt;
+
+        imageEl.onload = function () {
+          if (loadId !== pendingLoadId) return;
+          setLoading(false);
+        };
+
+        imageEl.onerror = function () {
+          if (loadId !== pendingLoadId) return;
+          metaEl.textContent = "Image " + (index + 1) + " of " + images.length + " · missing file";
+          setLoading(false);
+        };
+
+        imageEl.src = item.src;
       }
 
-      prevBtn.addEventListener("click", () => {
-        if (index === 0) return;
-        index -= 1;
+      function goTo(nextIndex) {
+        if (nextIndex < 0 || nextIndex >= images.length) return;
+        if (nextIndex === index) return;
+        if (stageEl.classList.contains("is-loading")) return;
+
+        index = nextIndex;
         render();
+      }
+
+      prevBtn.addEventListener("click", function () {
+        goTo(index - 1);
       });
 
-      nextBtn.addEventListener("click", () => {
-        if (index === images.length - 1) return;
-        index += 1;
-        render();
+      nextBtn.addEventListener("click", function () {
+        goTo(index + 1);
       });
 
-      document.addEventListener("keydown", (event) => {
-        if (event.key === "ArrowLeft" && index > 0) {
-          index -= 1;
-          render();
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "ArrowLeft") {
+          goTo(index - 1);
         }
-        if (event.key === "ArrowRight" && index < images.length - 1) {
-          index += 1;
-          render();
+        if (event.key === "ArrowRight") {
+          goTo(index + 1);
         }
       });
 
