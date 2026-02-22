@@ -16,6 +16,7 @@ if (window.location.protocol === "file:") {
 const THEME_KEY = "fz-theme";
 const LENS_KEY = "fz-lens";
 const LENS_INFO_KEY = "fz-lens-info-shown-v3";
+const LENS_TOUCH_INFO_KEY = "fz-lens-touch-info-shown-v1";
 
 const storage = createStorage();
 
@@ -138,6 +139,33 @@ function showLensNoteOnce() {
     applyLens(false);
     dismiss();
   });
+
+  document.body.appendChild(note);
+}
+
+function showTouchLensNoteOnce() {
+  if (storage.getItem(LENS_TOUCH_INFO_KEY) === "1") return;
+
+  const note = document.createElement("div");
+  note.className = "lens-note";
+  note.innerHTML = `
+    <div class="lens-note__title">Mobile Display Note</div>
+    <p class="lens-note__text">
+      FX is disabled on touch devices. Some visual effects may also feel reduced or slower because of screen and device limitations.
+    </p>
+    <div class="lens-note__actions">
+      <button class="pill" data-note-action="dismiss">Understood</button>
+    </div>
+    <button class="lens-note__dismiss" aria-label="Close">×</button>
+  `;
+
+  const dismiss = () => {
+    storage.setItem(LENS_TOUCH_INFO_KEY, "1");
+    note.remove();
+  };
+
+  note.querySelector("[data-note-action='dismiss']")?.addEventListener("click", dismiss);
+  note.querySelector(".lens-note__dismiss")?.addEventListener("click", dismiss);
 
   document.body.appendChild(note);
 }
@@ -288,6 +316,7 @@ function initLens() {
       lensButton.setAttribute("aria-disabled", "true");
       lensButton.title = "FX disabled on touch devices";
     }
+    setTimeout(showTouchLensNoteOnce, 250);
     return;
   }
 
