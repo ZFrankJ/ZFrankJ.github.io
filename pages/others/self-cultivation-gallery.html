@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fujia Zhang | Self-Cultivation Gallery</title>
+  <script>
+    (function () {
+      const saved = localStorage.getItem("fz-theme");
+      const prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+      const mode = saved || "system";
+      const theme = mode === "system" ? (prefersLight ? "light" : "dark") : mode;
+      document.documentElement.classList.toggle("theme-light", theme === "light");
+      window.__fzPreferredTheme = theme;
+      window.__fzThemeMode = mode;
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../../assets/css/site.css?v=4" />
+</head>
+<body>
+  <div class="page">
+    <div class="breadcrumbs">
+      <a href="../../index.html">Home</a>
+      <span>-</span>
+      <a href="./index.html">Others</a>
+      <span>-</span>
+      <span>Self-Cultivation Gallery</span>
+    </div>
+
+    <header class="sub-hero" data-lens>
+      <h1>Self-Cultivation Gallery</h1>
+      <p class="lede">Karate, calligraphy, and Duke of Edinburgh moments collected in one place.</p>
+    </header>
+
+    <div class="back-row">
+      <a class="pill pill--ghost" href="./index.html">Back to Others</a>
+    </div>
+
+    <main class="content">
+      <section class="content-section" id="karate">
+        <h2>Karate</h2>
+        <p class="muted">3 images</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+          <img src="../../assets/img/others-karate-1.png" alt="Karate image 1" style="width: 100%; border-radius: 12px; border: 1px solid var(--border); object-fit: cover;" />
+          <img src="../../assets/img/others-karate-2.png" alt="Karate image 2" style="width: 100%; border-radius: 12px; border: 1px solid var(--border); object-fit: cover;" />
+          <img src="../../assets/img/others-karate-3.png" alt="Karate image 3" style="width: 100%; border-radius: 12px; border: 1px solid var(--border); object-fit: cover;" />
+        </div>
+      </section>
+
+      <section class="content-section" id="calligraphy">
+        <h2>Calligraphy</h2>
+        <p class="muted">4 images</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+          <img src="../../assets/img/others-calligraphy-1.png" alt="Calligraphy image 1" style="width: 100%; border-radius: 12px; border: 1px solid var(--border); object-fit: cover;" />
+          <img src="../../assets/img/others-calligraphy-2.png" alt="Calligraphy image 2" style="width: 100%; border-radius: 12px; border: 1px solid var(--border); object-fit: cover;" />
+          <img src="../../assets/img/others-calligraphy-3.png" alt="Calligraphy image 3" style="width: 100%; border-radius: 12px; border: 1px solid var(--border); object-fit: cover;" />
+          <img src="../../assets/img/others-calligraphy-4.png" alt="Calligraphy image 4" style="width: 100%; border-radius: 12px; border: 1px solid var(--border); object-fit: cover;" />
+        </div>
+      </section>
+
+      <section class="content-section" id="duke-edinburgh">
+        <h2>Duke of Edinburgh</h2>
+        <p class="muted">3 images</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+          <img src="../../assets/img/others-duke-edinburgh-1.png" alt="Duke of Edinburgh image 1" style="width: 100%; border-radius: 12px; border: 1px solid var(--border); object-fit: cover;" />
+          <img src="../../assets/img/others-duke-edinburgh-2.png" alt="Duke of Edinburgh image 2" style="width: 100%; border-radius: 12px; border: 1px solid var(--border); object-fit: cover;" />
+          <img src="../../assets/img/others-duke-edinburgh-3.png" alt="Duke of Edinburgh image 3" style="width: 100%; border-radius: 12px; border: 1px solid var(--border); object-fit: cover;" />
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="control-bubbles" aria-label="Display controls">
+    <button class="bubble" data-toggle="theme" aria-pressed="false" title="Switch theme">☀</button>
+    <button class="bubble bubble--ghost" data-toggle="lens" aria-pressed="true" title="Disable liquid lens">FX</button>
+  </div>
+
+  <script type="module" src="../../assets/js/site.js?v=4"></script>
+</body>
+</html>
