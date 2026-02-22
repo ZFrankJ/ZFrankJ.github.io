@@ -307,12 +307,70 @@ function initLens() {
   }
 }
 
+
+function initImageLoaders() {
+  const images = document.querySelectorAll('img:not([data-loader-skip="true"])');
+
+  images.forEach((img) => {
+    if (img.dataset.loaderBound === "1") return;
+    if (!img.parentElement) return;
+
+    const wrapper = document.createElement("span");
+    wrapper.className = "media-load-shell is-loading";
+
+    const indicator = document.createElement("span");
+    indicator.className = "media-load-indicator";
+    indicator.innerHTML = '<span class="media-load-dot" aria-hidden="true"></span><span class="media-load-label">Loading image</span>';
+
+    if (img.closest(".profile-photo")) {
+      wrapper.style.height = "100%";
+    }
+
+    const radius = getComputedStyle(img).borderRadius;
+    if (radius && radius !== "0px") {
+      wrapper.style.borderRadius = radius;
+    }
+
+    const parent = img.parentElement;
+    parent.insertBefore(wrapper, img);
+    wrapper.appendChild(img);
+    wrapper.appendChild(indicator);
+
+    const clearLoading = () => {
+      wrapper.classList.remove("is-loading", "is-error");
+      const label = wrapper.querySelector(".media-load-label");
+      if (label) label.textContent = "Loading image";
+    };
+
+    const markError = () => {
+      wrapper.classList.remove("is-loading");
+      wrapper.classList.add("is-error");
+      const label = wrapper.querySelector(".media-load-label");
+      if (label) label.textContent = "Image unavailable";
+    };
+
+    img.addEventListener("load", clearLoading);
+    img.addEventListener("error", markError);
+
+    if (img.complete) {
+      if (img.naturalWidth > 0) {
+        clearLoading();
+      } else {
+        markError();
+      }
+    }
+
+    img.dataset.loaderBound = "1";
+  });
+}
+
 function bootstrap() {
   themeButton = document.querySelector('[data-toggle="theme"]');
   lensButton = document.querySelector('[data-toggle="lens"]');
   initTheme();
   initLens();
   initTimelineSpines();
+  initImageLoaders();
 }
 
 if (document.readyState === "loading") {

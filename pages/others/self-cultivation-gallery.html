@@ -95,49 +95,17 @@
       transition: opacity 0.2s ease;
     }
 
-    .gallery-loading {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 8px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease;
+    .gallery-stage .media-load-indicator {
+      border-radius: 10px;
       background: var(--panel-strong);
-      color: var(--muted);
-      font-size: 0.92rem;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
     }
 
-    .gallery-loading-dot {
-      width: 22px;
-      height: 22px;
-      border-radius: 999px;
-      border: 2px solid var(--border);
-      border-top-color: var(--accent);
-      animation: gallery-spin 0.75s linear infinite;
-    }
-
-    .gallery-stage.is-loading .gallery-loading {
+    .gallery-stage.is-loading .media-load-indicator {
       opacity: 1;
     }
 
     .gallery-stage.is-loading img {
       opacity: 0.18;
-    }
-
-    @keyframes gallery-spin {
-      from {
-        transform: rotate(0deg);
-      }
-
-      to {
-        transform: rotate(360deg);
-      }
     }
 
     @media (max-width: 720px) {
@@ -176,11 +144,11 @@
 
         <div class="gallery-nav">
           <button class="gallery-arrow" id="gallery-prev" aria-label="Previous image">←</button>
-          <div class="gallery-stage" id="gallery-stage">
-            <img id="gallery-image" src="../../assets/img/others-karate-1.png" alt="Karate image 1" />
-            <div class="gallery-loading" id="gallery-loading" aria-live="polite">
-              <span class="gallery-loading-dot" aria-hidden="true"></span>
-              <span>Loading image</span>
+          <div class="gallery-stage media-load-shell" id="gallery-stage">
+            <img id="gallery-image" data-loader-skip="true" src="../../assets/img/others-karate-1.png" alt="Karate image 1" />
+            <div class="media-load-indicator" aria-live="polite">
+              <span class="media-load-dot" aria-hidden="true"></span>
+              <span class="media-load-label">Loading image</span>
             </div>
           </div>
           <button class="gallery-arrow" id="gallery-next" aria-label="Next image">→</button>
@@ -238,6 +206,8 @@
       function render() {
         const item = images[index];
         const loadId = ++pendingLoadId;
+        const nextSrc = item.src;
+        const isSameSrc = imageEl.getAttribute("src") === nextSrc;
 
         titleEl.textContent = item.group + " · " + item.groupIndex + " / " + item.groupTotal;
         metaEl.textContent = "Image " + (index + 1) + " of " + images.length;
@@ -256,7 +226,19 @@
           setLoading(false);
         };
 
-        imageEl.src = item.src;
+        if (!isSameSrc) {
+          imageEl.src = nextSrc;
+        }
+
+        // Cached or same-source images can be complete immediately with no onload callback.
+        if (imageEl.complete) {
+          if (imageEl.naturalWidth > 0) {
+            setLoading(false);
+          } else {
+            metaEl.textContent = "Image " + (index + 1) + " of " + images.length + " · missing file";
+            setLoading(false);
+          }
+        }
       }
 
       function goTo(nextIndex) {
