@@ -578,6 +578,10 @@ h3 {
     letter-spacing: 0.03em;
     text-transform: uppercase;
 }
+.media-load-shell .media-load-indicator[hidden] {
+    display: none !important;
+}
+
 
 .media-load-shell .media-load-dot {
     width: 22px;

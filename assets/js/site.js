@@ -365,21 +365,24 @@ function initImageLoaders() {
     wrapper.appendChild(img);
     wrapper.appendChild(indicator);
 
+    const label = indicator.querySelector(".media-load-label");
+
     const clearLoading = () => {
       wrapper.classList.remove("is-loading", "is-error");
-      const label = wrapper.querySelector(".media-load-label");
+      indicator.hidden = true;
       if (label) label.textContent = "Loading image";
     };
 
     const markError = () => {
       wrapper.classList.remove("is-loading");
       wrapper.classList.add("is-error");
-      const label = wrapper.querySelector(".media-load-label");
+      indicator.hidden = false;
       if (label) label.textContent = "Image unavailable";
     };
 
-    img.addEventListener("load", clearLoading);
-    img.addEventListener("error", markError);
+    img.dataset.loaderBound = "1";
+    img.addEventListener("load", clearLoading, { once: true });
+    img.addEventListener("error", markError, { once: true });
 
     if (img.complete) {
       if (img.naturalWidth > 0) {
@@ -387,9 +390,16 @@ function initImageLoaders() {
       } else {
         markError();
       }
+      return;
     }
 
-    img.dataset.loaderBound = "1";
+    if (typeof img.decode === "function") {
+      img.decode().then(() => {
+        if (img.naturalWidth > 0) {
+          clearLoading();
+        }
+      }).catch(() => {});
+    }
   });
 }
 
