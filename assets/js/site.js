@@ -15,8 +15,8 @@ if (window.location.protocol === "file:") {
 
 const THEME_KEY = "fz-theme";
 const LENS_KEY = "fz-lens";
-const LENS_INFO_KEY = "fz-lens-info-shown-v3";
-const LENS_TOUCH_INFO_KEY = "fz-lens-touch-info-shown-v1";
+const LENS_INFO_KEY = "fz-lens-info-shown-v4";
+const LENS_SUPPORT_INFO_KEY = "fz-lens-support-info-shown-v2";
 
 const storage = createStorage();
 
@@ -120,6 +120,7 @@ function showLensNoteOnce() {
     <div class="lens-note__title">Liquid Lens</div>
     <p class="lens-note__text">
       Liquid FX is on by default to make the page feel alive. Tap the “FX” bubble any time to return to normal.
+      Safari and touch devices stay on the normal display because they do not support this FX reliably.
     </p>
     <div class="lens-note__actions">
       <button class="pill pill--ghost" data-note-action="dismiss">Keep FX</button>
@@ -143,15 +144,15 @@ function showLensNoteOnce() {
   document.body.appendChild(note);
 }
 
-function showTouchLensNoteOnce() {
-  if (storage.getItem(LENS_TOUCH_INFO_KEY) === "1") return;
+function showUnsupportedLensNoteOnce(message) {
+  if (storage.getItem(LENS_SUPPORT_INFO_KEY) === "1") return;
 
   const note = document.createElement("div");
   note.className = "lens-note";
   note.innerHTML = `
-    <div class="lens-note__title">Mobile Display Note</div>
+    <div class="lens-note__title">FX Support Note</div>
     <p class="lens-note__text">
-      FX is disabled on touch devices. Some visual effects may also feel reduced or slower because of screen and device limitations.
+      ${message}
     </p>
     <div class="lens-note__actions">
       <button class="pill" data-note-action="dismiss">Understood</button>
@@ -160,7 +161,7 @@ function showTouchLensNoteOnce() {
   `;
 
   const dismiss = () => {
-    storage.setItem(LENS_TOUCH_INFO_KEY, "1");
+    storage.setItem(LENS_SUPPORT_INFO_KEY, "1");
     note.remove();
   };
 
@@ -309,14 +310,18 @@ function initLens() {
   const isCoarsePointer =
     (typeof window.matchMedia === "function" && window.matchMedia("(pointer: coarse)").matches) ||
     navigator.maxTouchPoints > 0;
-  if (isCoarsePointer) {
+  const isSafari = LiquidLens.isSafariBrowser();
+  if (isCoarsePointer || isSafari) {
     applyLens(false, { persist: false });
     if (lensButton) {
       lensButton.disabled = true;
       lensButton.setAttribute("aria-disabled", "true");
-      lensButton.title = "FX disabled on touch devices";
+      lensButton.title = isSafari ? "FX unavailable in Safari" : "FX unavailable on touch devices";
     }
-    setTimeout(showTouchLensNoteOnce, 250);
+    const noteMessage = isSafari
+      ? "Liquid FX is disabled in Safari because WebKit does not support this effect reliably. Touch devices also stay on the normal display."
+      : "Liquid FX is disabled on touch devices. Safari also stays on the normal display because the effect is not reliable there.";
+    setTimeout(() => showUnsupportedLensNoteOnce(noteMessage), 250);
     return;
   }
 
