@@ -16,6 +16,8 @@ export const LiquidLens = {
   cleanup: null,
   frameId: null,
   scrollTimer: null,
+  safariPaintNodes: [],
+  safariPaintResetFrames: [],
   targetSelector: "body",
 
   init(targetSelector = "body") {
@@ -53,10 +55,84 @@ export const LiquidLens = {
     if (getComputedStyle(target).backgroundColor === "rgba(0, 0, 0, 0)") {
       target.style.backgroundColor = "#fff";
     }
+    this.applySafariPaintWorkaround(target);
 
     // 4. Start Animation Loop
     this.startAnimation(target);
     this.active = true;
+  },
+
+  isSafariBrowser() {
+    const ua = navigator.userAgent;
+    const vendor = navigator.vendor || "";
+    return /Safari/i.test(ua) && /Apple/i.test(vendor) && !/Chrome|CriOS|EdgiOS|FxiOS|OPiOS|Chromium/i.test(ua);
+  },
+
+  appendWillChange(existing, prop) {
+    if (!existing) return prop;
+    const parts = existing
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean);
+    if (parts.includes(prop)) return existing;
+    return `${existing}, ${prop}`;
+  },
+
+  applySafariPaintWorkaround(target) {
+    if (!this.isSafariBrowser()) return;
+    this.clearSafariPaintWorkaround();
+
+    const nodes =
+      target === document.body || target === document.documentElement
+        ? Array.from(target.children)
+        : [target];
+
+    nodes.forEach((node) => {
+      if (!(node instanceof HTMLElement)) return;
+
+      this.safariPaintNodes.push({
+        node,
+        opacity: node.style.opacity,
+        willChange: node.style.willChange,
+        backfaceVisibility: node.style.backfaceVisibility,
+        webkitBackfaceVisibility: node.style.webkitBackfaceVisibility
+      });
+
+      // Safari occasionally keeps descendants in a stale layer after an SVG
+      // filter is reattached. Promote a fresh paint layer, then restore opacity.
+      const computedOpacity = getComputedStyle(node).opacity;
+      node.style.backfaceVisibility = "hidden";
+      node.style.webkitBackfaceVisibility = "hidden";
+      node.style.willChange = this.appendWillChange(node.style.willChange, "opacity");
+      node.style.opacity = computedOpacity === "1" ? "0.9999" : computedOpacity;
+    });
+
+    const firstFrame = requestAnimationFrame(() => {
+      const secondFrame = requestAnimationFrame(() => {
+        this.safariPaintNodes.forEach(({ node, opacity }) => {
+          node.style.opacity = opacity;
+        });
+        this.safariPaintResetFrames = [];
+      });
+      this.safariPaintResetFrames.push(secondFrame);
+    });
+
+    this.safariPaintResetFrames.push(firstFrame);
+  },
+
+  clearSafariPaintWorkaround() {
+    this.safariPaintResetFrames.forEach((frameId) => cancelAnimationFrame(frameId));
+    this.safariPaintResetFrames = [];
+
+    this.safariPaintNodes.forEach(
+      ({ node, opacity, willChange, backfaceVisibility, webkitBackfaceVisibility }) => {
+        node.style.opacity = opacity;
+        node.style.willChange = willChange;
+        node.style.backfaceVisibility = backfaceVisibility;
+        node.style.webkitBackfaceVisibility = webkitBackfaceVisibility;
+      }
+    );
+    this.safariPaintNodes = [];
   },
 
   injectSVG() {
@@ -302,14 +378,11 @@ export const LiquidLens = {
       this.cleanup();
       this.cleanup = null;
     }
+    this.clearSafariPaintWorkaround();
     if (this.target) {
       this.target.style.filter = "";
       this.target.style.willChange = "";
     }
-    if (this.svgNode?.parentNode) {
-      this.svgNode.parentNode.removeChild(this.svgNode);
-    }
-    this.svgNode = null;
     this.target = null;
     this.active = false;
   },
