@@ -48,9 +48,11 @@ export const LiquidLens = {
       return;
     }
     feImage.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", lensMapUrl);
+    feImage.setAttribute("href", lensMapUrl);
 
     // 3. Apply CSS to Target
     target.style.filter = "url(#liquid-lens-filter)";
+    target.style.webkitFilter = "url(#liquid-lens-filter)";
     target.style.willChange = "filter";
     if (getComputedStyle(target).backgroundColor === "rgba(0, 0, 0, 0)") {
       target.style.backgroundColor = "#fff";
@@ -381,6 +383,7 @@ export const LiquidLens = {
     this.clearSafariPaintWorkaround();
     if (this.target) {
       this.target.style.filter = "";
+      this.target.style.webkitFilter = "";
       this.target.style.willChange = "";
     }
     this.target = null;
