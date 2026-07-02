@@ -198,6 +198,12 @@
     <div class="card">
       <h1>Voxel Dogfight</h1>
       <div>Choose mode</div>
+      <div style="margin-top:8px; font-size:12px; opacity:.82; line-height:1.45;">
+        1P: take off, intercept the naval raider, and stop it before it strikes or escapes.
+        <br>
+        2P: split-screen duel; P1 defends the base while P2 attacks with one missile, then escapes.
+        Scale: 1u = 10 m; aircraft speed range 3-18u/s.
+      </div>
       <div class="btns">
         <button id="btn-single">1 Player</button>
         <button id="btn-duo">2 Players</button>
@@ -235,13 +241,13 @@
     <div class="panel" id="status-panel-single">
       <div class="panel-title">Status</div>
       <div id="status-readout-single" class="status-readout">Score : 0
-HP    : ME 280 / ENY 220
-Fuel  : ME 300 / ENY 300
+HP    : ME 950 / ENY 1200
+Fuel  : ME 600 / ENY 700
 Ammo  : ME 320 / ENY 220
 Speed : 0.0 u/s
 Thr   : 50 %
 Hit   : -</div>
-      <div class="panel-caption">Score / HP / Fuel / Ammo</div>
+      <div class="panel-caption">1u = 10 m / Speed capped 18u/s</div>
     </div>
     <div class="panel" id="altitude-panel">
       <div class="panel-title">Alt / HP</div>
@@ -264,8 +270,8 @@ ENY : 0.0 u</div>
     </div>
     <div class="panel">
       <div class="panel-title">P1 Status</div>
-      <div id="status-readout-p1" class="status-readout">HP    : 280
-Fuel  : 300
+      <div id="status-readout-p1" class="status-readout">HP    : 950
+Fuel  : 600
 Ammo  : 320
 Speed : 0.0 u/s
 Hit   : -</div>
@@ -291,12 +297,12 @@ ENY : 0.0 u</div>
     </div>
     <div class="panel">
       <div class="panel-title">P2 Status</div>
-      <div id="status-readout-p2" class="status-readout">HP    : 220
-Fuel  : 300
+      <div id="status-readout-p2" class="status-readout">HP    : 1200
+Fuel  : 700
 Ammo  : 220
 Speed : 0.0 u/s
 Hit   : -</div>
-      <div class="panel-caption">Arrows + Enter</div>
+      <div class="panel-caption">Arrows + Enter + Right Shift</div>
     </div>
     <div class="panel">
       <div class="panel-title">Alt</div>
@@ -358,6 +364,8 @@ let scene, camera, camera2, renderer;
 let plane, planeBody, enemy, enemyBody, worldRoot;
 let buildings = [];
 let buildingBoxes = [];
+let runwayPieces = [];
+let runwayStripes = [];
 let groundY = 0;
 let mode = "chase"; // "cockpit" | "chase"
 let gameOver = false;
@@ -381,45 +389,69 @@ let bulletGeom, bulletMat, enemyBulletMat;
 
 // Flight state
 let throttle = 0.5;     // adjustable throttle (0..1), 0.5 = baseline
-let speed = 10;          // m/s (logical units/s)
+let speed = 10;          // logical units/s; 1u = 10 meters
 let speedP2 = 10;
-const minSpeed = 8;
-const maxSpeed = 70;
-const playerBaseSpeed = 24;
-const enemyBaseSpeed = 28;
+const WORLD_UNIT_METERS = 10;
+const minSpeed = 3;
+const maxSpeed = 18;
+const playerBaseSpeed = 18.0;
+const enemyBaseSpeed = 14.1;
 const baseSpeed = playerBaseSpeed;
 const throttleRate = 0.25; // /s
-const p1FixedSpeed = 22;
-const p2FixedSpeed = 28;
-const singleThrottleSpeedScaleMin = 0.72;
-const singleThrottleSpeedScaleMax = 1.28;
-const fuelBurnRate = 1.5; // units per second at full throttle
+const p1FixedSpeed = 18.0;
+const p1FullThrottleSpeed = 18.0;
+const p2FixedSpeed = 16.6;
+const p2MissileLoadedSpeed = 14.1;
+const p2MissileCleanSpeed = 16.6;
+const singleThrottleSpeedScaleMin = minSpeed / p1FixedSpeed;
+const singleThrottleSpeedScaleMax = p1FullThrottleSpeed / p1FixedSpeed;
+const fuelBurnRate = 1.5; // kept for HUD-era tuning; active fuel burn is distance-based
 const accel = 22;        // m/s^2 max accel at full throttle
 const drag = 0.015;      // simple quadratic-like drag factor
 
 // Dogfight state
-let playerHP = 280;
-let enemyHP = 220;
-let playerMaxHP = 280;
-let enemyMaxHP = 220;
-let playerFuel = 300;
-let enemyFuel = 300;
+let playerHP = 950;
+let enemyHP = 1200;
+let playerMaxHP = 950;
+let enemyMaxHP = 1200;
+let playerFuel = 600;
+let enemyFuel = 700;
 let playerAmmo = 320;
 let enemyAmmo = 220;
 let score = 0;
-const bulletSpeed = 120;
-const bulletLife = 2.2;
+const bulletSpeed = 80;
+const bulletLife = 2.4;
 const fireCooldown = 0.22;
+const missileSpeed = 26;
 let playerFireTimer = 0;
 let enemyFireTimer = 0;
 const enemySpeed = enemyBaseSpeed;
-const enemyTurnRate = 2.4;
 let enemyYaw = 0;
 let enemyPitch = 0;
-const WORLD_LIMIT = 450;
-const RUNWAY_LEFT_X = -16;
-const RUNWAY_RIGHT_X = 16;
+let enemyRoll = 0;
+let enemyEvadeTimer = 0;
+let enemyEvadeSide = 1;
+let enemyEvadeMode = 0;
+let missionPhase = "attack-run";
+let enemyMissile = null;
+let missileLaunched = false;
+let missileVelocity = new THREE.Vector3();
+let missileTarget = new THREE.Vector3();
+let missileTrail = [];
+let missileTrailTimer = 0;
+let missionEndTimer = -1;
+let explosions = [];
+let baseRubble = [];
+let baseDestroyed = false;
+let baseLostContinueAvailable = false;
+const WORLD_LIMIT = 3700;
+const OPERATION_RADIUS = 3500;
+const RUNWAY_LEFT_X = -5;
+const RUNWAY_RIGHT_X = 5;
 const RUNWAY_CENTER_Z = 40;
+// Story target: runway edge beside hangars. Air-base bombing usually disables the runway first,
+// then damages nearby infrastructure.
+const BASE_TARGET = new THREE.Vector3(0, groundY + 0.2, 20);
 const GUN_MOUNT_X = 0.78;
 const GUN_MOUNT_Y = -0.02;
 const GUN_MOUNT_Z = -0.39;
@@ -432,17 +464,17 @@ const weatherProfiles = {
     sky: 0x87ceeb,
     fog: 0x87ceeb,
     fogNear: 120,
-    fogFar: 900,
-    ambient: 0.68,
-    sunIntensity: 1.65,
+    fogFar: 6800,
+    ambient: 0.82,
+    sunIntensity: 4.8,
     sunVisible: true,
-    deckCount: 24,
+    deckCount: 240,
     deckAltitude: 74,
     deckThickness: 10,
     deckChunksMin: 2,
     deckChunksVar: 2,
-    deckHoleChance: 0.35,
-    highCloudCount: 20,
+    deckHoleChance: 0.22,
+    highCloudCount: 130,
     highAltitudeMin: 112,
     highAltitudeSpan: 52,
     highChunksMin: 2,
@@ -456,17 +488,17 @@ const weatherProfiles = {
     sky: 0x93afbf,
     fog: 0x93afbf,
     fogNear: 100,
-    fogFar: 640,
+    fogFar: 5600,
     ambient: 0.72,
     sunIntensity: 0.58,
     sunVisible: false,
-    deckCount: 56,
+    deckCount: 410,
     deckAltitude: 66,
     deckThickness: 7,
     deckChunksMin: 3,
     deckChunksVar: 3,
-    deckHoleChance: 0.08,
-    highCloudCount: 12,
+    deckHoleChance: 0.03,
+    highCloudCount: 96,
     highAltitudeMin: 116,
     highAltitudeSpan: 40,
     highChunksMin: 2,
@@ -480,17 +512,17 @@ const weatherProfiles = {
     sky: 0x6f8797,
     fog: 0x6f8797,
     fogNear: 70,
-    fogFar: 430,
+    fogFar: 4300,
     ambient: 0.6,
     sunIntensity: 0.22,
     sunVisible: false,
-    deckCount: 68,
+    deckCount: 470,
     deckAltitude: 62,
     deckThickness: 6,
     deckChunksMin: 3,
     deckChunksVar: 3,
-    deckHoleChance: 0.03,
-    highCloudCount: 8,
+    deckHoleChance: 0.01,
+    highCloudCount: 88,
     highAltitudeMin: 110,
     highAltitudeSpan: 32,
     highChunksMin: 2,
@@ -556,10 +588,10 @@ animate(0);
 function init() {
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x87ceeb);
-  scene.fog = new THREE.Fog(0x87ceeb, 120, 900);
+  scene.fog = new THREE.Fog(0x87ceeb, 120, 6800);
 
-  camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.12, 2000);
-  camera2 = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.12, 2000);
+  camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.12, 8200);
+  camera2 = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.12, 8200);
 
   try {
     renderer = new THREE.WebGLRenderer({ antialias:true, powerPreference:"high-performance" });
@@ -584,16 +616,16 @@ function init() {
   ambient.name = "ambient-main";
   scene.add(ambient);
 
-  sunLight = new THREE.DirectionalLight(0xfff4d6, weatherProfiles.sunny.sunIntensity);
-  sunLight.position.set(80, 120, 100);
+  sunLight = new THREE.DirectionalLight(0xfff6d0, weatherProfiles.sunny.sunIntensity);
+  sunLight.position.set(180, 520, -260);
   sunLight.castShadow = false;
   scene.add(sunLight);
 
   // Voxel "sun"
-  const sunGeom = new THREE.BoxGeometry(8,8,8);
-  const sunMat  = new THREE.MeshBasicMaterial({ color: 0xfff07a });
+  const sunGeom = new THREE.BoxGeometry(22,22,22);
+  const sunMat  = new THREE.MeshBasicMaterial({ color: 0xffffcc });
   sunMesh = new THREE.Mesh(sunGeom, sunMat);
-  sunMesh.position.set(120, 160, -180);
+  sunMesh.position.set(260, 520, -420);
   scene.add(sunMesh);
 
   // Root for world content
@@ -613,7 +645,7 @@ function init() {
     vstab: 0x5e7b4f,
     wing: 0x5e7b4f
   };
-  const player = createPlane(playerColors, new THREE.Vector3(RUNWAY_LEFT_X, 3.5, 140));
+  const player = createPlane(playerColors, new THREE.Vector3(RUNWAY_LEFT_X, 0.35, 140));
   plane = player.plane;
   planeBody = player.body;
   plane.userData.propeller = player.propeller;
@@ -625,10 +657,12 @@ function init() {
     vstab: 0x274d7e,
     wing: 0x274d7e
   };
-  const foe = createPlane(enemyColors, new THREE.Vector3(RUNWAY_RIGHT_X, 8, -60));
+  const foe = createPlane(enemyColors, new THREE.Vector3(RUNWAY_RIGHT_X, 26, -60));
   enemy = foe.plane;
   enemyBody = foe.body;
   enemy.userData.propeller = foe.propeller;
+  enemyMissile = createMissionMissile();
+  enemyBody.add(enemyMissile);
   enemy.rotation.y = Math.PI;
   enemyYaw = enemy.rotation.y;
   enemyPitch = 0;
@@ -656,6 +690,10 @@ function init() {
   window.addEventListener('keydown', (e) => {
     if (e.repeat) return;
     keys.add(e.key.toLowerCase());
+    if ((e.key === 'x' || e.key === 'X') && gameOver && baseLostContinueAvailable) {
+      continueAfterBaseDestroyed();
+      return;
+    }
     if (e.key === 'c' || e.key === 'C') toggleCameraMode();
     if (e.key === 'f' || e.key === 'F') toggleFullscreen();
     if (e.key === '1') { setGameMode("single"); setModeState("playing"); }
@@ -664,6 +702,7 @@ function init() {
     if (e.key === '8') applyWeather("cloudy");
     if (e.key === '9') applyWeather("rainy");
     if (e.key === 'r' || e.key === 'R') { if (gameOver) resetGame(); }
+    if (e.code === 'ShiftRight') launchPlayer2Missile();
     if (e.code === 'Space') {
       if (gameOver) { resetGame(); return; }
       fireHeld = true;
@@ -689,32 +728,43 @@ function init() {
 function createGround() {
   // Green ground plane + voxel bumps
   const base = new THREE.Mesh(
-    new THREE.PlaneGeometry(1000, 1000),
-    new THREE.MeshLambertMaterial({ color: 0x55aa55 })
+    new THREE.PlaneGeometry(8200, 8200),
+    new THREE.MeshLambertMaterial({ color: 0x2f6b34 })
   );
   base.rotation.x = -Math.PI/2;
   base.position.y = groundY;
   base.receiveShadow = false;
   worldRoot.add(base);
 
-  // Gentle hills via sparse boxes
-  const tile = new THREE.BoxGeometry(6, 1, 6);
-  const greens = [0x4da64d, 0x5eb35e, 0x6bc06b, 0x79cc79];
-  for (let x = -300; x <= 300; x += 12) {
-    for (let z = -300; z <= 300; z += 12) {
-      // Keep clear corridors around both parallel runways to avoid green patch intrusions.
-      const nearRunwayL = Math.abs(x + 16) < 16;
-      const nearRunwayR = Math.abs(x - 16) < 16;
-      const inRunway = (nearRunwayL || nearRunwayR) && z > -120 && z < 200;
-      if (!inRunway && Math.random() < 0.045) {
-        const h = 1 + Math.floor(Math.random()*3);
-        const mat = new THREE.MeshLambertMaterial({ color: greens[(h-1) % greens.length] });
-        const box = new THREE.Mesh(tile, mat);
-        box.scale.y = h;
-        box.position.set(x, groundY + (h/2), z);
-        worldRoot.add(box);
-      }
-    }
+  const boundary = new THREE.Mesh(
+    new THREE.RingGeometry(OPERATION_RADIUS - 2, OPERATION_RADIUS, 96),
+    new THREE.MeshBasicMaterial({ color: 0xe8f6ff, transparent: true, opacity: 0.38, side: THREE.DoubleSide })
+  );
+  boundary.rotation.x = -Math.PI / 2;
+  boundary.position.y = groundY + 0.08;
+  worldRoot.add(boundary);
+
+  // Gentle voxel grass/hills spread across the enlarged operation area.
+  const tile = new THREE.BoxGeometry(4, 0.18, 4);
+  const greens = [0x245c2b, 0x2f7335, 0x3f873d, 0x4d9447, 0x356b2f, 0x5a7f37, 0x6a8e45];
+  const grassRadius = OPERATION_RADIUS * 0.96;
+  for (let i = 0; i < 900; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const radius = Math.sqrt(Math.random()) * grassRadius;
+    const x = Math.cos(angle) * radius;
+    const z = Math.sin(angle) * radius;
+    // Keep clear corridors around both parallel runways to avoid green patch intrusions.
+    const nearRunwayL = Math.abs(x - RUNWAY_LEFT_X) < 8;
+    const nearRunwayR = Math.abs(x - RUNWAY_RIGHT_X) < 8;
+    const inRunway = (nearRunwayL || nearRunwayR) && z > -140 && z < 210;
+    const nearBaseCore = Math.abs(x) < 115 && z > -140 && z < 210;
+    if (inRunway || (nearBaseCore && Math.random() < 0.72)) continue;
+    const h = 0.45 + Math.random() * 1.3;
+    const mat = new THREE.MeshLambertMaterial({ color: greens[Math.floor(Math.random() * greens.length)] });
+    const box = new THREE.Mesh(tile, mat);
+    box.scale.set(0.6 + Math.random() * 2.0, h, 0.6 + Math.random() * 2.0);
+    box.position.set(x, groundY + 0.09 * h, z);
+    worldRoot.add(box);
   }
 }
 
@@ -722,7 +772,8 @@ function createClouds(cfg) {
   if (cloudGroup) worldRoot.remove(cloudGroup);
   cloudGroup = new THREE.Group();
   const cloudMat = new THREE.MeshLambertMaterial({ color: cfg.cloudColor });
-  const addCloudCluster = (altitude, chunksMin, chunksVar, flatness) => {
+  const cloudRadius = OPERATION_RADIUS * 0.92;
+  const addCloudCluster = (altitude, chunksMin, chunksVar, flatness, placement) => {
     const g = new THREE.Group();
     const chunks = chunksMin + Math.floor(Math.random() * chunksVar);
     for (let j=0; j<chunks; j++) {
@@ -735,11 +786,13 @@ function createClouds(cfg) {
       p.position.set((j-1.5)*5 + (Math.random()*2-1), (Math.random()*2-1), (Math.random()*2-1));
       g.add(p);
     }
-    g.position.set(
-      -350 + Math.random()*700,
-      altitude,
-      -350 + Math.random()*700
-    );
+    if (placement) {
+      g.position.set(placement.x, altitude, placement.z);
+    } else {
+      const angle = Math.random() * Math.PI * 2;
+      const radius = Math.sqrt(Math.random()) * cloudRadius;
+      g.position.set(Math.cos(angle) * radius, altitude, Math.sin(angle) * radius);
+    }
     cloudGroup.add(g);
   };
 
@@ -752,6 +805,30 @@ function createClouds(cfg) {
     const y = cfg.highAltitudeMin + Math.random() * cfg.highAltitudeSpan;
     addCloudCluster(y, cfg.highChunksMin, cfg.highChunksVar, 1.0);
   }
+
+  // Extra local cloud decks keep the sky above the base populated after the map radius grew.
+  const localDeckCount = Math.round(cfg.deckCount * 0.72);
+  const localHighCount = Math.round(cfg.highCloudCount * 0.75);
+  const addLocal = (count, minAlt, altSpan, chunksMin, chunksVar, flatness, radiusMax, runwayBias) => {
+    for (let i = 0; i < count; i++) {
+      if (Math.random() < cfg.deckHoleChance * 0.35) continue;
+      const y = minAlt + Math.random() * altSpan;
+      let x;
+      let z;
+      if (Math.random() < runwayBias) {
+        x = -220 + Math.random() * 440;
+        z = -380 + Math.random() * 760;
+      } else {
+        const angle = Math.random() * Math.PI * 2;
+        const radius = Math.sqrt(Math.random()) * radiusMax;
+        x = Math.cos(angle) * radius;
+        z = Math.sin(angle) * radius;
+      }
+      addCloudCluster(y, chunksMin, chunksVar + 1, flatness, { x, z });
+    }
+  };
+  addLocal(localDeckCount, cfg.deckAltitude - cfg.deckThickness * 0.5, cfg.deckThickness, cfg.deckChunksMin + 1, cfg.deckChunksVar + 1, 0.7, 1250, 0.55);
+  addLocal(localHighCount, cfg.highAltitudeMin, cfg.highAltitudeSpan, cfg.highChunksMin, cfg.highChunksVar + 1, 0.95, 1500, 0.35);
   worldRoot.add(cloudGroup);
 }
 
@@ -820,6 +897,8 @@ function createBuildings() {
   // Sparse military base layout (fewer buildings, clearer sightlines)
   buildingBoxes = [];
   buildings = [];
+  runwayPieces = [];
+  runwayStripes = [];
 
   const addBuilding = (mesh) => {
     worldRoot.add(mesh);
@@ -831,33 +910,38 @@ function createBuildings() {
   // Use thin boxes instead of coplanar planes to remove distance flicker (z-fighting).
   const runwayMat = new THREE.MeshLambertMaterial({ color: 0x2b333a, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -3 });
   const runwayCenters = [RUNWAY_LEFT_X, RUNWAY_RIGHT_X];
+  const runwaySegmentLength = 16;
+  const runwaySegmentCount = 15;
+  const runwayLength = runwaySegmentLength * runwaySegmentCount + 0.5;
   runwayCenters.forEach((cx) => {
     const runway = new THREE.Mesh(
-      new THREE.BoxGeometry(20, 0.28, 260),
+      new THREE.BoxGeometry(5.5, 0.04, runwayLength),
       runwayMat
     );
-    runway.position.set(cx, groundY + 0.34, RUNWAY_CENTER_Z);
+    runway.position.set(cx, groundY + 0.04, RUNWAY_CENTER_Z);
     worldRoot.add(runway);
+    runwayPieces.push(runway);
   });
 
   const stripeMat = new THREE.MeshLambertMaterial({ color: 0xd9d9d9, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -4 });
   runwayCenters.forEach((cx) => {
     for (let i = -5; i <= 5; i++) {
-      const stripe = new THREE.Mesh(new THREE.BoxGeometry(1, 0.2, 8), stripeMat);
-      stripe.position.set(cx, groundY + 0.56, RUNWAY_CENTER_Z + i * 22);
+      const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.035, 3.6), stripeMat);
+      stripe.position.set(cx, groundY + 0.085, RUNWAY_CENTER_Z + i * 20);
       worldRoot.add(stripe);
+      runwayStripes.push(stripe);
     }
   });
 
   // Hangars
   const hangarMat = new THREE.MeshLambertMaterial({ color: 0x6f7b88 });
-  const hangarGeom = new THREE.BoxGeometry(18, 6, 12);
+  const hangarGeom = new THREE.BoxGeometry(5.8, 1.8, 4.2);
   const hangarPositions = [
-    [-72, 3, -10],
-    [-72, 3, 20],
-    [-72, 3, 50],
-    [72, 3, -10],
-    [72, 3, 20]
+    [-28, 0.9, -10],
+    [-28, 0.9, 20],
+    [-28, 0.9, 50],
+    [28, 0.9, -10],
+    [28, 0.9, 20]
   ];
   hangarPositions.forEach(([x, y, z]) => {
     const h = new THREE.Mesh(hangarGeom, hangarMat);
@@ -867,44 +951,64 @@ function createBuildings() {
 
   // Control tower
   const towerBase = new THREE.Mesh(
-    new THREE.BoxGeometry(8, 10, 8),
+    new THREE.BoxGeometry(2.2, 3.4, 2.2),
     new THREE.MeshLambertMaterial({ color: 0x4c5865 })
   );
-  towerBase.position.set(-60, groundY + 5, -70);
+  towerBase.position.set(-24, groundY + 1.7, -70);
   addBuilding(towerBase);
   const towerTop = new THREE.Mesh(
-    new THREE.BoxGeometry(10, 4, 10),
+    new THREE.BoxGeometry(3.0, 1.0, 3.0),
     new THREE.MeshLambertMaterial({ color: 0x8da2b8 })
   );
-  towerTop.position.set(-60, groundY + 12, -70);
+  towerTop.position.set(-24, groundY + 3.9, -70);
   addBuilding(towerTop);
 
   // Barracks + storage
   const barracksMat = new THREE.MeshLambertMaterial({ color: 0x55614d });
-  const barracks = new THREE.Mesh(new THREE.BoxGeometry(20, 4, 8), barracksMat);
-  barracks.position.set(70, groundY + 2, -60);
+  const barracks = new THREE.Mesh(new THREE.BoxGeometry(6.0, 1.3, 2.8), barracksMat);
+  barracks.position.set(30, groundY + 0.65, -60);
   addBuilding(barracks);
 
-  const storage = new THREE.Mesh(new THREE.BoxGeometry(10, 5, 14), new THREE.MeshLambertMaterial({ color: 0x796650 }));
-  storage.position.set(-80, groundY + 2.5, 90);
+  const storage = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.5, 4.0), new THREE.MeshLambertMaterial({ color: 0x796650 }));
+  storage.position.set(-31, groundY + 0.75, 90);
   addBuilding(storage);
+}
+
+function rebuildBuildingBoxes() {
+  buildingBoxes = buildings
+    .filter((mesh) => mesh.visible)
+    .map((mesh) => new THREE.Box3().setFromObject(mesh).expandByScalar(0.4));
 }
 
 function createPlane(colors, position) {
   const group = new THREE.Group();
+  const planeModelScale = 0.42; // ~12 m aircraft length when 1u = 10 m.
   const bodyMat = new THREE.MeshLambertMaterial({ color: colors.body });
   const wingMat = new THREE.MeshLambertMaterial({ color: colors.wing });
   const tailMat = new THREE.MeshLambertMaterial({ color: colors.tail });
   const noseMat = new THREE.MeshLambertMaterial({ color: colors.nose });
   const vstabMat = new THREE.MeshLambertMaterial({ color: colors.vstab });
 
-  // Single tapered fuselage cylinder (thicker nose -> thinner tail)
-  const fuselage = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.03, 0.20, 2.7, 18),
+  // Two-section tapered fuselage: broad front, tighter rear taper.
+  const fuselage = new THREE.Group();
+  const fuselageNoseZ = -1.17;
+  const fuselageSplitZ = 0.16;
+  const fuselageTailZ = 1.53;
+  const fuselageMidRadius = 0.18;
+  const fuselageFront = new THREE.Mesh(
+    new THREE.CylinderGeometry(fuselageMidRadius, 0.20, fuselageSplitZ - fuselageNoseZ, 18),
     bodyMat
   );
-  fuselage.rotation.x = Math.PI / 2;
-  fuselage.position.set(0, 0.03, 0.18);
+  fuselageFront.rotation.x = Math.PI / 2;
+  fuselageFront.position.set(0, 0.03, (fuselageNoseZ + fuselageSplitZ) * 0.5);
+  fuselage.add(fuselageFront);
+  const fuselageRear = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.03, fuselageMidRadius, fuselageTailZ - fuselageSplitZ, 18),
+    bodyMat
+  );
+  fuselageRear.rotation.x = Math.PI / 2;
+  fuselageRear.position.set(0, 0.03, (fuselageSplitZ + fuselageTailZ) * 0.5);
+  fuselage.add(fuselageRear);
   group.add(fuselage);
 
   // Engine cowling + spinner
@@ -994,12 +1098,42 @@ function createPlane(colors, position) {
   group.add(tailWheel);
 
   const planeGroup = new THREE.Group();
+  group.scale.setScalar(planeModelScale);
   planeGroup.add(group);
   planeGroup.position.copy(position);
   planeGroup.rotation.order = "ZYX"; // roll (Z), pitch (X), yaw (Y) stability
   worldRoot.add(planeGroup);
 
   return { plane: planeGroup, body: group, propeller: propGroup };
+}
+
+function createMissionMissile() {
+  const missile = new THREE.Group();
+  const bodyMat = new THREE.MeshLambertMaterial({ color: 0xe6e0d2 });
+  const noseMat = new THREE.MeshLambertMaterial({ color: 0xff563d });
+  const finMat = new THREE.MeshLambertMaterial({ color: 0x252b31 });
+
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.065, 0.72, 10), bodyMat);
+  body.rotation.x = Math.PI / 2;
+  missile.add(body);
+
+  const nose = new THREE.Mesh(new THREE.ConeGeometry(0.065, 0.18, 10), noseMat);
+  nose.rotation.x = -Math.PI / 2;
+  nose.position.z = -0.45;
+  missile.add(nose);
+
+  const finGeom = new THREE.BoxGeometry(0.16, 0.018, 0.08);
+  for (let i = 0; i < 4; i++) {
+    const fin = new THREE.Mesh(finGeom, finMat);
+    fin.position.z = 0.32;
+    fin.rotation.z = (Math.PI / 2) * i;
+    missile.add(fin);
+  }
+
+  missile.position.set(0, -0.23, -0.18);
+  missile.scale.set(1.15, 1.15, 1.15);
+  missile.userData.carried = true;
+  return missile;
 }
 
 function onResize() {
@@ -1019,11 +1153,65 @@ function onResize() {
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
 function wrapDelta(from, to) {
-  let d = to - from;
-  const span = WORLD_LIMIT * 2;
-  if (d > WORLD_LIMIT) d -= span;
-  if (d < -WORLD_LIMIT) d += span;
-  return d;
+  return to - from;
+}
+
+function horizontalRadius(obj) {
+  return Math.hypot(obj.position.x, obj.position.z);
+}
+
+function clampTargetToOperationCircle(x, z, margin = 18) {
+  const r = Math.hypot(x, z);
+  const maxR = OPERATION_RADIUS - margin;
+  if (r <= maxR || r < 0.001) return { x, z };
+  const scale = maxR / r;
+  return { x: x * scale, z: z * scale };
+}
+
+function checkOperationBoundary() {
+  wrapAtOperationBoundary(plane);
+  wrapAtOperationBoundary(enemy);
+}
+
+function wrapAtOperationBoundary(obj) {
+  const r = horizontalRadius(obj);
+  if (r <= OPERATION_RADIUS || r < 0.001) return;
+  const scale = -(OPERATION_RADIUS - 36) / r;
+  obj.position.x *= scale;
+  obj.position.z *= scale;
+}
+
+function throttleScale01(value) {
+  return clamp((value - 0.2) / 0.8, 0, 1);
+}
+
+function throttleControlScale(value) {
+  return 1 + throttleScale01(value) * 0.9;
+}
+
+function hpSpeedScale(currentHP, maxHP) {
+  return clamp(currentHP / Math.max(1, maxHP), 0.35, 1.0);
+}
+
+function targetPlayerSpeed() {
+  const hpScale = hpSpeedScale(playerHP, playerMaxHP);
+  if (gameMode === "duo") return clamp(p1FixedSpeed * hpScale, minSpeed, maxSpeed);
+  const t = throttleScale01(throttle);
+  const throttleScale = singleThrottleSpeedScaleMin + (singleThrottleSpeedScaleMax - singleThrottleSpeedScaleMin) * t;
+  return clamp(p1FixedSpeed * throttleScale * hpScale, minSpeed, maxSpeed);
+}
+
+function targetEnemySpeed() {
+  const hpScale = hpSpeedScale(enemyHP, enemyMaxHP);
+  const carryingMissile = !!(enemyMissile && enemyMissile.visible && enemyMissile.userData.carried);
+  const cleanSpeed = gameMode === "duo" ? p2MissileCleanSpeed : p2FixedSpeed;
+  const loadedSpeed = p2MissileLoadedSpeed;
+  const base = carryingMissile ? loadedSpeed : cleanSpeed;
+  return clamp(base * hpScale, minSpeed, maxSpeed);
+}
+
+function burnFuelByDistance(currentFuel, tankFuel, distanceMoved) {
+  return Math.max(0, currentFuel - Math.max(0, distanceMoved) * (tankFuel / OPERATION_RADIUS));
 }
 
 function toggleCameraMode() {
@@ -1080,9 +1268,9 @@ function setCameras(targetPlane, cam) {
     cam.position.copy(targetPlane.localToWorld(offset));
     cam.quaternion.copy(targetPlane.quaternion);
   } else {
-    // Forward pilot view to avoid nose-only framing.
-    const camPos = targetPlane.localToWorld(new THREE.Vector3(0, 0.24, -1.95));
-    const lookAt = targetPlane.localToWorld(new THREE.Vector3(0, 0.18, -26));
+    // Pilot view from inside the cockpit canopy, looking over the cowling.
+    const camPos = targetPlane.localToWorld(new THREE.Vector3(0, 0.28, -0.08));
+    const lookAt = targetPlane.localToWorld(new THREE.Vector3(0, 0.18, -28));
     cam.position.copy(camPos);
     cam.up.set(0, 1, 0).applyQuaternion(targetPlane.quaternion);
     cam.lookAt(lookAt);
@@ -1121,6 +1309,7 @@ function updateHUD() {
         `Fuel  : ${playerFuel.toFixed(0)}`,
         `Ammo  : ${playerAmmo}`,
         `Speed : ${speed.toFixed(1)} u/s`,
+        `Base  : ${baseDestroyed ? "DESTROYED" : "OK"}`,
         `Hit   : ${playerHitTimer > 0 ? "HIT" : "-"}`,
       ].join("\n");
     }
@@ -1130,6 +1319,8 @@ function updateHUD() {
         `Fuel  : ${enemyFuel.toFixed(0)}`,
         `Ammo  : ${enemyAmmo}`,
         `Speed : ${speedP2.toFixed(1)} u/s`,
+        `Missile: ${missileLaunched ? "USED" : "RShift"}`,
+        `Base  : ${baseDestroyed ? "DESTROYED" : "OK"}`,
         `Hit   : ${enemyHitTimer > 0 ? "HIT" : "-"}`,
       ].join("\n");
     }
@@ -1141,6 +1332,7 @@ function updateHUD() {
       `Ammo  : ME ${playerAmmo} / ENY ${enemyAmmo}`,
       `Speed : ${speed.toFixed(1)} u/s`,
       `Thr   : ${(throttle * 100).toFixed(0)} %`,
+      `Mission: ${missionPhase === "attack-run" ? "INTERCEPT" : (missionPhase === "missile-away" ? "MISSILE" : (missionPhase === "base-hit" ? "IMPACT" : (missionPhase === "revenge" ? "CHASE" : "DOGFIGHT")))}`,
       `Hit   : ${enemyHitTimer > 0 ? "ENEMY" : (playerHitTimer > 0 ? "YOU" : "-")}`,
     ];
     if (statusReadoutSingleEl) statusReadoutSingleEl.textContent = lines.join("\n");
@@ -1204,24 +1396,18 @@ function handleInput(dt) {
     if (keys.has("e")) throttle += throttleRate * dt;
     throttle = clamp(throttle, 0.2, 1.0);
 
-    applyControls(plane, yawInput, pitchInput, dt);
+    const authority = throttleControlScale(throttle);
+    applyControls(plane, yawInput, pitchInput, dt, yawRate * authority, pitchRate * authority);
   }
 }
 
 function integrateMotion(dt) {
   if (gameMode === "duo") {
-    const hpScale = clamp(playerHP / Math.max(1, playerMaxHP), 0.35, 1.0);
-    const targetSpeed = clamp(p1FixedSpeed * hpScale, minSpeed, maxSpeed);
-    speed = THREE.MathUtils.damp(speed, targetSpeed, 2.0, dt);
-    playerFuel = Math.max(0, playerFuel - 0.6 * fuelBurnRate * dt);
+    speed = THREE.MathUtils.damp(speed, targetPlayerSpeed(), 2.0, dt);
+    playerFuel = burnFuelByDistance(playerFuel, 600, speed * dt);
   } else {
-    // Single-player speed is proportional to throttle (Q/E).
-    const t = clamp((throttle - 0.2) / 0.8, 0, 1); // throttle range 0.2..1.0
-    const throttleScale = singleThrottleSpeedScaleMin + (singleThrottleSpeedScaleMax - singleThrottleSpeedScaleMin) * t;
-    const hpScale = clamp(playerHP / Math.max(1, playerMaxHP), 0.35, 1.0);
-    const targetSpeed = clamp(p1FixedSpeed * throttleScale * hpScale, minSpeed, maxSpeed);
-    speed = THREE.MathUtils.damp(speed, targetSpeed, 2.0, dt);
-    playerFuel = Math.max(0, playerFuel - throttle * fuelBurnRate * dt);
+    speed = THREE.MathUtils.damp(speed, targetPlayerSpeed(), 2.0, dt);
+    playerFuel = burnFuelByDistance(playerFuel, 600, speed * dt);
   }
 
   // Move along the plane's forward direction (-Z in local space)
@@ -1229,12 +1415,7 @@ function integrateMotion(dt) {
   plane.getWorldDirection(dir); // returns world-space forward (-Z)
   plane.position.addScaledVector(dir, -speed * dt);
 
-  // Keep within world bounds (soft wrap on X/Z)
-  const lim = WORLD_LIMIT;
-  if (plane.position.x > lim) plane.position.x = -lim;
-  if (plane.position.x < -lim) plane.position.x = lim;
-  if (plane.position.z > lim) plane.position.z = -lim;
-  if (plane.position.z < -lim) plane.position.z = lim;
+  // Circular operation boundary is checked after both planes move.
 }
 
 function updateEnemy(dt) {
@@ -1242,63 +1423,128 @@ function updateEnemy(dt) {
   if (gameMode === "duo") {
     const dir = new THREE.Vector3();
     enemy.getWorldDirection(dir);
-    const hpScale = clamp(enemyHP / Math.max(1, enemyMaxHP), 0.35, 1.0);
-    const targetEnemySpeed = clamp(p2FixedSpeed * hpScale, minSpeed, maxSpeed);
-    speedP2 = THREE.MathUtils.damp(speedP2, targetEnemySpeed, 2.0, dt);
+    speedP2 = THREE.MathUtils.damp(speedP2, targetEnemySpeed(), 2.0, dt);
     enemy.position.addScaledVector(dir, -speedP2 * dt);
-    enemyFuel = Math.max(0, enemyFuel - 0.6 * fuelBurnRate * dt);
-    const lim = WORLD_LIMIT;
-    if (enemy.position.x > lim) enemy.position.x = -lim;
-    if (enemy.position.x < -lim) enemy.position.x = lim;
-    if (enemy.position.z > lim) enemy.position.z = -lim;
-    if (enemy.position.z < -lim) enemy.position.z = lim;
+    enemyFuel = burnFuelByDistance(enemyFuel, 700, speedP2 * dt);
   } else {
-    const lim = WORLD_LIMIT;
-    const dx = wrapDelta(enemy.position.x, plane.position.x);
-    const dz = wrapDelta(enemy.position.z, plane.position.z);
+    enemyEvadeTimer = Math.max(0, enemyEvadeTimer - dt);
+
+    const playerMoveDir = new THREE.Vector3();
+    plane.getWorldDirection(playerMoveDir);
+    playerMoveDir.multiplyScalar(-1).normalize();
+
+    const enemyFromPlayer = new THREE.Vector3(
+      wrapDelta(plane.position.x, enemy.position.x),
+      enemy.position.y - plane.position.y,
+      wrapDelta(plane.position.z, enemy.position.z)
+    );
+    const enemyDistance = Math.max(0.001, enemyFromPlayer.length());
+    const playerAim = playerMoveDir.dot(enemyFromPlayer.clone().normalize());
+    const sideCross = playerMoveDir.x * enemyFromPlayer.z - playerMoveDir.z * enemyFromPlayer.x;
+    const enemyMoveDir = new THREE.Vector3(0, 0, -1).applyQuaternion(enemy.quaternion).normalize();
+    const playerFromEnemy = enemyFromPlayer.clone().multiplyScalar(-1).normalize();
+    // During the story attack run the raider commits to the base until the player is truly close.
+    // Otherwise it looks like a UFO that abandons the mission before the takeoff chase starts.
+    const tailDetectRange = missionPhase === "attack-run" ? 90 : 280;
+    const aimDetectRange = missionPhase === "attack-run" ? 75 : 240;
+    const playerOnTail = enemyMoveDir.dot(playerFromEnemy) < -0.35 && playerAim > 0.35 && enemyDistance < tailDetectRange;
+    const threat = (playerAim > 0.72 && enemyDistance < aimDetectRange) || playerOnTail || enemyDistance < 70;
+
+    if (threat && enemyEvadeTimer <= 0.05) {
+      enemyEvadeSide = Math.abs(sideCross) > 0.05 ? (sideCross >= 0 ? 1 : -1) : -enemyEvadeSide;
+      enemyEvadeMode = (enemyEvadeMode + 1) % 3;
+      enemyEvadeTimer = missionPhase === "attack-run" ? 1.35 : (playerOnTail ? 3.1 : 2.4);
+    }
+
+    const sideVec = new THREE.Vector3(-playerMoveDir.z, 0, playerMoveDir.x).multiplyScalar(enemyEvadeSide);
+    const awayVec = enemyFromPlayer.clone();
+    awayVec.y = 0;
+    if (awayVec.lengthSq() < 0.001) awayVec.copy(sideVec);
+    awayVec.normalize();
+
+    let targetX;
+    let targetZ;
+    let desiredAlt;
+    if (enemyEvadeTimer > 0) {
+      const tailPressure = playerOnTail ? 1.25 : 1.0;
+      const forwardBias = enemyEvadeMode === 0 ? 15 : -20;
+      targetX = enemy.position.x + awayVec.x * 75 * tailPressure + sideVec.x * 120 * tailPressure + playerMoveDir.x * forwardBias;
+      targetZ = enemy.position.z + awayVec.z * 75 * tailPressure + sideVec.z * 120 * tailPressure + playerMoveDir.z * forwardBias;
+      const climbOffset = enemyEvadeMode === 1 ? 34 : (enemyEvadeMode === 2 ? -10 : 18);
+      desiredAlt = clamp(enemy.position.y + climbOffset, groundY + 16, 140);
+    } else if (missionPhase === "attack-run") {
+      targetX = BASE_TARGET.x;
+      targetZ = BASE_TARGET.z;
+      desiredAlt = clamp(24, groundY + 18, 42);
+    } else if (missionPhase === "revenge") {
+      const radial = new THREE.Vector3(enemy.position.x, 0, enemy.position.z);
+      if (radial.lengthSq() < 0.001) radial.set(1, 0, 0);
+      radial.normalize();
+      targetX = enemy.position.x + radial.x * 220;
+      targetZ = enemy.position.z + radial.z * 220;
+      desiredAlt = clamp(enemy.position.y + 8, groundY + 18, 110);
+    } else if (enemyDistance > 170) {
+      targetX = plane.position.x + playerMoveDir.x * 70 + sideVec.x * 35;
+      targetZ = plane.position.z + playerMoveDir.z * 70 + sideVec.z * 35;
+      desiredAlt = clamp(plane.position.y + 16, groundY + 16, 125);
+    } else {
+      targetX = plane.position.x + awayVec.x * 120 + sideVec.x * 55;
+      targetZ = plane.position.z + awayVec.z * 120 + sideVec.z * 55;
+      desiredAlt = clamp(plane.position.y + 18, groundY + 16, 130);
+    }
+
+    if (missionPhase !== "revenge") {
+      const radius = horizontalRadius(enemy);
+      if (radius > OPERATION_RADIUS - 90) {
+        targetX += -enemy.position.x / Math.max(1, radius) * 180;
+        targetZ += -enemy.position.z / Math.max(1, radius) * 180;
+      }
+    }
+
+    const boundedTarget = missionPhase === "revenge"
+      ? { x: targetX, z: targetZ }
+      : clampTargetToOperationCircle(targetX, targetZ);
+    const dx = wrapDelta(enemy.position.x, boundedTarget.x);
+    const dz = wrapDelta(enemy.position.z, boundedTarget.z);
     const horizontal = Math.max(0.001, Math.hypot(dx, dz));
-    const desiredAlt = clamp(plane.position.y + 12, groundY + 16, 120);
     const dy = desiredAlt - enemy.position.y;
 
     const yawTarget = Math.atan2(dx, -dz);
-    const pitchTarget = clamp(Math.atan2(dy, horizontal), THREE.MathUtils.degToRad(-25), THREE.MathUtils.degToRad(25));
+    const pitchTarget = clamp(Math.atan2(dy, horizontal), THREE.MathUtils.degToRad(-28), THREE.MathUtils.degToRad(28));
 
-    const maxYaw = enemyTurnRate * dt;
     const yawDiff = ((yawTarget - enemyYaw + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
-    enemyYaw += clamp(yawDiff, -maxYaw, maxYaw);
+    const yawStep = clamp(yawDiff, -p2YawRate * dt, p2YawRate * dt);
+    enemyYaw += yawStep;
 
-    const maxPitch = enemyTurnRate * 0.7 * dt;
     const pitchDiff = pitchTarget - enemyPitch;
-    enemyPitch += clamp(pitchDiff, -maxPitch, maxPitch);
+    enemyPitch += clamp(pitchDiff, -p2PitchRate * dt, p2PitchRate * dt);
 
-    enemy.quaternion.setFromEuler(new THREE.Euler(enemyPitch, enemyYaw, 0, "YXZ"));
+    const turnFraction = clamp(yawStep / Math.max(0.0001, p2YawRate * dt), -1, 1);
+    const targetRoll = turnFraction * THREE.MathUtils.degToRad(30);
+    enemyRoll += clamp(targetRoll - enemyRoll, -rollRate * dt, rollRate * dt);
 
-    const hpScale = clamp(enemyHP / Math.max(1, enemyMaxHP), 0.35, 1.0);
-    const targetEnemySpeed = clamp(p2FixedSpeed * hpScale, minSpeed, maxSpeed);
-    speedP2 = THREE.MathUtils.damp(speedP2, targetEnemySpeed, 2.0, dt);
+    enemy.quaternion.setFromEuler(new THREE.Euler(enemyPitch, enemyYaw, enemyRoll, "YXZ"));
+
+    speedP2 = THREE.MathUtils.damp(speedP2, targetEnemySpeed(), 2.0, dt);
     const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(enemy.quaternion);
     enemy.position.addScaledVector(dir, speedP2 * dt);
     enemy.position.y = clamp(enemy.position.y, groundY + 12, 160);
 
-    // Enemy fuel consumption (proportional to its speed)
-    enemyFuel = Math.max(0, enemyFuel - fuelBurnRate * (speedP2 / baseSpeed) * dt);
+    enemyFuel = burnFuelByDistance(enemyFuel, 700, speedP2 * dt);
 
-    if (enemy.position.x > lim) enemy.position.x = -lim;
-    if (enemy.position.x < -lim) enemy.position.x = lim;
-    if (enemy.position.z > lim) enemy.position.z = -lim;
-    if (enemy.position.z < -lim) enemy.position.z = lim;
   }
 }
 
 function spawnBullet(fromPlane, collection, material) {
+  const modelRoot = fromPlane.children[0] || fromPlane;
   const muzzleOffsets = [
     new THREE.Vector3(-GUN_MOUNT_X, GUN_MOUNT_Y, GUN_MOUNT_Z - GUN_BARREL_LEN * 0.5 + 0.01),
     new THREE.Vector3(GUN_MOUNT_X, GUN_MOUNT_Y, GUN_MOUNT_Z - GUN_BARREL_LEN * 0.5 + 0.01),
   ];
-  const convergencePoint = fromPlane.localToWorld(new THREE.Vector3(0, 0.02, -120));
+  const convergencePoint = modelRoot.localToWorld(new THREE.Vector3(0, 0.02, -120));
   for (const muzzleOffset of muzzleOffsets) {
     const bullet = new THREE.Mesh(bulletGeom, material);
-    const muzzleWorld = fromPlane.localToWorld(muzzleOffset.clone());
+    const muzzleWorld = modelRoot.localToWorld(muzzleOffset.clone());
     const velocityDir = convergencePoint.clone().sub(muzzleWorld).normalize();
     bullet.position.copy(muzzleWorld);
     bullet.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), velocityDir);
@@ -1366,11 +1612,11 @@ function updateCombat(dt) {
   updateBullets(dt, enemyBullets);
 
   checkBulletHits(bullets, enemy, () => {
-    enemyHP = Math.max(0, enemyHP - 12);
+    enemyHP = Math.max(0, enemyHP - 45);
     enemyHitTimer = 0.45;
   });
   checkBulletHits(enemyBullets, plane, () => {
-    playerHP = Math.max(0, playerHP - 10);
+    playerHP = Math.max(0, playerHP - 38);
     playerHitTimer = 0.45;
   });
 
@@ -1381,12 +1627,503 @@ function updateCombat(dt) {
 }
 
 function updatePropellers(dt) {
-  const spin = 18 + speed * 0.6;
+  const playerThrottleForSpin = gameMode === "single" ? throttle : 0.6;
+  const spin = 42 + speed * 1.25 + playerThrottleForSpin * 90;
   if (plane.userData.propeller) {
     plane.userData.propeller.rotation.z += spin * dt;
   }
   if (enemy.userData.propeller) {
-    enemy.userData.propeller.rotation.z += (18 + (enemySpeed * 0.6)) * dt;
+    enemy.userData.propeller.rotation.z += (48 + speedP2 * 1.9 + 90) * dt;
+  }
+}
+
+function launchEnemyMissile(target = BASE_TARGET.clone()) {
+  if (!enemyMissile || missileLaunched) return;
+  enemyMissile.updateMatrixWorld(true);
+  worldRoot.attach(enemyMissile);
+  enemyMissile.userData.carried = false;
+  missileLaunched = true;
+  missileTarget.copy(target);
+  missionPhase = gameMode === "single" ? "missile-away" : "p2-missile";
+
+  const toTarget = missileTarget.clone().sub(enemyMissile.position).normalize();
+  missileVelocity.copy(toTarget.multiplyScalar(missileSpeed));
+}
+
+function getGunAimGroundPoint(shooter) {
+  shooter.updateMatrixWorld(true);
+  const origin = new THREE.Vector3(0, GUN_MOUNT_Y, GUN_MOUNT_Z).applyMatrix4(shooter.matrixWorld);
+  const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(shooter.quaternion).normalize();
+  const ground = groundY + 0.2;
+  let t = forward.y < -0.04 ? (ground - origin.y) / forward.y : 220;
+  t = clamp(t, 35, 360);
+  const hit = origin.clone().addScaledVector(forward, t);
+  hit.y = ground;
+  const bounded = clampTargetToOperationCircle(hit.x, hit.z, 8);
+  hit.x = bounded.x;
+  hit.z = bounded.z;
+  return hit;
+}
+
+function launchPlayer2Missile() {
+  if (gameMode !== "duo" || gameOver || !enemyMissile || missileLaunched) return;
+  launchEnemyMissile(getGunAimGroundPoint(enemy));
+}
+
+function updateMission(dt) {
+  if (!enemyMissile) return;
+
+  if (gameMode === "single" && missionEndTimer > 0) {
+    missionEndTimer -= dt;
+    if (missionEndTimer <= 0 && !gameOver) showBaseDestroyedChoice();
+  }
+  if (missionPhase === "base-hit" || missionPhase === "revenge" || missionPhase === "duo-impact") return;
+
+  if (gameMode === "single") {
+    const enemyToBase = new THREE.Vector3(
+      wrapDelta(enemy.position.x, BASE_TARGET.x),
+      BASE_TARGET.y - enemy.position.y,
+      wrapDelta(enemy.position.z, BASE_TARGET.z)
+    );
+    const enemyBaseDistance = enemyToBase.length();
+    if (!missileLaunched && enemyBaseDistance < 115) {
+      launchEnemyMissile(BASE_TARGET.clone());
+    }
+  }
+
+  if (!missileLaunched) return;
+
+  missileTrailTimer -= dt;
+  if (missileTrailTimer <= 0) {
+    missileTrailTimer = 0.045;
+    const puff = new THREE.Mesh(
+      new THREE.SphereGeometry(0.18, 8, 6),
+      new THREE.MeshBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0.65, depthWrite: false })
+    );
+    puff.position.copy(enemyMissile.position);
+    puff.userData.life = 0.55;
+    puff.userData.maxLife = 0.55;
+    worldRoot.add(puff);
+    missileTrail.push(puff);
+  }
+
+  const targetVector = missileTarget.clone().sub(enemyMissile.position);
+  if (targetVector.lengthSq() > 0.001) {
+    missileVelocity.lerp(targetVector.normalize().multiplyScalar(missileSpeed), 1 - Math.exp(-3.5 * dt));
+  }
+  const previousMissilePosition = enemyMissile.position.clone();
+  enemyMissile.position.addScaledVector(missileVelocity, dt);
+  enemyMissile.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, -1), missileVelocity.clone().normalize());
+
+  const buildingHit = findMissileBuildingHit(previousMissilePosition, enemyMissile.position);
+  if (buildingHit) {
+    detonateMissileAt(buildingHit.point, buildingHit.mesh);
+    return;
+  }
+
+  if (missionPhase !== "base-hit" && missionPhase !== "duo-impact" && enemyMissile.position.distanceTo(missileTarget) < 4.5) {
+    detonateMissileAt(enemyMissile.position.clone());
+  }
+}
+
+function findMissileBuildingHit(start, end) {
+  if (!start || !end) return null;
+  const travelBox = new THREE.Box3().setFromPoints([start, end]).expandByScalar(2.4);
+  const segment = end.clone().sub(start);
+  const steps = Math.max(2, Math.ceil(segment.length() / 1.8));
+  const testPoint = new THREE.Vector3();
+  for (const mesh of buildings) {
+    if (!mesh.visible) continue;
+    const box = new THREE.Box3().setFromObject(mesh).expandByScalar(1.2);
+    if (!box.intersectsBox(travelBox)) continue;
+    for (let i = 0; i <= steps; i++) {
+      testPoint.copy(start).lerp(end, i / steps);
+      if (box.containsPoint(testPoint)) return { mesh, point: testPoint.clone() };
+    }
+  }
+  return null;
+}
+
+function detonateMissileAt(position, directBuilding = null) {
+  if (!enemyMissile || !missileLaunched || missionPhase === "base-hit" || missionPhase === "duo-impact") return;
+  enemyMissile.visible = false;
+  missionPhase = gameMode === "single" ? "base-hit" : "duo-impact";
+  if (directBuilding && directBuilding.visible) collapseBuildingsNear(position, 7, directBuilding);
+  createExplosion(position.clone());
+  applyBlastDamage(position);
+  if (gameMode === "single") missionEndTimer = 1.6;
+}
+
+function collapseBuildingsNear(position, radius = 22, directBuilding = null) {
+  let collapsed = 0;
+  const affected = new Set();
+  if (directBuilding) affected.add(directBuilding);
+  for (const mesh of buildings) {
+    if (!mesh.visible) continue;
+    const box = new THREE.Box3().setFromObject(mesh);
+    const nearest = box.clampPoint(position.clone(), new THREE.Vector3());
+    if (nearest.distanceTo(position) <= radius) affected.add(mesh);
+  }
+  affected.forEach((mesh) => {
+    if (!mesh.visible) return;
+    const box = new THREE.Box3().setFromObject(mesh);
+    createBuildingRubble(mesh, box);
+    mesh.visible = false;
+    collapsed += 1;
+  });
+  if (collapsed) rebuildBuildingBoxes();
+  return collapsed;
+}
+
+function createBuildingRubble(mesh, box) {
+  const center = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3());
+  const group = new THREE.Group();
+  group.name = "building-rubble";
+  const baseColor = mesh.material && mesh.material.color ? mesh.material.color.getHex() : 0x606870;
+  const colors = [baseColor, 0x252a2d, 0x4c5256, 0x7b7f7e];
+  const count = Math.min(18, Math.max(8, Math.round((size.x * size.z) / 18)));
+  for (let i = 0; i < count; i++) {
+    const sx = 0.7 + Math.random() * Math.min(2.2, size.x * 0.16);
+    const sy = 0.18 + Math.random() * 0.7;
+    const sz = 0.7 + Math.random() * Math.min(2.2, size.z * 0.18);
+    const part = new THREE.Mesh(
+      new THREE.BoxGeometry(sx, sy, sz),
+      new THREE.MeshLambertMaterial({ color: colors[i % colors.length] })
+    );
+    part.position.set(
+      center.x + (Math.random() - 0.5) * size.x * 0.82,
+      groundY + 0.22 + Math.random() * 0.55,
+      center.z + (Math.random() - 0.5) * size.z * 0.82
+    );
+    part.rotation.set((Math.random() - 0.5) * 0.35, Math.random() * Math.PI, (Math.random() - 0.5) * 0.35);
+    group.add(part);
+  }
+  worldRoot.add(group);
+  baseRubble.push(group);
+}
+
+function createExplosion(position) {
+  destroyBaseAt(position);
+
+  const group = new THREE.Group();
+  group.position.copy(position);
+
+  const surfacePalette = getExplosionSurfacePalette(position);
+  const fireColors = [0xfff08a, 0xffb229, 0xff6f1e, 0xb72c16];
+  const smokeColors = [0x171a1c, 0x2a2e31, 0x42474a, 0x5a5d5b];
+  const debrisColors = surfacePalette.debris;
+  const cube = (size, color, kind, pos, velocity, opacity = 1) => {
+    const matParams = {
+      color,
+      transparent: opacity < 1 || kind === "fire" || kind === "debris" || kind === "dust",
+      opacity,
+      depthWrite: false
+    };
+    const mat = kind === "fire"
+      ? new THREE.MeshBasicMaterial({ ...matParams, depthWrite: false })
+      : new THREE.MeshLambertMaterial(matParams);
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(size.x, size.y, size.z), mat);
+    mesh.position.copy(pos);
+    mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+    mesh.userData.kind = kind;
+    mesh.userData.velocity = velocity;
+    mesh.userData.spin = new THREE.Vector3((Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4);
+    mesh.userData.baseScale = mesh.scale.x;
+    mesh.userData.fadeOffset = Math.random() * 0.22;
+    group.add(mesh);
+    return mesh;
+  };
+
+  // Voxel fireball: dense hot blocks expanding upward/outward, not smooth circles.
+  for (let i = 0; i < 42; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const radius = Math.random() * 4.6;
+    const up = 7.5 + Math.random() * 17.0;
+    const dir = new THREE.Vector3(Math.cos(angle) * (0.4 + Math.random()), 0.7 + Math.random() * 0.9, Math.sin(angle) * (0.4 + Math.random())).normalize();
+    const size = 0.42 + Math.random() * 1.05;
+    cube(
+      new THREE.Vector3(size, size * (0.8 + Math.random() * 0.7), size),
+      fireColors[i % fireColors.length],
+      "fire",
+      new THREE.Vector3(Math.cos(angle) * radius, 1.0 + Math.random() * 7.5, Math.sin(angle) * radius),
+      dir.multiplyScalar(up)
+    );
+  }
+
+  // Smoke column: larger black/gray voxels rise and drift after the bright blast fades.
+  for (let i = 0; i < 96; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const radius = 1.8 + Math.random() * 8.2;
+    const size = 0.65 + Math.random() * 1.8;
+    cube(
+      new THREE.Vector3(size * 1.25, size, size * 1.25),
+      smokeColors[i % smokeColors.length],
+      "smoke",
+      new THREE.Vector3(Math.cos(angle) * radius, 3.5 + Math.random() * 13.0, Math.sin(angle) * radius),
+      new THREE.Vector3(Math.cos(angle) * (0.8 + Math.random() * 3.2), 7.0 + Math.random() * 10.0, Math.sin(angle) * (0.8 + Math.random() * 3.2)),
+      0.56
+    );
+  }
+
+  // Hard fragments: metal/concrete voxels fly out and fall back down.
+  for (let i = 0; i < 56; i++) {
+    const dir = new THREE.Vector3(Math.random() - 0.5, 0.2 + Math.random() * 0.95, Math.random() - 0.5).normalize();
+    const size = 0.12 + Math.random() * 0.38;
+    cube(
+      new THREE.Vector3(size * (0.8 + Math.random() * 2.2), size, size * (0.8 + Math.random() * 2.2)),
+      debrisColors[i % debrisColors.length],
+      "debris",
+      new THREE.Vector3(dir.x * (1.0 + Math.random() * 2.0), 0.9 + Math.random() * 2.5, dir.z * (1.0 + Math.random() * 2.0)),
+      dir.multiplyScalar(8 + Math.random() * 18)
+    );
+  }
+
+  // Ground blast/dust front, voxel-style instead of a circular torus.
+  for (let i = 0; i < 42; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const dir = new THREE.Vector3(Math.cos(angle), 0.06 + Math.random() * 0.15, Math.sin(angle)).normalize();
+    const size = 0.22 + Math.random() * 0.58;
+    cube(
+      new THREE.Vector3(size * 1.8, size * 0.35, size),
+      surfacePalette.dust[i % surfacePalette.dust.length],
+      "dust",
+      new THREE.Vector3(Math.cos(angle) * 2.5, 0.35, Math.sin(angle) * 2.5),
+      dir.multiplyScalar(8 + Math.random() * 8),
+      0.5
+    );
+  }
+
+  // Persistent blocky scorch plates.
+  for (let i = 0; i < 12; i++) {
+    const plate = cube(
+      new THREE.Vector3(2 + Math.random() * 4, 0.05, 1.2 + Math.random() * 3.0),
+      0x14100c,
+      "scorch",
+      new THREE.Vector3((Math.random() - 0.5) * 11, 0.04, (Math.random() - 0.5) * 11),
+      new THREE.Vector3(),
+      0.62
+    );
+    plate.rotation.y = Math.random() * Math.PI;
+  }
+
+  const light = new THREE.PointLight(0xff9a36, 7.0, 150, 2);
+  light.position.set(0, 9.5, 0);
+  light.userData.kind = "light";
+  group.add(light);
+
+  group.userData.life = 8.5;
+  group.userData.maxLife = 8.5;
+  worldRoot.add(group);
+  explosions.push(group);
+}
+
+function destroyBaseAt(position) {
+  if (baseDestroyed) return;
+  if (!(gameMode === "single" || isRunwayDisabledByBlast(position))) return;
+  baseDestroyed = true;
+  damageRunwayAt(position);
+}
+
+function damageRunwayAt(position) {
+  const runwayPalette = [0x050607, 0x161b1f, 0x2b333a, 0x4a5258, 0x8a8f8d, 0xd9d9d9];
+  const grassPalette = [0x173d1d, 0x245c2b, 0x2f6b34, 0x3b7439, 0x4f6a36];
+  const damaged = new THREE.Group();
+  damaged.name = "damaged-runway";
+  const impact = position.clone();
+  impact.x = gameMode === "single" ? 0 : impact.x;
+  const damageRadius = gameMode === "single" ? 5 : 5;
+
+  runwayStripes.forEach((stripe) => {
+    const dx = stripe.position.x - impact.x;
+    const dz = stripe.position.z - impact.z;
+    if (Math.hypot(dx, dz) < damageRadius && Math.random() < 0.92) stripe.visible = false;
+  });
+
+  const materialCache = new Map();
+  const materialFor = (color, opacity = 1) => {
+    const key = `${color}:${opacity}`;
+    if (!materialCache.has(key)) {
+      materialCache.set(key, new THREE.MeshLambertMaterial({
+        color,
+        transparent: opacity < 1,
+        opacity,
+        polygonOffset: true,
+        polygonOffsetFactor: -6,
+        polygonOffsetUnits: -6
+      }));
+    }
+    return materialCache.get(key);
+  };
+
+  const isRunwaySurface = (x, z) => (
+    [RUNWAY_LEFT_X, RUNWAY_RIGHT_X].some((cx) => Math.abs(x - cx) < 3.2) &&
+    z > RUNWAY_CENTER_Z - 124 && z < RUNWAY_CENTER_Z + 124
+  );
+
+  const makeFlatPatch = (x, z, sx, sz, color, opacity = 0.96) => {
+    const patch = new THREE.Mesh(new THREE.BoxGeometry(sx, 0.035, sz), materialFor(color, opacity));
+    patch.position.set(x, groundY + 0.61 + Math.random() * 0.012, z);
+    patch.rotation.y = Math.random() * Math.PI;
+    damaged.add(patch);
+  };
+
+  // Re-render the blast footprint as randomized surface tiles instead of a cave or raised crater.
+  // The colors come from the original surface: runway grays/white on asphalt, greens off-runway.
+  for (let i = 0; i < 190; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const radius = Math.sqrt(Math.random()) * damageRadius;
+    const x = impact.x + Math.cos(angle) * radius + (Math.random() - 0.5) * 1.6;
+    const z = impact.z + Math.sin(angle) * radius + (Math.random() - 0.5) * 1.6;
+    const edgeFade = radius / damageRadius;
+    const sx = 0.75 + Math.random() * (edgeFade > 0.72 ? 2.2 : 3.8);
+    const sz = 0.75 + Math.random() * (edgeFade > 0.72 ? 2.2 : 3.8);
+    const palette = isRunwaySurface(x, z) ? runwayPalette : grassPalette;
+    let color = palette[Math.floor(Math.random() * palette.length)];
+    if (edgeFade < 0.38 && Math.random() < 0.52) color = Math.random() < 0.65 ? 0x050607 : 0x1b1f22;
+    makeFlatPatch(x, z, sx, sz, color, edgeFade > 0.86 ? 0.78 : 0.96);
+  }
+
+  // A few tiny loose chips for texture only; they stay low and do not form a raised rim.
+  for (let i = 0; i < 18; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const radius = Math.sqrt(Math.random()) * damageRadius * 0.65;
+    const x = impact.x + Math.cos(angle) * radius;
+    const z = impact.z + Math.sin(angle) * radius;
+    const palette = isRunwaySurface(x, z) ? runwayPalette : grassPalette;
+    const chip = new THREE.Mesh(
+      new THREE.BoxGeometry(0.22 + Math.random() * 0.8, 0.05, 0.22 + Math.random() * 0.9),
+      materialFor(palette[Math.floor(Math.random() * palette.length)], 0.92)
+    );
+    chip.position.set(x, groundY + 0.66, z);
+    chip.rotation.set(0, Math.random() * Math.PI, 0);
+    damaged.add(chip);
+  }
+
+  worldRoot.add(damaged);
+  baseRubble.push(damaged);
+}
+
+function getExplosionSurfacePalette(position) {
+  if (isNearRunway(position)) {
+    return {
+      debris: [0x050607, 0x2d3338, 0x7c858c, 0xdcdcdc, 0xf4f4ef],
+      dust: [0x1c1f22, 0x4f575d, 0xa7a9a5, 0xe2e2dc]
+    };
+  }
+  return {
+    debris: [0x2f6d32, 0x3e7f3f, 0x5b8a4b, 0x6b6251],
+    dust: [0x3d7138, 0x527f3e, 0x756e56]
+  };
+}
+
+function isNearRunway(position) {
+  return [RUNWAY_LEFT_X, RUNWAY_RIGHT_X].some((cx) => (
+    Math.abs(position.x - cx) < 4.0 &&
+    position.z > RUNWAY_CENTER_Z - 124 &&
+    position.z < RUNWAY_CENTER_Z + 124
+  ));
+}
+
+function isRunwayDisabledByBlast(position) {
+  const blastRadius = 5;
+  const runwayHalfWidth = 2.75;
+  if (position.z <= RUNWAY_CENTER_Z - 124 || position.z >= RUNWAY_CENTER_Z + 124) return false;
+  const affectedRunways = [RUNWAY_LEFT_X, RUNWAY_RIGHT_X].filter((cx) => (
+    Math.abs(position.x - cx) <= blastRadius + runwayHalfWidth
+  ));
+  return affectedRunways.length >= 2 || isNearRunway(position);
+}
+
+function applyBlastDamage(position) {
+  const blast = (target, label) => {
+    const dist = target.position.distanceTo(position);
+    if (dist > 5) return 0;
+    if (dist <= 2.5) return 1200;
+    return Math.round((1 - (dist - 2.5) / 2.5) * 700);
+  };
+
+  const playerDamage = blast(plane, "player");
+  const enemyDamage = blast(enemy, "enemy");
+  if (playerDamage > 0) {
+    playerHP = Math.max(0, playerHP - playerDamage);
+    playerHitTimer = 0.35;
+  }
+  if (enemyDamage > 0) {
+    enemyHP = Math.max(0, enemyHP - enemyDamage);
+    enemyHitTimer = 0.35;
+  }
+
+  if (playerHP <= 0 && enemyHP <= 0) {
+    setGameOver("BOTH CAUGHT IN BLAST");
+    missionEndTimer = -1;
+  } else if (playerHP <= 0) {
+    setGameOver(gameMode === "duo" ? "P1 CAUGHT IN BLAST" : "CAUGHT IN BLAST");
+    missionEndTimer = -1;
+  } else if (enemyHP <= 0) {
+    if (gameMode !== "duo") score += 1;
+    setGameOver(gameMode === "duo" ? "P2 CAUGHT IN BLAST" : "ENEMY CAUGHT IN BLAST");
+    missionEndTimer = -1;
+  }
+}
+
+function updateEffects(dt) {
+  for (let i = missileTrail.length - 1; i >= 0; i--) {
+    const puff = missileTrail[i];
+    puff.userData.life -= dt;
+    const t = Math.max(0, puff.userData.life / puff.userData.maxLife);
+    puff.scale.setScalar(1 + (1 - t) * 2.5);
+    puff.material.opacity = 0.65 * t;
+    if (puff.userData.life <= 0) {
+      worldRoot.remove(puff);
+      missileTrail.splice(i, 1);
+    }
+  }
+
+  for (let i = explosions.length - 1; i >= 0; i--) {
+    const explosion = explosions[i];
+    explosion.userData.life -= dt;
+    const t = Math.max(0, explosion.userData.life / explosion.userData.maxLife);
+    const age = 1 - t;
+    explosion.children.forEach((part) => {
+      if (part.isLight) {
+        part.intensity = 4.5 * Math.max(0, 1 - age * 2.8);
+        return;
+      }
+      if (part.userData.velocity) part.position.addScaledVector(part.userData.velocity, dt);
+      if (part.userData.kind === "fire") {
+        part.userData.velocity.multiplyScalar(Math.pow(0.7, dt));
+        part.scale.setScalar((part.userData.baseScale || 1) * (1 + age * 1.8));
+        const fireFade = Math.max(0, 1 - (age - part.userData.fadeOffset) / 0.38);
+        part.material.opacity = 0.95 * fireFade * fireFade;
+      } else if (part.userData.kind === "smoke") {
+        part.userData.velocity.multiplyScalar(Math.pow(0.86, dt));
+        part.scale.setScalar((part.userData.baseScale || 1) * (1 + age * 5.2));
+        const riseIn = Math.min(1, age * 3.0);
+        part.material.opacity = 0.48 * riseIn * Math.pow(t, 0.8);
+      } else if (part.userData.kind === "debris") {
+        part.userData.velocity.y -= 16 * dt;
+        part.rotation.x += part.userData.spin.x * dt;
+        part.rotation.y += part.userData.spin.y * dt;
+        part.rotation.z += part.userData.spin.z * dt;
+        if (part.position.y < 0.08) {
+          part.position.y = 0.08;
+          part.userData.velocity.multiplyScalar(0.3);
+        }
+        part.material.opacity = 0.9 * Math.pow(Math.max(0, t), 1.35);
+      } else if (part.userData.kind === "dust") {
+        part.userData.velocity.multiplyScalar(Math.pow(0.72, dt));
+        part.scale.setScalar(1 + age * 2.1);
+        part.material.opacity = 0.42 * Math.pow(t, 0.75);
+        if (part.position.y < 0.05) part.position.y = 0.05;
+      } else if (part.userData.kind === "scorch") {
+        part.material.opacity = 0.58 * Math.pow(Math.max(0, t), 1.1);
+      }
+    });
+    if (explosion.userData.life <= 0) {
+      worldRoot.remove(explosion);
+      explosions.splice(i, 1);
+    }
   }
 }
 
@@ -1663,7 +2400,7 @@ function updateAttitudeIndicator(ctx, canvas, attitude) {
 function checkCollisionFor(body, planeGroup) {
   if (!body || !planeGroup) return false;
   // Ground
-  if (planeGroup.position.y <= groundY + 0.5) return true;
+  if (planeGroup.position.y <= groundY + 0.12) return true;
 
   // Buildings (AABB vs plane bounding box)
   const pbox = new THREE.Box3().setFromObject(body).expandByScalar(0.05);
@@ -1675,34 +2412,87 @@ function checkCollisionFor(body, planeGroup) {
 
 function setGameOver(message) {
   gameOver = true;
+  baseLostContinueAvailable = false;
   outcome = message || "GAME OVER";
   if (gameoverTitleEl) gameoverTitleEl.textContent = outcome;
   if (gameoverHintEl) gameoverHintEl.textContent = "Press R or Space to restart";
   gameoverEl.style.display = "flex";
 }
 
+function showBaseDestroyedChoice() {
+  gameOver = true;
+  baseLostContinueAvailable = true;
+  outcome = "BASE DESTROYED";
+  if (gameoverTitleEl) gameoverTitleEl.textContent = outcome;
+  if (gameoverHintEl) gameoverHintEl.textContent = "Press X to continue chase, or R / Space to restart";
+  gameoverEl.style.display = "flex";
+}
+
+function continueAfterBaseDestroyed() {
+  gameOver = false;
+  baseLostContinueAvailable = false;
+  outcome = "";
+  missionPhase = "revenge";
+  missionEndTimer = -1;
+  if (gameoverEl) gameoverEl.style.display = "none";
+}
+
 function resetGame() {
   gameOver = false;
+  baseLostContinueAvailable = false;
   outcome = "";
   gameoverEl.style.display = "none";
   // Reset player
-  plane.position.set(RUNWAY_LEFT_X, 3.5, 140);
+  plane.position.set(RUNWAY_LEFT_X, 0.35, 140);
   plane.rotation.set(0, 0, 0);
   throttle = 0.5;
-  speed = 10;
-  playerFuel = 300;
-  playerAmmo = 300;
+  speed = targetPlayerSpeed();
+  playerFuel = 600;
+  playerAmmo = 320;
   fireHeld = false;
+  fireHeld2 = false;
   playerFireTimer = 0;
 
-  // Reset enemy
-  enemy.position.set(RUNWAY_RIGHT_X, 8, -60);
+  // Reset enemy. Both modes now start with the navy plane farther out, approaching the base.
+  const enemyStartY = 26;
+  const enemyStartZ = -360;
+  enemy.position.set(RUNWAY_RIGHT_X, enemyStartY, enemyStartZ);
   enemy.rotation.set(0, Math.PI, 0);
   enemyYaw = enemy.rotation.y;
   enemyPitch = 0;
-  enemyFuel = 300;
-  enemyAmmo = 300;
+  enemyRoll = 0;
+  enemyEvadeTimer = 0;
+  enemyEvadeSide = 1;
+  enemyEvadeMode = 0;
+  speedP2 = targetEnemySpeed();
+  enemyFuel = 700;
+  enemyAmmo = 220;
   enemyFireTimer = 0;
+  missionPhase = gameMode === "single" ? "attack-run" : "duo";
+  missileLaunched = false;
+  missileVelocity.set(0, 0, 0);
+  missileTarget.copy(BASE_TARGET);
+  missileTrailTimer = 0;
+  missionEndTimer = -1;
+  missileTrail.forEach((puff) => worldRoot.remove(puff));
+  explosions.forEach((explosion) => worldRoot.remove(explosion));
+  baseRubble.forEach((rubble) => worldRoot.remove(rubble));
+  missileTrail = [];
+  explosions = [];
+  baseRubble = [];
+  baseDestroyed = false;
+  buildings.forEach((mesh) => { mesh.visible = true; });
+  runwayPieces.forEach((mesh) => { mesh.visible = true; });
+  runwayStripes.forEach((mesh) => { mesh.visible = true; });
+  rebuildBuildingBoxes();
+  if (enemyMissile) {
+    if (enemyMissile.parent !== enemyBody) enemyBody.attach(enemyMissile);
+    enemyMissile.position.set(0, -0.23, -0.18);
+    enemyMissile.rotation.set(0, 0, 0);
+    enemyMissile.scale.set(1.15, 1.15, 1.15);
+    enemyMissile.visible = true;
+    enemyMissile.userData.carried = true;
+  }
 
   // Clear bullets
   bullets.forEach(b => worldRoot.remove(b));
@@ -1711,22 +2501,23 @@ function resetGame() {
   enemyBullets = [];
 
   if (gameMode === "duo") {
-    playerHP = 280;
-    enemyHP = 220;
+    playerHP = 950;
+    enemyHP = 1200;
     playerAmmo = 320;
     enemyAmmo = 220;
     playerMaxHP = playerHP;
     enemyMaxHP = enemyHP;
-    speedP2 = 10;
   } else {
-    playerHP = 280;
-    enemyHP = 220;
+    playerHP = 950;
+    enemyHP = 1200;
     playerAmmo = 320;
     enemyAmmo = 220;
     playerMaxHP = playerHP;
     enemyMaxHP = enemyHP;
   }
 
+  speed = targetPlayerSpeed();
+  speedP2 = targetEnemySpeed();
   mode = "chase";
 }
 
@@ -1739,9 +2530,16 @@ function update(dt) {
     handleInput(dt);
     integrateMotion(dt);
     updateEnemy(dt);
+    updateMission(dt);
+    if (!gameOver) checkOperationBoundary();
+    if (gameOver) {
+      updateEffects(dt);
+      return;
+    }
     updateCombat(dt);
     updatePropellers(dt);
     updateWeatherEffects(dt);
+    updateEffects(dt);
 
     if (gameMode === "duo") {
       if (playerFuel <= 0) {
@@ -1806,6 +2604,8 @@ function update(dt) {
         return;
       }
     }
+  } else {
+    updateEffects(dt);
   }
 }
 
@@ -1892,6 +2692,14 @@ function renderGameToText() {
       ammo: enemyAmmo
     },
     weather,
+    operation_radius: OPERATION_RADIUS,
+    base_destroyed: baseDestroyed,
+    mission: {
+      phase: missionPhase,
+      missile_launched: missileLaunched,
+      missile_visible: !!(enemyMissile && enemyMissile.visible),
+      target: { x: round(missileTarget.x), y: round(missileTarget.y), z: round(missileTarget.z) }
+    },
     bullets: bullets.map(b => ({ x: round(b.position.x), y: round(b.position.y), z: round(b.position.z) })),
     enemy_bullets: enemyBullets.map(b => ({ x: round(b.position.x), y: round(b.position.y), z: round(b.position.z) })),
     score
