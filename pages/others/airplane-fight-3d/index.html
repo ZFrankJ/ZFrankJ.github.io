@@ -535,13 +535,13 @@ const weatherProfiles = {
     ambient: 0.72,
     sunIntensity: 0.58,
     sunVisible: false,
-    deckCount: 410,
+    deckCount: 650,
     deckAltitude: 66,
     deckThickness: 7,
     deckChunksMin: 3,
     deckChunksVar: 3,
     deckHoleChance: 0.03,
-    highCloudCount: 96,
+    highCloudCount: 150,
     highAltitudeMin: 116,
     highAltitudeSpan: 40,
     highChunksMin: 2,
@@ -559,13 +559,13 @@ const weatherProfiles = {
     ambient: 0.6,
     sunIntensity: 0.22,
     sunVisible: false,
-    deckCount: 470,
+    deckCount: 780,
     deckAltitude: 62,
     deckThickness: 6,
     deckChunksMin: 3,
     deckChunksVar: 3,
     deckHoleChance: 0.01,
-    highCloudCount: 88,
+    highCloudCount: 180,
     highAltitudeMin: 110,
     highAltitudeSpan: 32,
     highChunksMin: 2,
@@ -770,9 +770,15 @@ function init() {
 
 function createGround() {
   // Green ground plane + voxel bumps
+  const groundMat = new THREE.MeshLambertMaterial({
+    color: 0x2f6b34,
+    polygonOffset: true,
+    polygonOffsetFactor: 4,
+    polygonOffsetUnits: 8
+  });
   const base = new THREE.Mesh(
     new THREE.PlaneGeometry(8200, 8200),
-    new THREE.MeshLambertMaterial({ color: 0x2f6b34 })
+    groundMat
   );
   base.rotation.x = -Math.PI/2;
   base.position.y = groundY;
@@ -951,26 +957,28 @@ function createBuildings() {
 
   // Twin runways
   // Use thin boxes instead of coplanar planes to remove distance flicker (z-fighting).
-  const runwayMat = new THREE.MeshLambertMaterial({ color: 0x2b333a, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -3 });
+  const runwayMat = new THREE.MeshLambertMaterial({ color: 0x2b333a, polygonOffset: true, polygonOffsetFactor: -8, polygonOffsetUnits: -16 });
   const runwayCenters = [RUNWAY_LEFT_X, RUNWAY_RIGHT_X];
   const runwaySegmentLength = 16;
   const runwaySegmentCount = 15;
   const runwayLength = runwaySegmentLength * runwaySegmentCount + 0.5;
   runwayCenters.forEach((cx) => {
     const runway = new THREE.Mesh(
-      new THREE.BoxGeometry(5.5, 0.04, runwayLength),
+      new THREE.BoxGeometry(5.5, 0.14, runwayLength),
       runwayMat
     );
-    runway.position.set(cx, groundY + 0.04, RUNWAY_CENTER_Z);
+    runway.position.set(cx, groundY + 0.09, RUNWAY_CENTER_Z);
+    runway.renderOrder = 2;
     worldRoot.add(runway);
     runwayPieces.push(runway);
   });
 
-  const stripeMat = new THREE.MeshLambertMaterial({ color: 0xd9d9d9, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -4 });
+  const stripeMat = new THREE.MeshLambertMaterial({ color: 0xd9d9d9, polygonOffset: true, polygonOffsetFactor: -10, polygonOffsetUnits: -20 });
   runwayCenters.forEach((cx) => {
     for (let i = -5; i <= 5; i++) {
-      const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.035, 3.6), stripeMat);
-      stripe.position.set(cx, groundY + 0.085, RUNWAY_CENTER_Z + i * 20);
+      const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.04, 3.6), stripeMat);
+      stripe.position.set(cx, groundY + 0.185, RUNWAY_CENTER_Z + i * 20);
+      stripe.renderOrder = 3;
       worldRoot.add(stripe);
       runwayStripes.push(stripe);
     }
@@ -2243,10 +2251,43 @@ function updateRadar(ctx, canvas, originPlane, targetPlane, headingYaw) {
   const px = relX * scale * factor;
   const py = -relZ * scale * factor;
 
+  const projectWorldToRadar = (worldPos) => {
+    const toPoint = new THREE.Vector3(
+      wrapDelta(originPlane.position.x, worldPos.x),
+      0,
+      wrapDelta(originPlane.position.z, worldPos.z)
+    ).applyQuaternion(inv);
+    const pointX = toPoint.x;
+    const pointZ = -toPoint.z;
+    const pointDist = Math.hypot(pointX, pointZ);
+    const pointClamped = Math.min(pointDist, radarRange);
+    const pointFactor = pointDist > 0 ? pointClamped / pointDist : 0;
+    return {
+      x: cx + pointX * scale * pointFactor,
+      y: cy - pointZ * scale * pointFactor,
+      edge: pointDist > radarRange
+    };
+  };
+
   ctx.fillStyle = "#7ee7ff";
   ctx.beginPath();
   ctx.arc(cx, cy, 4, 0, Math.PI * 2);
   ctx.fill();
+
+  // Base position marker. It is intentionally horizontal-only; altitude is shown in the ALT panel.
+  const baseMark = projectWorldToRadar(BASE_TARGET);
+  ctx.save();
+  ctx.translate(baseMark.x, baseMark.y);
+  ctx.rotate(Math.PI / 4);
+  ctx.fillStyle = baseDestroyed ? "rgba(255,95,70,0.85)" : "rgba(255,218,96,0.9)";
+  ctx.strokeStyle = "rgba(255,245,190,0.8)";
+  ctx.lineWidth = 1;
+  ctx.fillRect(-4, -4, 8, 8);
+  ctx.strokeRect(-4, -4, 8, 8);
+  ctx.restore();
+  ctx.fillStyle = "rgba(255,245,190,0.86)";
+  ctx.font = "9px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+  ctx.fillText(baseDestroyed ? "X" : "B", baseMark.x + 6, baseMark.y + 3);
 
   ctx.fillStyle = "#ff6b6b";
   ctx.beginPath();
