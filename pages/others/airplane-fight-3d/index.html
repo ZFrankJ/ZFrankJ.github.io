@@ -112,7 +112,7 @@
     border: 1px solid var(--menu-border);
     border-radius: 16px;
     padding: 24px 28px;
-    min-width: 320px;
+    width: min(720px, calc(100vw - 48px));
     box-shadow: 0 10px 30px rgba(0,0,0,0.35), 0 0 28px var(--menu-glow);
   }
   #menu h1 {
@@ -121,6 +121,31 @@
   }
   #menu .btns { display: flex; gap: 12px; justify-content: center; margin-top: 14px; }
   #menu .btns.weather { margin-top: 10px; gap: 8px; }
+  .menu-brief {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    text-align: left;
+    font-size: 11px;
+    line-height: 1.45;
+  }
+  .menu-brief section {
+    padding: 10px 12px;
+    border: 1px solid rgba(120,190,230,0.24);
+    border-radius: 12px;
+    background: rgba(6, 16, 26, 0.48);
+  }
+  .menu-brief strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #e5f7ff;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  @media (max-width: 760px) {
+    .menu-brief { grid-template-columns: 1fr; }
+  }
   #menu button {
     background: linear-gradient(180deg, #15415f 0%, #12344f 100%);
     color: #dff3ff;
@@ -203,6 +228,24 @@
         <br>
         2P: split-screen duel; P1 defends the base while P2 attacks with one missile, then escapes.
         Scale: 1u = 10 m; aircraft speed range 3-18u/s.
+      </div>
+      <div class="menu-brief">
+        <section>
+          <strong>Background</strong>
+          P1 is a land-based interceptor scrambling from the runway. The navy raider carries one heavy missile to break the runways, then tries to escape the 35 km combat radius.
+        </section>
+        <section>
+          <strong>1 Player</strong>
+          Arrow keys turn and pitch. Q / E adjust throttle. Space fires twin wing guns. C switches cockpit / chase view. X continues the chase after base loss.
+        </section>
+        <section>
+          <strong>2 Players</strong>
+          P1 uses WASD + Space. P2 uses Arrow keys + Enter. Right Shift launches P2's missile toward the gunsight aim point.
+        </section>
+        <section>
+          <strong>System</strong>
+          1 / 2 choose mode. 7 / 8 / 9 choose weather. F toggles fullscreen. R or Space restarts after game over.
+        </section>
       </div>
       <div class="btns">
         <button id="btn-single">1 Player</button>
@@ -395,14 +438,14 @@ const WORLD_UNIT_METERS = 10;
 const minSpeed = 3;
 const maxSpeed = 18;
 const playerBaseSpeed = 18.0;
-const enemyBaseSpeed = 14.1;
+const enemyBaseSpeed = 14.0;
 const baseSpeed = playerBaseSpeed;
 const throttleRate = 0.25; // /s
 const p1FixedSpeed = 18.0;
 const p1FullThrottleSpeed = 18.0;
-const p2FixedSpeed = 16.6;
-const p2MissileLoadedSpeed = 14.1;
-const p2MissileCleanSpeed = 16.6;
+const p2FixedSpeed = 16.0;
+const p2MissileLoadedSpeed = 14.0;
+const p2MissileCleanSpeed = 16.0;
 const singleThrottleSpeedScaleMin = minSpeed / p1FixedSpeed;
 const singleThrottleSpeedScaleMax = p1FullThrottleSpeed / p1FixedSpeed;
 const fuelBurnRate = 1.5; // kept for HUD-era tuning; active fuel burn is distance-based
@@ -1620,7 +1663,7 @@ function updateCombat(dt) {
     playerHitTimer = 0.45;
   });
 
-  if (plane.position.distanceTo(enemy.position) < 1.4) {
+  if (checkPlaneCollision(planeBody, enemyBody)) {
     playerHP = 0;
     enemyHP = 0;
   }
@@ -2410,6 +2453,53 @@ function checkCollisionFor(body, planeGroup) {
   return false;
 }
 
+const planeCollisionSamples = [
+  new THREE.Vector3(0, 0.04, -1.42), // spinner / nose
+  new THREE.Vector3(0, 0.03, -0.72),
+  new THREE.Vector3(0, 0.03, 0.18),
+  new THREE.Vector3(0, 0.05, 1.42),  // tail
+  new THREE.Vector3(-1.42, -0.04, -0.2),
+  new THREE.Vector3(1.42, -0.04, -0.2),
+  new THREE.Vector3(-0.55, 0.07, 1.3),
+  new THREE.Vector3(0.55, 0.07, 1.3),
+  new THREE.Vector3(0, 0.32, 1.3)
+];
+
+function pointInsidePlaneCollisionVolume(localPoint) {
+  const x = Math.abs(localPoint.x);
+  const y = localPoint.y;
+  const z = localPoint.z;
+  const inFuselage = z > -1.5 && z < 1.55 && x < 0.23 && Math.abs(y - 0.04) < 0.22;
+  const inMainWing = z > -0.52 && z < 0.12 && x < 1.52 && Math.abs(y + 0.04) < 0.075;
+  const inTailPlane = z > 1.12 && z < 1.48 && x < 0.58 && Math.abs(y - 0.07) < 0.07;
+  const inVerticalTail = z > 1.04 && z < 1.58 && x < 0.07 && y > 0.06 && y < 0.55;
+  return inFuselage || inMainWing || inTailPlane || inVerticalTail;
+}
+
+function samplesHitPlane(sourceBody, targetBody) {
+  const worldPoint = new THREE.Vector3();
+  const localPoint = new THREE.Vector3();
+  for (const sample of planeCollisionSamples) {
+    worldPoint.copy(sample);
+    sourceBody.localToWorld(worldPoint);
+    localPoint.copy(worldPoint);
+    targetBody.worldToLocal(localPoint);
+    if (pointInsidePlaneCollisionVolume(localPoint)) return true;
+  }
+  return false;
+}
+
+function checkPlaneCollision(bodyA, bodyB) {
+  if (!bodyA || !bodyB) return false;
+  const posA = new THREE.Vector3();
+  const posB = new THREE.Vector3();
+  bodyA.getWorldPosition(posA);
+  bodyB.getWorldPosition(posB);
+  // Broad phase only rejects far objects; final collision uses model-space volumes.
+  if (posA.distanceTo(posB) > 1.65) return false;
+  return samplesHitPlane(bodyA, bodyB) || samplesHitPlane(bodyB, bodyA);
+}
+
 function setGameOver(message) {
   gameOver = true;
   baseLostContinueAvailable = false;
@@ -2562,6 +2652,10 @@ function update(dt) {
       }
       if (p2Crash) {
         setGameOver("P2 CRASHED");
+        return;
+      }
+      if (checkPlaneCollision(planeBody, enemyBody)) {
+        setGameOver("MID-AIR COLLISION");
         return;
       }
       if (playerHP <= 0 && enemyHP <= 0) {
