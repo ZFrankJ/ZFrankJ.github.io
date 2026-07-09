@@ -214,7 +214,9 @@
     position: absolute; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column;
     background: rgba(0,0,0,.45); color: #fff; text-align:center; font: 700 28px/1.2 Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
   }
-  #gameover small { font-weight:500; font-size:14px; margin-top:10px; opacity:.9 }
+  #gameover small { font-weight:500; font-size:14px; margin-top:10px; opacity:.9; line-height:1.55 }
+  #gameover small .say { display:block; color:#dff3ff; font-weight:700; letter-spacing:.02em; }
+  #gameover small .restart { display:block; margin-top:4px; opacity:.82; }
 </style>
 </head>
 <body>
@@ -437,13 +439,15 @@ let speedP2 = 10;
 const WORLD_UNIT_METERS = 10;
 const minSpeed = 3;
 const maxSpeed = 18;
-const playerBaseSpeed = 18.0;
-const enemyBaseSpeed = 14.0;
-const baseSpeed = playerBaseSpeed;
 const throttleRate = 0.25; // /s
+const playerTankFuel = 600;
+const enemyTankFuel = 700;
+const playerStartHP = 950;
+const enemyStartHP = 1200;
+const playerStartAmmo = 320;
+const enemyStartAmmo = 220;
 const p1FixedSpeed = 18.0;
 const p1FullThrottleSpeed = 18.0;
-const p2FixedSpeed = 16.0;
 const p2MissileLoadedSpeed = 14.0;
 const p2MissileCleanSpeed = 16.0;
 const singleThrottleSpeedScaleMin = minSpeed / p1FixedSpeed;
@@ -453,14 +457,14 @@ const accel = 22;        // m/s^2 max accel at full throttle
 const drag = 0.015;      // simple quadratic-like drag factor
 
 // Dogfight state
-let playerHP = 950;
-let enemyHP = 1200;
-let playerMaxHP = 950;
-let enemyMaxHP = 1200;
-let playerFuel = 600;
-let enemyFuel = 700;
-let playerAmmo = 320;
-let enemyAmmo = 220;
+let playerHP = playerStartHP;
+let enemyHP = enemyStartHP;
+let playerMaxHP = playerStartHP;
+let enemyMaxHP = enemyStartHP;
+let playerFuel = playerTankFuel;
+let enemyFuel = enemyTankFuel;
+let playerAmmo = playerStartAmmo;
+let enemyAmmo = enemyStartAmmo;
 let score = 0;
 const bulletSpeed = 80;
 const bulletLife = 2.4;
@@ -468,7 +472,6 @@ const fireCooldown = 0.22;
 const missileSpeed = 26;
 let playerFireTimer = 0;
 let enemyFireTimer = 0;
-const enemySpeed = enemyBaseSpeed;
 let enemyYaw = 0;
 let enemyPitch = 0;
 let enemyRoll = 0;
@@ -535,13 +538,13 @@ const weatherProfiles = {
     ambient: 0.72,
     sunIntensity: 0.58,
     sunVisible: false,
-    deckCount: 650,
+    deckCount: 860,
     deckAltitude: 66,
     deckThickness: 7,
     deckChunksMin: 3,
     deckChunksVar: 3,
     deckHoleChance: 0.03,
-    highCloudCount: 150,
+    highCloudCount: 230,
     highAltitudeMin: 116,
     highAltitudeSpan: 40,
     highChunksMin: 2,
@@ -559,20 +562,20 @@ const weatherProfiles = {
     ambient: 0.6,
     sunIntensity: 0.22,
     sunVisible: false,
-    deckCount: 780,
+    deckCount: 1320,
     deckAltitude: 62,
-    deckThickness: 6,
+    deckThickness: 18,
     deckChunksMin: 3,
     deckChunksVar: 3,
     deckHoleChance: 0.01,
-    highCloudCount: 180,
+    highCloudCount: 380,
     highAltitudeMin: 110,
     highAltitudeSpan: 32,
     highChunksMin: 2,
     highChunksVar: 2,
     cloudColor: 0xbecad2,
     rain: true,
-    rainCount: 460
+    rainCount: 12000
   }
 };
 
@@ -710,8 +713,8 @@ function init() {
   enemyYaw = enemy.rotation.y;
   enemyPitch = 0;
 
-  // Small round tracer-like bullets.
-  bulletGeom = new THREE.CylinderGeometry(0.03, 0.03, 0.2, 8);
+  // Small tracer rounds. Keep the visible projectile thinner than the wing gun barrel.
+  bulletGeom = new THREE.CylinderGeometry(0.009, 0.009, 0.14, 8);
   bulletMat = new THREE.MeshBasicMaterial({
     color: 0x9dff86,
     transparent: true,
@@ -878,28 +881,50 @@ function createClouds(cfg) {
   };
   addLocal(localDeckCount, cfg.deckAltitude - cfg.deckThickness * 0.5, cfg.deckThickness, cfg.deckChunksMin + 1, cfg.deckChunksVar + 1, 0.7, 1250, 0.55);
   addLocal(localHighCount, cfg.highAltitudeMin, cfg.highAltitudeSpan, cfg.highChunksMin, cfg.highChunksVar + 1, 0.95, 1500, 0.35);
+  if (cfg.rain) {
+    // Rainy weather uses stacked bands instead of one flat overcast layer.
+    const stormLayers = [
+      { count: Math.round(cfg.deckCount * 0.28), minAlt: 34, altSpan: 20, chunksMin: 2, chunksVar: 3, flatness: 0.55, radiusMax: 1450, runwayBias: 0.65 },
+      { count: Math.round(cfg.deckCount * 0.34), minAlt: 76, altSpan: 28, chunksMin: 3, chunksVar: 4, flatness: 0.75, radiusMax: 1750, runwayBias: 0.45 },
+      { count: Math.round(cfg.highCloudCount * 0.8), minAlt: 128, altSpan: 46, chunksMin: 2, chunksVar: 3, flatness: 0.95, radiusMax: 1900, runwayBias: 0.25 },
+    ];
+    stormLayers.forEach((layer) => {
+      addLocal(layer.count, layer.minAlt, layer.altSpan, layer.chunksMin, layer.chunksVar, layer.flatness, layer.radiusMax, layer.runwayBias);
+    });
+  }
   worldRoot.add(cloudGroup);
 }
 
 function createRain(count) {
   if (rainGroup) worldRoot.remove(rainGroup);
-  rainGroup = new THREE.Group();
-  const rainGeom = new THREE.CylinderGeometry(0.012, 0.012, 0.9, 6);
-  const rainMat = new THREE.MeshBasicMaterial({
-    color: 0xbfe8ff,
-    transparent: true,
-    opacity: 0.42
-  });
+  rainGroup = new THREE.InstancedMesh(
+    new THREE.CylinderGeometry(0.012, 0.012, 0.9, 6),
+    new THREE.MeshBasicMaterial({
+      color: 0xbfe8ff,
+      transparent: true,
+      opacity: 0.48
+    }),
+    count
+  );
+  const dummy = new THREE.Object3D();
+  const drops = [];
   for (let i = 0; i < count; i++) {
-    const drop = new THREE.Mesh(rainGeom, rainMat);
-    drop.position.set(
-      -430 + Math.random() * 860,
-      8 + Math.random() * 200,
-      -430 + Math.random() * 860
-    );
-    drop.userData.fall = 28 + Math.random() * 24;
-    rainGroup.add(drop);
+    const drop = {
+      x: -680 + Math.random() * 1360,
+      y: 8 + Math.random() * 230,
+      z: -680 + Math.random() * 1360,
+      fall: 34 + Math.random() * 36
+    };
+    drops.push(drop);
+    dummy.position.set(drop.x, drop.y, drop.z);
+    dummy.rotation.set(0, 0, -0.18);
+    dummy.updateMatrix();
+    rainGroup.setMatrixAt(i, dummy.matrix);
   }
+  rainGroup.userData.drops = drops;
+  rainGroup.userData.dummy = dummy;
+  rainGroup.userData.count = count;
+  rainGroup.instanceMatrix.needsUpdate = true;
   worldRoot.add(rainGroup);
 }
 
@@ -919,7 +944,7 @@ function applyWeather(nextWeather) {
   if (sunMesh) sunMesh.visible = cfg.sunVisible;
   createClouds(cfg);
   if (cfg.rain) {
-    if (!rainGroup || rainGroup.children.length !== cfg.rainCount) createRain(cfg.rainCount);
+    if (!rainGroup || rainGroup.userData.count !== cfg.rainCount) createRain(cfg.rainCount);
     if (rainGroup) rainGroup.visible = true;
   } else if (rainGroup) {
     rainGroup.visible = false;
@@ -929,6 +954,28 @@ function applyWeather(nextWeather) {
 
 function updateWeatherEffects(dt) {
   if (!rainGroup || !rainGroup.visible) return;
+  if (rainGroup.isInstancedMesh) {
+    const drops = rainGroup.userData.drops || [];
+    const dummy = rainGroup.userData.dummy || new THREE.Object3D();
+    for (let i = 0; i < drops.length; i++) {
+      const drop = drops[i];
+      drop.y -= drop.fall * dt;
+      drop.x += 1.9 * dt;
+      if (drop.y < groundY + 1) {
+        drop.y = 125 + Math.random() * 115;
+        drop.x = -680 + Math.random() * 1360;
+        drop.z = -680 + Math.random() * 1360;
+      } else if (drop.x > 680) {
+        drop.x = -680;
+      }
+      dummy.position.set(drop.x, drop.y, drop.z);
+      dummy.rotation.set(0, 0, -0.18);
+      dummy.updateMatrix();
+      rainGroup.setMatrixAt(i, dummy.matrix);
+    }
+    rainGroup.instanceMatrix.needsUpdate = true;
+    return;
+  }
   for (const drop of rainGroup.children) {
     drop.position.y -= drop.userData.fall * dt;
     drop.position.x += 1.4 * dt;
@@ -1221,7 +1268,9 @@ function clampTargetToOperationCircle(x, z, margin = 18) {
 
 function checkOperationBoundary() {
   wrapAtOperationBoundary(plane);
-  wrapAtOperationBoundary(enemy);
+  if (horizontalRadius(enemy) > OPERATION_RADIUS) {
+    setGameOver(gameMode === "duo" ? "P2 ESCAPED" : "ENEMY ESCAPED");
+  }
 }
 
 function wrapAtOperationBoundary(obj) {
@@ -1255,7 +1304,7 @@ function targetPlayerSpeed() {
 function targetEnemySpeed() {
   const hpScale = hpSpeedScale(enemyHP, enemyMaxHP);
   const carryingMissile = !!(enemyMissile && enemyMissile.visible && enemyMissile.userData.carried);
-  const cleanSpeed = gameMode === "duo" ? p2MissileCleanSpeed : p2FixedSpeed;
+  const cleanSpeed = p2MissileCleanSpeed;
   const loadedSpeed = p2MissileLoadedSpeed;
   const base = carryingMissile ? loadedSpeed : cleanSpeed;
   return clamp(base * hpScale, minSpeed, maxSpeed);
@@ -1453,13 +1502,8 @@ function handleInput(dt) {
 }
 
 function integrateMotion(dt) {
-  if (gameMode === "duo") {
-    speed = THREE.MathUtils.damp(speed, targetPlayerSpeed(), 2.0, dt);
-    playerFuel = burnFuelByDistance(playerFuel, 600, speed * dt);
-  } else {
-    speed = THREE.MathUtils.damp(speed, targetPlayerSpeed(), 2.0, dt);
-    playerFuel = burnFuelByDistance(playerFuel, 600, speed * dt);
-  }
+  speed = THREE.MathUtils.damp(speed, targetPlayerSpeed(), 2.0, dt);
+  playerFuel = burnFuelByDistance(playerFuel, playerTankFuel, speed * dt);
 
   // Move along the plane's forward direction (-Z in local space)
   const dir = new THREE.Vector3();
@@ -1476,7 +1520,7 @@ function updateEnemy(dt) {
     enemy.getWorldDirection(dir);
     speedP2 = THREE.MathUtils.damp(speedP2, targetEnemySpeed(), 2.0, dt);
     enemy.position.addScaledVector(dir, -speedP2 * dt);
-    enemyFuel = burnFuelByDistance(enemyFuel, 700, speedP2 * dt);
+    enemyFuel = burnFuelByDistance(enemyFuel, enemyTankFuel, speedP2 * dt);
   } else {
     enemyEvadeTimer = Math.max(0, enemyEvadeTimer - dt);
 
@@ -1581,7 +1625,7 @@ function updateEnemy(dt) {
     enemy.position.addScaledVector(dir, speedP2 * dt);
     enemy.position.y = clamp(enemy.position.y, groundY + 12, 160);
 
-    enemyFuel = burnFuelByDistance(enemyFuel, 700, speedP2 * dt);
+    enemyFuel = burnFuelByDistance(enemyFuel, enemyTankFuel, speedP2 * dt);
 
   }
 }
@@ -2013,8 +2057,8 @@ function damageRunwayAt(position) {
   );
 
   const makeFlatPatch = (x, z, sx, sz, color, opacity = 0.96) => {
-    const patch = new THREE.Mesh(new THREE.BoxGeometry(sx, 0.035, sz), materialFor(color, opacity));
-    patch.position.set(x, groundY + 0.61 + Math.random() * 0.012, z);
+    const patch = new THREE.Mesh(new THREE.BoxGeometry(sx, 0.024, sz), materialFor(color, opacity));
+    patch.position.set(x, groundY + 0.18 + Math.random() * 0.006, z);
     patch.rotation.y = Math.random() * Math.PI;
     damaged.add(patch);
   };
@@ -2046,7 +2090,7 @@ function damageRunwayAt(position) {
       new THREE.BoxGeometry(0.22 + Math.random() * 0.8, 0.05, 0.22 + Math.random() * 0.9),
       materialFor(palette[Math.floor(Math.random() * palette.length)], 0.92)
     );
-    chip.position.set(x, groundY + 0.66, z);
+    chip.position.set(x, groundY + 0.22, z);
     chip.rotation.set(0, Math.random() * Math.PI, 0);
     damaged.add(chip);
   }
@@ -2269,25 +2313,25 @@ function updateRadar(ctx, canvas, originPlane, targetPlane, headingYaw) {
     };
   };
 
-  ctx.fillStyle = "#7ee7ff";
-  ctx.beginPath();
-  ctx.arc(cx, cy, 4, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Base position marker. It is intentionally horizontal-only; altitude is shown in the ALT panel.
+  // Base position marker. Draw it below aircraft symbols; planes are always above the base.
   const baseMark = projectWorldToRadar(BASE_TARGET);
   ctx.save();
   ctx.translate(baseMark.x, baseMark.y);
   ctx.rotate(Math.PI / 4);
-  ctx.fillStyle = baseDestroyed ? "rgba(255,95,70,0.85)" : "rgba(255,218,96,0.9)";
-  ctx.strokeStyle = "rgba(255,245,190,0.8)";
+  ctx.fillStyle = baseDestroyed ? "rgba(185,185,160,0.88)" : "rgba(255,218,96,0.9)";
+  ctx.strokeStyle = baseDestroyed ? "rgba(235,235,210,0.82)" : "rgba(255,245,190,0.8)";
   ctx.lineWidth = 1;
   ctx.fillRect(-4, -4, 8, 8);
   ctx.strokeRect(-4, -4, 8, 8);
   ctx.restore();
-  ctx.fillStyle = "rgba(255,245,190,0.86)";
+  ctx.fillStyle = baseDestroyed ? "rgba(235,235,210,0.9)" : "rgba(255,245,190,0.86)";
   ctx.font = "9px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
   ctx.fillText(baseDestroyed ? "X" : "B", baseMark.x + 6, baseMark.y + 3);
+
+  ctx.fillStyle = "#7ee7ff";
+  ctx.beginPath();
+  ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+  ctx.fill();
 
   ctx.fillStyle = "#ff6b6b";
   ctx.beginPath();
@@ -2546,7 +2590,9 @@ function setGameOver(message) {
   baseLostContinueAvailable = false;
   outcome = message || "GAME OVER";
   if (gameoverTitleEl) gameoverTitleEl.textContent = outcome;
-  if (gameoverHintEl) gameoverHintEl.textContent = "Press R or Space to restart";
+  if (gameoverHintEl) {
+    gameoverHintEl.innerHTML = `<span class="say">${gameOverSaying(outcome)}</span><span class="restart">Press R or Space to restart</span>`;
+  }
   gameoverEl.style.display = "flex";
 }
 
@@ -2555,8 +2601,35 @@ function showBaseDestroyedChoice() {
   baseLostContinueAvailable = true;
   outcome = "BASE DESTROYED";
   if (gameoverTitleEl) gameoverTitleEl.textContent = outcome;
-  if (gameoverHintEl) gameoverHintEl.textContent = "Press X to continue chase, or R / Space to restart";
+  if (gameoverHintEl) {
+    gameoverHintEl.innerHTML = `<span class="say">Runways disabled. The raid is not over unless you let it end.</span><span class="restart">Press X to continue chase, or R / Space to restart</span>`;
+  }
   gameoverEl.style.display = "flex";
+}
+
+function gameOverSaying(message) {
+  const text = String(message || "").toUpperCase();
+  if (text.includes("ENEMY DOWN")) {
+    return baseDestroyed ? "Enemy down. The raid is avenged, but the base is already damaged." : "Confirmed kill. The air base survives.";
+  }
+  if (text.includes("ENEMY OUT OF FUEL")) {
+    return baseDestroyed ? "The raider failed to escape after the strike. Damaged base, successful pursuit." : "The raider failed to escape. Patrol wins by endurance.";
+  }
+  if (text.includes("P2 DOWN")) {
+    return baseDestroyed ? "P1 shoots P2 down after the strike. The base is damaged, but the attacker is stopped." : "P1 holds the runway and wins the defense.";
+  }
+  if (text.includes("P1 DOWN")) return "P2 wins the strike duel and owns the exit route.";
+  if (text.includes("ENEMY ESCAPED")) {
+    return baseDestroyed ? "The raider escaped after disabling the base." : "The raider escaped the combat radius.";
+  }
+  if (text.includes("P2 ESCAPED")) return "P2 crosses the combat boundary and wins by escape.";
+  if (text.includes("BASE DESTROYED")) return "The runway is broken, but the chase can still continue.";
+  if (text.includes("BOTH")) return "Both aircraft are down. No clean victory today.";
+  if (text.includes("MID-AIR")) return "Mid-air collision. Too close, too fast.";
+  if (text.includes("FUEL")) return "Fuel management decided the fight.";
+  if (text.includes("CRASH")) return "Terrain wins. Keep altitude in reserve.";
+  if (text.includes("SHOT")) return "You were intercepted before the mission could turn.";
+  return "Sortie complete. Review the radar, then fly again.";
 }
 
 function continueAfterBaseDestroyed() {
@@ -2578,8 +2651,8 @@ function resetGame() {
   plane.rotation.set(0, 0, 0);
   throttle = 0.5;
   speed = targetPlayerSpeed();
-  playerFuel = 600;
-  playerAmmo = 320;
+  playerFuel = playerTankFuel;
+  playerAmmo = playerStartAmmo;
   fireHeld = false;
   fireHeld2 = false;
   playerFireTimer = 0;
@@ -2596,8 +2669,8 @@ function resetGame() {
   enemyEvadeSide = 1;
   enemyEvadeMode = 0;
   speedP2 = targetEnemySpeed();
-  enemyFuel = 700;
-  enemyAmmo = 220;
+  enemyFuel = enemyTankFuel;
+  enemyAmmo = enemyStartAmmo;
   enemyFireTimer = 0;
   missionPhase = gameMode === "single" ? "attack-run" : "duo";
   missileLaunched = false;
@@ -2631,21 +2704,13 @@ function resetGame() {
   bullets = [];
   enemyBullets = [];
 
-  if (gameMode === "duo") {
-    playerHP = 950;
-    enemyHP = 1200;
-    playerAmmo = 320;
-    enemyAmmo = 220;
-    playerMaxHP = playerHP;
-    enemyMaxHP = enemyHP;
-  } else {
-    playerHP = 950;
-    enemyHP = 1200;
-    playerAmmo = 320;
-    enemyAmmo = 220;
-    playerMaxHP = playerHP;
-    enemyMaxHP = enemyHP;
-  }
+  // Single-player AI and two-player P2 use the same aircraft settings.
+  playerHP = playerStartHP;
+  enemyHP = enemyStartHP;
+  playerAmmo = playerStartAmmo;
+  enemyAmmo = enemyStartAmmo;
+  playerMaxHP = playerStartHP;
+  enemyMaxHP = enemyStartHP;
 
   speed = targetPlayerSpeed();
   speedP2 = targetEnemySpeed();

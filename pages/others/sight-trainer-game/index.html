@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="auto">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,9 +9,7 @@
 <body>
   <main class="shell">
     <section class="command-panel">
-      <p class="eyebrow">Vision Rhythm Trainer</p>
       <h1>Focus Sprint Neo</h1>
-      <p class="subtitle">Minimal, distraction-controlled visual reaction drills.</p>
       <p class="disclaimer">Not a medical treatment and not a cure for myopia. Use as a habit tool for comfort and break discipline.</p>
 
       <div class="actions">
@@ -27,6 +25,7 @@
             <option value="60">1 min</option>
             <option value="120" selected>2 min</option>
             <option value="180">3 min</option>
+            <option value="300">5 min</option>
           </select>
         </label>
 
@@ -45,19 +44,24 @@
         <span>Enable 20-second distance break prompts</span>
       </label>
 
-      <section class="stat-grid" aria-label="live stats">
-        <article><span>Score</span><strong id="score-value">0</strong></article>
-        <article><span>Lives</span><strong id="lives-value">5</strong></article>
-        <article><span>Streak</span><strong id="streak-value">0</strong></article>
-        <article><span>Accuracy</span><strong id="accuracy-value">0%</strong></article>
-        <article><span>Level</span><strong id="level-value">1</strong></article>
-        <article><span>Time Left</span><strong id="time-value">120s</strong></article>
+      <section class="performance-panel" aria-label="session performance">
+        <article class="total-card">
+          <span>Total done</span>
+          <strong id="total-done-value">0</strong>
+        </article>
+        <canvas id="radar-canvas" width="280" height="220" aria-label="Performance radar chart"></canvas>
+        <div class="metric-list">
+          <article><span>Avg / min</span><strong id="per-minute-value">0.0</strong></article>
+          <article><span>Reaction</span><strong id="reaction-value">--</strong></article>
+          <article><span>Accuracy</span><strong id="accuracy-value">0%</strong></article>
+          <article><span>Time Left</span><strong id="time-value">02:00</strong></article>
+        </div>
       </section>
 
       <section class="help">
         <h2>Controls</h2>
         <p><kbd>W A S D</kbd> or <kbd>Arrow keys</kbd> match the E direction.</p>
-        <p><kbd>Space</kbd> quick start/pause. <kbd>B</kbd> during blink prompt for bonus. <kbd>P</kbd> pause. <kbd>F</kbd> fullscreen.</p>
+        <p><kbd>Space</kbd> quick start/pause. <kbd>P</kbd> pause. <kbd>F</kbd> fullscreen.</p>
       </section>
 
       <p id="status-text" class="status">Press Start to begin.</p>
