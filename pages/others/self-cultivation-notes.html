@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Journal notes by Fujia Zhang on consciousness, identity, attachment, and self-cultivation." />
+  <title>Fujia Zhang | Self-Cultivation Notes</title>
+  <script>
+    (function () {
+      const saved = localStorage.getItem("fz-theme");
+      const prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+      const mode = saved || "system";
+      const theme = mode === "system" ? (prefersLight ? "light" : "dark") : mode;
+      document.documentElement.classList.toggle("theme-light", theme === "light");
+      window.__fzPreferredTheme = theme;
+      window.__fzThemeMode = mode;
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="../../assets/css/site.css?v=10" />
+</head>
+<body>
+  <div class="page">
+    <div class="breadcrumbs">
+      <a href="../../index.html">Home</a>
+      <span>·</span>
+      <a href="./index.html">Others</a>
+      <span>·</span>
+      <span>Self-Cultivation Notes</span>
+    </div>
+
+    <header class="sub-hero" data-lens>
+      <h1>Self-Cultivation Notes</h1>
+      <p class="lede">Reflections on consciousness, identity, attachment, and the continuing practice of looking inward.</p>
+    </header>
+
+    <div class="back-row">
+      <a class="pill pill--ghost" href="./index.html">← Back to Others</a>
+    </div>
+
+    <main class="content">
+      <section class="content-section">
+        <div class="notes-gallery">
+          <a class="note-card" href="./self-cultivation.html">
+            <div class="note-card__meta">
+              <time datetime="2026-08-02">Aug 2, 2026</time>
+              <span>中文 / English</span>
+            </div>
+            <h2>向内求：一场迟来的自我修行</h2>
+            <p class="note-card__excerpt">向外求，让我看见世界；向内求，让我看见自己。</p>
+            <span class="note-card__cta">Read note →</span>
+          </a>
+
+          <a class="note-card" href="./notes/further-thoughts-on-self.html">
+            <div class="note-card__meta">
+              <time datetime="2026-05-28">May 28, 2026</time>
+              <span>中文</span>
+            </div>
+            <h2>关于我相的进一步思考以及指导意义</h2>
+            <p class="note-card__excerpt">认识到“我”是被形成的，不是为了消解自己，而是为了不再被旧的自己完全支配。</p>
+            <span class="note-card__cta">Read note →</span>
+          </a>
+
+          <a class="note-card" href="./notes/breaking-the-four-appearances.html">
+            <div class="note-card__meta">
+              <time datetime="2025-08-13">Aug 13, 2025</time>
+              <span>中文 · 摘录</span>
+            </div>
+            <h2>说破四相</h2>
+            <p class="note-card__excerpt">破除四相，离执去妄，以“空明之心”如实观照万物。</p>
+            <span class="note-card__cta">Read note →</span>
+          </a>
+
+          <a class="note-card" href="./notes/consciousness-self.html">
+            <div class="note-card__meta">
+              <time datetime="2025-06-08">Jun 8, 2025</time>
+              <span>中文</span>
+            </div>
+            <h2>意识，自我与境界</h2>
+            <p class="note-card__excerpt">通《金刚经》与《盲视》有感，回顾意识、自我、境界与一次次悟道。</p>
+            <span class="note-card__cta">Read note →</span>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p class="muted">© 2026 Fujia Zhang. All rights reserved.</p>
+    </footer>
+  </div>
+
+  <div class="control-bubbles" aria-label="Display controls">
+    <button class="bubble" data-toggle="theme" aria-pressed="false" title="Switch theme">☀</button>
+    <button class="bubble bubble--ghost" data-toggle="lens" aria-pressed="true" title="Disable liquid lens">FX</button>
+  </div>
+
+  <script type="module" src="../../assets/js/site.js?v=9"></script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="说破四相：破除四相，离执去妄。" />
+  <title>说破四相 | Fujia Zhang</title>
+  <script>
+    (function () {
+      const saved = localStorage.getItem("fz-theme");
+      const prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+      const mode = saved || "system";
+      const theme = mode === "system" ? (prefersLight ? "light" : "dark") : mode;
+      document.documentElement.classList.toggle("theme-light", theme === "light");
+      window.__fzPreferredTheme = theme;
+      window.__fzThemeMode = mode;
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="../../../assets/css/site.css?v=10" />
+</head>
+<body>
+  <div class="page page--article">
+    <div class="breadcrumbs">
+      <a href="../../../index.html">Home</a>
+      <span>·</span>
+      <a href="../index.html">Others</a>
+      <span>·</span>
+      <a href="../self-cultivation-notes.html">Self-Cultivation Notes</a>
+      <span>·</span>
+      <span>说破四相</span>
+    </div>
+
+    <header class="sub-hero article-header" data-lens>
+      <h1>说破四相</h1>
+      <p class="lede article-header__subtitle">(摘录他人语句)</p>
+    </header>
+
+    <div class="back-row">
+      <a class="pill pill--ghost" href="../self-cultivation-notes.html">← Back to Notes</a>
+    </div>
+
+    <main class="content article">
+      <article class="article__body">
+        <p class="article__meta"><em>Journal entry — Wednesday, August 13, 2025</em></p>
+
+        <p>破除四相，离执去妄。</p>
+
+        <p>无我相，无人相，无众生相，无寿者相。</p>
+
+        <p>当我们不再用“我相”画地为牢、用“人相”制造对立、用“众生相”编织偏见、用“寿者相”恐惧变迁，便能以“空明之心”如实观照万物——如镜子映照山河，不迎不拒，不执不留，在虚妄中见真实，于波动中得安宁。</p>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <p class="muted">© 2026 Fujia Zhang. All rights reserved.</p>
+    </footer>
+  </div>
+
+  <div class="control-bubbles" aria-label="Display controls">
+    <button class="bubble" data-toggle="theme" aria-pressed="false" title="Switch theme">☀</button>
+    <button class="bubble bubble--ghost" data-toggle="lens" aria-pressed="true" title="Disable liquid lens">FX</button>
+  </div>
+
+  <script type="module" src="../../../assets/js/site.js?v=9"></script>
+</body>
+</html>

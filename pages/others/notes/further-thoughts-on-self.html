@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="关于我相的进一步思考以及指导意义。" />
+  <title>关于我相的进一步思考以及指导意义 | Fujia Zhang</title>
+  <script>
+    (function () {
+      const saved = localStorage.getItem("fz-theme");
+      const prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+      const mode = saved || "system";
+      const theme = mode === "system" ? (prefersLight ? "light" : "dark") : mode;
+      document.documentElement.classList.toggle("theme-light", theme === "light");
+      window.__fzPreferredTheme = theme;
+      window.__fzThemeMode = mode;
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="../../../assets/css/site.css?v=10" />
+</head>
+<body>
+  <div class="page page--article">
+    <div class="breadcrumbs">
+      <a href="../../../index.html">Home</a>
+      <span>·</span>
+      <a href="../index.html">Others</a>
+      <span>·</span>
+      <a href="../self-cultivation-notes.html">Self-Cultivation Notes</a>
+      <span>·</span>
+      <span>关于我相</span>
+    </div>
+
+    <header class="sub-hero article-header" data-lens>
+      <h1>关于我相的进一步思考以及指导意义</h1>
+    </header>
+
+    <div class="back-row">
+      <a class="pill pill--ghost" href="../self-cultivation-notes.html">← Back to Notes</a>
+    </div>
+
+    <main class="content article">
+      <article class="article__body">
+        <p class="article__meta"><em>Journal entry — Thursday, May 28, 2026</em></p>
+
+        <p>人并不是凭空选择自己的人。所谓“我”的判断、偏好、意志与价值观，都是先天禀赋、身体状态、社会环境、语言结构与后天经历长期塑造后的结果。人脑并不直接拥有完整的世界，而是在不断抽象、压缩和解释输入；而所有压缩都必然有损，因此每个人看到的世界都带有自身历史的痕迹。我们之所以能沟通，是因为社会、语言和共同经验塑造出了一部分共享的抽象空间；而我们之所以彼此不同，则是因为在快乐、意义、尊严、恐惧、爱憎和人生目标这些更高层的概念上，每个人都承载着不同的压缩方式。</p>
+
+        <p>因此，理解一个人，不应只是判断他说了什么，而应尝试理解他为何会这样说。他的说辞并不必然正确，却一定有其生成路径；我的判断也并不天然高于他人，而只是我在当前信息、经验和模型下给出的结果。尊重他人，不意味着接受一切观点，而是尊重每一种观点背后的形成过程；坚持判断，也不意味着执着于自我，而是要在检验现实的同时保留修正自己的可能。</p>
+
+        <p>真正成熟的思考，是在“我相”升起之后仍能看见它：看见自己的情绪如何影响判断，看见自己的经验如何伪装成普遍规律，看见自己的立场如何筛选证据。跳脱出“我”，并不是否定自我，而是把自我也纳入观察对象；不是放弃行动，而是在行动前多一层觉察。这样的人不会轻易轻蔑他人，也不会轻易神化自己；不会因为理解因果而否定责任，也不会因为承认塑造而放弃成长。</p>
+
+        <p>所谓自由，或许并不是脱离因果的绝对选择，而是在看见自身如何被塑造之后，仍然拥有重新塑造自己的能力。人无法完全跳出过去，但可以重新解释过去；人无法凭空成为另一个人，但可以通过反思、训练和环境选择，逐渐改变自己的默认反应。认识到“我”是被形成的，不是为了消解自己，而是为了不再被旧的自己完全支配。真正的清醒，也许就是不再把自己的压缩模型误认为世界本身。</p>
+
+        <p class="article__closing">既然我看见了我的模型，我就不必永远被它支配。</p>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <p class="muted">© 2026 Fujia Zhang. All rights reserved.</p>
+    </footer>
+  </div>
+
+  <div class="control-bubbles" aria-label="Display controls">
+    <button class="bubble" data-toggle="theme" aria-pressed="false" title="Switch theme">☀</button>
+    <button class="bubble bubble--ghost" data-toggle="lens" aria-pressed="true" title="Disable liquid lens">FX</button>
+  </div>
+
+  <script type="module" src="../../../assets/js/site.js?v=9"></script>
+</body>
+</html>
