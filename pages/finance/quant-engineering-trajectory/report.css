@@ -36,6 +36,7 @@
   --panel-strong: #152952 !important;
   --text: #f4e8c1 !important;
   --muted: #b8a978 !important;
+  --portable-table-text: #e7d9ad !important;
   --accent: #d4af37 !important;
   --accent-2: #f0d77a !important;
   --border: rgba(212, 175, 55, 0.12) !important;
@@ -48,6 +49,7 @@
   --panel-strong: #f9f3dc !important;
   --text: #1a2d4a !important;
   --muted: #4a5a78 !important;
+  --portable-table-text: #3f506e !important;
   --accent: #1e3a5f !important;
   --accent-2: #2d5a8a !important;
   --border: rgba(30, 58, 95, 0.1) !important;
@@ -445,10 +447,37 @@ body.quant-report {
   background: var(--panel-strong) !important;
 }
 
+:root.theme-light .quant-report #data-analytics-portable-reader .table-scroll-shell {
+  --table-scroll-edge-surface: #fff !important;
+}
+
+:root:not(.theme-light) .quant-report #data-analytics-portable-reader .table-scroll-shell {
+  --table-scroll-edge-surface: #000 !important;
+}
+
+:root:not(.theme-light) .quant-report #data-analytics-portable-reader .viz-card-menu-button {
+  border-color: rgba(184, 199, 224, 0.14) !important;
+  color: rgba(244, 248, 255, 0.72) !important;
+  background: var(--panel) !important;
+  box-shadow: none !important;
+}
+
+:root:not(.theme-light) .quant-report #data-analytics-portable-reader .viz-card-menu-button:hover,
+:root:not(.theme-light) .quant-report #data-analytics-portable-reader .viz-card-menu-button:focus-visible,
+:root:not(.theme-light) .quant-report #data-analytics-portable-reader .viz-card-menu-button[aria-expanded="true"] {
+  border-color: rgba(184, 199, 224, 0.24) !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  background: var(--panel-strong) !important;
+}
+
 .quant-report #data-analytics-portable-reader .data-table th,
 .quant-report #data-analytics-portable-reader .data-table td {
   border-color: var(--border) !important;
   background: transparent !important;
+}
+
+.quant-report #data-analytics-portable-reader .data-table td {
+  color: var(--portable-table-text) !important;
 }
 
 .quant-report .portable-block:not([data-artifact-block-id="report-chapter-navigation"]) {
