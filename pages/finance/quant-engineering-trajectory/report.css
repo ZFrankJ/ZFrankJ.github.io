@@ -78,30 +78,46 @@ body.quant-report {
   color: var(--accent-2) !important;
 }
 
-.quant-report .report-back-link {
-  position: fixed;
-  z-index: 90;
-  top: 18px;
-  left: 18px;
-  display: inline-flex;
+.quant-report .report-site-back-row {
+  display: none;
+}
+
+.quant-report .report-site-back-row.is-placed {
+  display: flex;
   align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  margin: -4px 0 22px;
+}
+
+.quant-report .report-back-link {
+  position: static;
   min-height: 44px;
-  padding: 9px 15px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
+  padding: 10px 16px;
   color: var(--text) !important;
-  background: color-mix(in srgb, var(--panel) 88%, transparent);
-  box-shadow: var(--shadow);
+  background: rgba(212, 175, 55, 0.08) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: none !important;
   font-size: 13px;
-  font-weight: 650;
   letter-spacing: 0.02em;
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
 }
 
 .quant-report .report-back-link:hover {
-  color: var(--accent-2) !important;
-  transform: translateY(-1px);
+  color: var(--text) !important;
+  border-color: rgba(212, 175, 55, 0.25) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35) !important;
+}
+
+:root.theme-light .quant-report .report-back-link {
+  color: #1a2d4a !important;
+  background: rgba(30, 58, 95, 0.05) !important;
+  border-color: rgba(30, 58, 95, 0.1) !important;
+}
+
+:root.theme-light .quant-report .report-back-link:hover {
+  color: #1a2d4a !important;
+  border-color: rgba(30, 58, 95, 0.2) !important;
+  box-shadow: 0 12px 28px rgba(30, 58, 95, 0.14) !important;
 }
 
 .quant-report .control-bubbles {
@@ -535,14 +551,161 @@ body.quant-report {
   background: var(--panel-strong) !important;
 }
 
+@media (min-width: 761px) {
+  .quant-report .portable-fallback,
+  .quant-report #data-analytics-portable-reader {
+    padding: 0 24px 32px 256px !important;
+  }
+
+  .quant-report .portable-page-header {
+    width: min(920px, 100%) !important;
+    margin: 24px auto 0 !important;
+  }
+
+  .quant-report .portable-block-stack {
+    width: min(920px, 100%) !important;
+    max-width: 920px !important;
+    margin: 26px auto 0 !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .analytics-layout-canvas,
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-content-grid,
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-block-stack {
+    width: min(920px, 100%) !important;
+    max-width: 920px !important;
+    margin-right: auto !important;
+    margin-left: auto !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .analytics-layout-canvas {
+    padding: 24px 0 32px !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .analytics-layout-row:has(> [data-artifact-block-id="report-chapter-navigation"]) {
+    display: contents !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root [data-artifact-block-id="report-chapter-navigation"] {
+    position: fixed !important;
+    z-index: 55 !important;
+    top: 18px !important;
+    bottom: 18px !important;
+    left: 18px !important;
+    display: block !important;
+    width: 220px !important;
+    max-width: 220px !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root [data-artifact-block-id="report-chapter-navigation"] > .analytics-layout-item-shell {
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    padding: 18px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 20px !important;
+    background: color-mix(in srgb, var(--panel) 96%, transparent) !important;
+    box-shadow: var(--shadow) !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation h2 {
+    margin: 0 0 12px !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation ul {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation li {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation li + li {
+    margin-top: 5px !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation a {
+    display: block !important;
+    padding: 7px 9px !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 11px !important;
+    background: var(--panel) !important;
+    line-height: 1.35 !important;
+    white-space: normal !important;
+  }
+
+  .quant-report #data-analytics-portable-fallback [data-artifact-block-id="report-chapter-navigation"] {
+    position: fixed !important;
+    z-index: 55 !important;
+    top: 18px !important;
+    bottom: 18px !important;
+    left: 18px !important;
+    width: 220px !important;
+    max-width: 220px !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 18px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 20px !important;
+    background: color-mix(in srgb, var(--panel) 96%, transparent) !important;
+    box-shadow: var(--shadow) !important;
+  }
+
+  .quant-report #data-analytics-portable-fallback [data-artifact-block-id="report-chapter-navigation"] ul {
+    display: block !important;
+    overflow: visible !important;
+  }
+
+  .quant-report #data-analytics-portable-fallback [data-artifact-block-id="report-chapter-navigation"] li + li {
+    margin-top: 5px !important;
+  }
+
+  .quant-report #data-analytics-portable-fallback [data-artifact-block-id="report-chapter-navigation"] a {
+    display: block !important;
+    padding: 7px 9px !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 11px !important;
+    white-space: normal !important;
+  }
+}
+
 @media (max-width: 760px) {
   body.quant-report {
     padding-bottom: 40px;
   }
 
   .quant-report .report-back-link {
-    top: 14px;
-    left: 14px;
     min-height: 42px;
     padding: 8px 13px;
   }
@@ -589,6 +752,26 @@ body.quant-report {
     margin-bottom: 16px !important;
   }
 
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .analytics-layout-row:has(> [data-artifact-block-id="report-chapter-navigation"]),
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root [data-artifact-block-id="report-chapter-navigation"],
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root [data-artifact-block-id="report-chapter-navigation"] > .analytics-layout-item-shell {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation {
+    padding: 16px !important;
+    overflow: hidden !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 18px !important;
+    background: color-mix(in srgb, var(--panel) 96%, transparent) !important;
+    box-shadow: var(--shadow) !important;
+  }
+
   .quant-report #data-analytics-portable-reader .panel.report-block,
   .quant-report #data-analytics-portable-reader .panel.table-panel,
   .quant-report #data-analytics-portable-reader .panel.chart-panel,
@@ -606,6 +789,148 @@ body.quant-report {
 
   .quant-report .portable-table-scroll {
     overflow-x: auto !important;
+  }
+}
+
+@media (min-width: 761px) {
+  .quant-report .portable-fallback,
+  .quant-report #data-analytics-portable-reader {
+    padding: 0 24px 32px !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .analytics-layout-canvas,
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-content-grid,
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-block-stack {
+    width: min(1180px, 100%) !important;
+    max-width: 1180px !important;
+    margin-right: auto !important;
+    margin-left: auto !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-block-stack {
+    display: grid !important;
+    grid-template-columns: 220px minmax(0, 1fr) !important;
+    grid-auto-flow: row !important;
+    gap: 22px 18px !important;
+    align-items: start !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-block-stack > .analytics-layout-row,
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-block-stack > .report-site-back-row {
+    grid-column: 2 !important;
+    margin: 0 !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .analytics-layout-row:has(> [data-artifact-block-id="report-chapter-navigation"]) {
+    position: sticky !important;
+    z-index: 55 !important;
+    top: 18px !important;
+    display: block !important;
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    align-self: start !important;
+    width: 220px !important;
+    max-width: 220px !important;
+    height: auto !important;
+    max-height: calc(100vh - 36px) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root [data-artifact-block-id="report-chapter-navigation"] {
+    position: static !important;
+    inset: auto !important;
+    display: block !important;
+    width: 220px !important;
+    max-width: 220px !important;
+    height: auto !important;
+    max-height: calc(100vh - 36px) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root [data-artifact-block-id="report-chapter-navigation"] > .analytics-layout-item-shell {
+    width: 220px !important;
+    height: auto !important;
+    max-height: calc(100vh - 36px) !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation {
+    width: 220px !important;
+    height: auto !important;
+    max-height: calc(100vh - 36px) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 20px !important;
+    background: color-mix(in srgb, var(--panel) 96%, transparent) !important;
+    box-shadow: var(--shadow) !important;
+  }
+
+  .quant-report #data-analytics-portable-fallback .portable-block-stack {
+    display: grid !important;
+    grid-template-columns: 220px minmax(0, 1fr) !important;
+    gap: 22px 18px !important;
+    width: min(1180px, 100%) !important;
+    max-width: 1180px !important;
+  }
+
+  .quant-report #data-analytics-portable-fallback .portable-block:not([data-artifact-block-id="report-chapter-navigation"]) {
+    grid-column: 2 !important;
+  }
+
+  .quant-report #data-analytics-portable-fallback [data-artifact-block-id="report-chapter-navigation"] {
+    position: sticky !important;
+    inset: auto !important;
+    top: 18px !important;
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    align-self: start !important;
+    width: 220px !important;
+    height: auto !important;
+    max-height: calc(100vh - 36px) !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-block-stack:has(> .report-reading-layout) {
+    display: block !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-reading-layout {
+    display: grid !important;
+    grid-template-columns: 220px minmax(0, 1fr) !important;
+    gap: 18px !important;
+    align-items: stretch !important;
+    width: 100% !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-reading-sidebar {
+    position: relative !important;
+    align-self: stretch !important;
+    min-width: 0 !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-reading-main {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 22px !important;
+    align-content: start !important;
+    min-width: 0 !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-reading-main > .analytics-layout-row,
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-reading-main > .report-site-back-row {
+    grid-column: 1 !important;
+    margin: 0 !important;
   }
 }
 
