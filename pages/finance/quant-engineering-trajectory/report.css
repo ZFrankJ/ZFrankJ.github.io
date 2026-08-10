@@ -1,0 +1,617 @@
+:root {
+  --portable-canvas: var(--bg) !important;
+  --portable-surface: var(--panel) !important;
+  --portable-surface-subtle: var(--panel-strong) !important;
+  --portable-ink: var(--text) !important;
+  --portable-muted: var(--muted) !important;
+  --portable-tertiary: var(--muted) !important;
+  --portable-table-text: var(--muted) !important;
+  --portable-border: var(--border) !important;
+  --portable-accent: var(--accent) !important;
+  --portable-positive: #6ecf8e !important;
+  --portable-positive-bg: rgba(110, 207, 142, 0.12) !important;
+  --portable-negative: #ff8b86 !important;
+  --portable-negative-bg: rgba(255, 139, 134, 0.12) !important;
+  --portable-warning-bg: rgba(212, 175, 55, 0.08) !important;
+  --portable-warning-border: rgba(212, 175, 55, 0.28) !important;
+  --portable-radius: 16px !important;
+  --chapter-nav-bg: var(--panel) !important;
+  --chapter-nav-surface: var(--panel-strong) !important;
+  --chapter-nav-ink: var(--text) !important;
+  --chapter-nav-muted: var(--muted) !important;
+  --chapter-nav-border: var(--border) !important;
+  --chapter-nav-accent: var(--accent) !important;
+}
+
+:root.theme-light {
+  --portable-positive: #1b6f43 !important;
+  --portable-positive-bg: rgba(27, 111, 67, 0.08) !important;
+  --portable-negative: #a43c38 !important;
+  --portable-negative-bg: rgba(164, 60, 56, 0.08) !important;
+}
+
+#data-analytics-portable-reader {
+  --bg: #0a1628 !important;
+  --panel: #0f1f3a !important;
+  --panel-strong: #152952 !important;
+  --text: #f4e8c1 !important;
+  --muted: #b8a978 !important;
+  --accent: #d4af37 !important;
+  --accent-2: #f0d77a !important;
+  --border: rgba(212, 175, 55, 0.12) !important;
+  --glow: rgba(212, 175, 55, 0.25) !important;
+}
+
+:root.theme-light #data-analytics-portable-reader {
+  --bg: #fdf8e8 !important;
+  --panel: #fffef8 !important;
+  --panel-strong: #f9f3dc !important;
+  --text: #1a2d4a !important;
+  --muted: #4a5a78 !important;
+  --accent: #1e3a5f !important;
+  --accent-2: #2d5a8a !important;
+  --border: rgba(30, 58, 95, 0.1) !important;
+  --glow: rgba(30, 58, 95, 0.15) !important;
+}
+
+html,
+body.quant-report {
+  min-height: 100%;
+  color: var(--text) !important;
+  background: var(--bg-gradient) !important;
+  background-attachment: fixed !important;
+  font-family: "MuseoModerno", "Space Grotesk", "DM Sans", "Segoe UI", sans-serif !important;
+}
+
+body.quant-report {
+  padding: 0 0 72px;
+  font-size: 15px !important;
+  line-height: 1.72 !important;
+}
+
+.quant-report a {
+  color: var(--accent) !important;
+}
+
+.quant-report a:hover,
+.quant-report a:focus-visible {
+  color: var(--accent-2) !important;
+}
+
+.quant-report .report-back-link {
+  position: fixed;
+  z-index: 90;
+  top: 18px;
+  left: 18px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 9px 15px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text) !important;
+  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  box-shadow: var(--shadow);
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+.quant-report .report-back-link:hover {
+  color: var(--accent-2) !important;
+  transform: translateY(-1px);
+}
+
+.quant-report .control-bubbles {
+  z-index: 95;
+}
+
+.quant-report .control-bubbles .bubble {
+  width: 46px;
+  height: 46px;
+}
+
+.quant-report .portable-fallback,
+.quant-report #data-analytics-portable-reader {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 24px 32px !important;
+  color: var(--text) !important;
+  background: transparent !important;
+}
+
+.quant-report .portable-page-header,
+.quant-report #data-analytics-portable-reader .portable-page-header {
+  position: relative !important;
+  z-index: 1 !important;
+  top: auto !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  width: min(920px, 100%) !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 90px auto 0 !important;
+  padding: clamp(26px, 4vw, 42px) !important;
+  gap: 24px !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  background: linear-gradient(145deg, rgba(212, 175, 55, 0.12), rgba(10, 22, 40, 0.92)) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+:root.theme-light .quant-report .portable-page-header,
+:root.theme-light .quant-report #data-analytics-portable-reader .portable-page-header {
+  background: linear-gradient(145deg, rgba(30, 58, 95, 0.08), rgba(212, 175, 55, 0.12)) !important;
+}
+
+.quant-report .portable-page-heading {
+  min-width: 0 !important;
+}
+
+.quant-report .portable-surface-label {
+  display: inline-flex !important;
+  margin: 0 0 14px !important;
+  padding: 5px 10px !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 999px !important;
+  color: var(--accent) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+}
+
+.quant-report .portable-page-header h1 {
+  margin: 0 0 12px !important;
+  overflow: visible !important;
+  color: var(--text) !important;
+  font-family: inherit !important;
+  font-size: clamp(28px, 5vw, 46px) !important;
+  font-weight: 650 !important;
+  line-height: 1.08 !important;
+  letter-spacing: -0.035em !important;
+  text-overflow: clip !important;
+  white-space: normal !important;
+}
+
+.quant-report .portable-description {
+  display: block !important;
+  max-width: 720px !important;
+  margin: 0 !important;
+  color: var(--muted) !important;
+  font-size: 16px !important;
+  line-height: 1.7 !important;
+}
+
+.quant-report .portable-page-meta {
+  display: flex !important;
+  flex: 0 0 auto !important;
+  align-items: flex-end !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  color: var(--muted) !important;
+  font-size: 11px !important;
+  font-weight: 650 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+}
+
+.quant-report .portable-block-stack,
+.quant-report #data-analytics-portable-reader .analytics-layout-root,
+.quant-report #data-analytics-portable-reader .analytics-report-layout {
+  width: min(920px, 100%) !important;
+  max-width: 920px !important;
+  margin: 26px auto 0 !important;
+}
+
+.quant-report .portable-block-stack {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 22px !important;
+}
+
+.quant-report #data-analytics-portable-reader .dashboard-shell.report-shell {
+  min-height: 100vh !important;
+  color: var(--text) !important;
+  background: transparent !important;
+}
+
+.quant-report #data-analytics-portable-reader .analytics-top-bar {
+  display: none !important;
+}
+
+.quant-report #data-analytics-portable-reader .analytics-layout-canvas,
+.quant-report #data-analytics-portable-reader .report-content-grid,
+.quant-report #data-analytics-portable-reader .report-block-stack {
+  width: min(920px, 100%) !important;
+  max-width: 920px !important;
+  margin-right: auto !important;
+  margin-left: auto !important;
+  color: var(--text) !important;
+  background: transparent !important;
+}
+
+.quant-report #data-analytics-portable-reader .analytics-layout-canvas {
+  padding: 90px 0 32px !important;
+}
+
+.quant-report #data-analytics-portable-reader .report-content-grid,
+.quant-report #data-analytics-portable-reader .report-block-stack {
+  padding: 0 !important;
+}
+
+.quant-report #data-analytics-portable-reader .analytics-layout-row {
+  gap: 22px !important;
+  margin: 0 0 22px !important;
+}
+
+.quant-report #data-analytics-portable-reader .analytics-layout-item-shell {
+  overflow: visible !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.quant-report #data-analytics-portable-reader .panel.report-block,
+.quant-report #data-analytics-portable-reader .panel.table-panel,
+.quant-report #data-analytics-portable-reader .panel.chart-panel,
+.quant-report #data-analytics-portable-reader .panel.viz-card {
+  overflow: visible !important;
+  padding: clamp(22px, 4vw, 34px) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+  color: var(--text) !important;
+  background: color-mix(in srgb, var(--panel) 94%, transparent) !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.14) !important;
+}
+
+:root.theme-light .quant-report #data-analytics-portable-reader .panel.report-block,
+:root.theme-light .quant-report #data-analytics-portable-reader .panel.table-panel,
+:root.theme-light .quant-report #data-analytics-portable-reader .panel.chart-panel,
+:root.theme-light .quant-report #data-analytics-portable-reader .panel.viz-card {
+  box-shadow: 0 12px 28px rgba(30, 58, 95, 0.08) !important;
+}
+
+.quant-report #data-analytics-portable-reader [data-artifact-block-id^="01-from-scripts"] .panel {
+  padding: clamp(28px, 5vw, 48px) !important;
+  border-radius: var(--radius) !important;
+  background: linear-gradient(145deg, rgba(212, 175, 55, 0.12), rgba(10, 22, 40, 0.92)) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+:root.theme-light .quant-report #data-analytics-portable-reader [data-artifact-block-id^="01-from-scripts"] .panel {
+  background: linear-gradient(145deg, rgba(30, 58, 95, 0.08), rgba(212, 175, 55, 0.12)) !important;
+}
+
+.quant-report #data-analytics-portable-reader [data-artifact-block-id^="01-from-scripts"] h1 {
+  margin: 0 !important;
+  color: var(--text) !important;
+  font-family: inherit !important;
+  font-size: clamp(30px, 5vw, 46px) !important;
+  font-weight: 650 !important;
+  line-height: 1.1 !important;
+  letter-spacing: -0.035em !important;
+}
+
+.quant-report #data-analytics-portable-reader .markdown-render,
+.quant-report #data-analytics-portable-reader .markdown-body,
+.quant-report #data-analytics-portable-reader .panel-header,
+.quant-report #data-analytics-portable-reader .panel-title-row {
+  color: var(--text) !important;
+  background: transparent !important;
+}
+
+.quant-report #data-analytics-portable-reader .markdown-render h2,
+.quant-report #data-analytics-portable-reader .markdown-render h3,
+.quant-report #data-analytics-portable-reader .panel-header h2,
+.quant-report #data-analytics-portable-reader .panel-title-row h2 {
+  color: var(--text) !important;
+  font-family: inherit !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.quant-report #data-analytics-portable-reader .markdown-render p,
+.quant-report #data-analytics-portable-reader .markdown-render li,
+.quant-report #data-analytics-portable-reader .table-wrap,
+.quant-report #data-analytics-portable-reader .data-table {
+  color: var(--muted) !important;
+  font-family: inherit !important;
+  font-size: 15px !important;
+  line-height: 1.72 !important;
+}
+
+.quant-report #data-analytics-portable-reader .markdown-render strong,
+.quant-report #data-analytics-portable-reader .data-table th,
+.quant-report #data-analytics-portable-reader .data-table td:first-child {
+  color: var(--text) !important;
+}
+
+.quant-report #data-analytics-portable-reader .table-scroll-shell,
+.quant-report #data-analytics-portable-reader .table-wrap,
+.quant-report #data-analytics-portable-reader .chart-frame {
+  border-color: var(--border) !important;
+  border-radius: 12px !important;
+  background: var(--panel-strong) !important;
+}
+
+.quant-report #data-analytics-portable-reader .data-table th,
+.quant-report #data-analytics-portable-reader .data-table td {
+  border-color: var(--border) !important;
+  background: transparent !important;
+}
+
+.quant-report .portable-block:not([data-artifact-block-id="report-chapter-navigation"]) {
+  grid-column: 1 !important;
+  min-width: 0 !important;
+  padding: clamp(22px, 4vw, 34px) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+  background: color-mix(in srgb, var(--panel) 94%, transparent) !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.14) !important;
+}
+
+:root.theme-light .quant-report .portable-block:not([data-artifact-block-id="report-chapter-navigation"]) {
+  box-shadow: 0 12px 28px rgba(30, 58, 95, 0.08) !important;
+}
+
+.quant-report .portable-markdown {
+  max-width: none !important;
+  color: var(--text) !important;
+}
+
+.quant-report .portable-markdown h1,
+.quant-report .portable-markdown h2,
+.quant-report .portable-markdown h3,
+.quant-report .portable-content-card h2,
+.quant-report .portable-visual-header h2 {
+  color: var(--text) !important;
+  font-family: inherit !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.quant-report .portable-markdown h2,
+.quant-report .portable-content-card h2,
+.quant-report .portable-visual-header h2 {
+  margin: 0 0 14px !important;
+  font-size: clamp(21px, 3vw, 28px) !important;
+  line-height: 1.25 !important;
+}
+
+.quant-report .portable-markdown h3 {
+  margin: 24px 0 8px !important;
+  font-size: 18px !important;
+}
+
+.quant-report .portable-markdown p,
+.quant-report .portable-markdown li,
+.quant-report .portable-visual-header p,
+.quant-report .portable-visual-header span {
+  color: var(--muted) !important;
+  font-size: 15px !important;
+  line-height: 1.72 !important;
+}
+
+.quant-report .portable-markdown strong {
+  color: var(--text) !important;
+}
+
+.quant-report code,
+.quant-report pre {
+  color: var(--accent-2) !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+}
+
+.quant-report code {
+  padding: 0.12em 0.35em;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--panel-strong);
+}
+
+.quant-report pre {
+  border: 1px solid var(--border) !important;
+  background: var(--panel-strong) !important;
+}
+
+.quant-report pre code {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.quant-report .portable-content-card,
+.quant-report .portable-metric-card,
+.quant-report .portable-static-chart,
+.quant-report .portable-custom-html iframe {
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+  background: transparent !important;
+}
+
+.quant-report .portable-metric-card {
+  background: var(--panel-strong) !important;
+}
+
+.quant-report .portable-table-scroll {
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  background: var(--panel-strong) !important;
+}
+
+.quant-report .portable-table-scroll table {
+  width: 100% !important;
+}
+
+.quant-report .portable-table-scroll th,
+.quant-report .portable-table-scroll td {
+  border-color: var(--border) !important;
+  color: var(--muted) !important;
+  background: transparent !important;
+}
+
+.quant-report .portable-table-scroll th,
+.quant-report .portable-table-scroll td:first-child {
+  color: var(--text) !important;
+}
+
+.quant-report [data-artifact-block-id="report-chapter-navigation"] {
+  border-color: var(--border) !important;
+  background: color-mix(in srgb, var(--panel) 94%, transparent) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+.quant-report [data-artifact-block-id="report-chapter-navigation"] h2 {
+  color: var(--accent) !important;
+}
+
+.quant-report [data-artifact-block-id="report-chapter-navigation"] a {
+  color: var(--muted) !important;
+  border-color: var(--border) !important;
+  background: var(--panel) !important;
+}
+
+.quant-report [data-artifact-block-id="report-chapter-navigation"] a:hover,
+.quant-report [data-artifact-block-id="report-chapter-navigation"] a:focus-visible,
+.quant-report [data-artifact-block-id="report-chapter-navigation"] a[aria-current="location"] {
+  color: var(--text) !important;
+  border-color: var(--accent) !important;
+  background: var(--panel-strong) !important;
+}
+
+.quant-report #data-analytics-portable-reader [data-artifact-block-id="report-chapter-navigation"] a {
+  color: var(--muted) !important;
+  border-color: var(--border) !important;
+  background: var(--panel) !important;
+}
+
+.quant-report #data-analytics-portable-reader [data-artifact-block-id="report-chapter-navigation"] a:hover,
+.quant-report #data-analytics-portable-reader [data-artifact-block-id="report-chapter-navigation"] a:focus-visible,
+.quant-report #data-analytics-portable-reader [data-artifact-block-id="report-chapter-navigation"] a[aria-current="location"] {
+  color: var(--text) !important;
+  border-color: var(--accent) !important;
+  background: var(--panel-strong) !important;
+}
+
+.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation a {
+  color: var(--muted) !important;
+  border-color: var(--border) !important;
+  background: var(--panel) !important;
+}
+
+.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation a:hover,
+.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation a:focus-visible,
+.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation a[aria-current="location"] {
+  color: var(--text) !important;
+  border-color: var(--accent) !important;
+  background: var(--panel-strong) !important;
+}
+
+.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .markdown-render p,
+.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .markdown-render li {
+  color: var(--muted) !important;
+}
+
+.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .markdown-render strong,
+.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .markdown-render h1,
+.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .markdown-render h2,
+.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .markdown-render h3 {
+  color: var(--text) !important;
+}
+
+.quant-report .portable-notice {
+  border-color: rgba(212, 175, 55, 0.28) !important;
+  background: rgba(212, 175, 55, 0.08) !important;
+}
+
+.quant-report .portable-source-tooltip-content,
+.quant-report .portable-inline-source-content {
+  border-color: var(--border) !important;
+  color: var(--muted) !important;
+  background: var(--panel-strong) !important;
+}
+
+@media (max-width: 760px) {
+  body.quant-report {
+    padding-bottom: 40px;
+  }
+
+  .quant-report .report-back-link {
+    top: 14px;
+    left: 14px;
+    min-height: 42px;
+    padding: 8px 13px;
+  }
+
+  .quant-report .control-bubbles {
+    top: 14px;
+    right: 14px;
+    gap: 8px;
+  }
+
+  .quant-report .control-bubbles .bubble {
+    width: 42px;
+    height: 42px;
+  }
+
+  .quant-report .portable-fallback,
+  .quant-report #data-analytics-portable-reader {
+    padding: 0 14px 28px !important;
+  }
+
+  .quant-report .portable-page-header,
+  .quant-report #data-analytics-portable-reader .portable-page-header {
+    margin-top: 76px !important;
+    padding: 24px !important;
+    flex-direction: column !important;
+  }
+
+  .quant-report .portable-page-meta {
+    order: -1 !important;
+    align-items: flex-start !important;
+  }
+
+  .quant-report .portable-block-stack {
+    gap: 16px !important;
+    margin-top: 16px !important;
+  }
+
+  .quant-report #data-analytics-portable-reader .analytics-layout-canvas {
+    padding-top: 76px !important;
+  }
+
+  .quant-report #data-analytics-portable-reader .analytics-layout-row {
+    gap: 16px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .quant-report #data-analytics-portable-reader .panel.report-block,
+  .quant-report #data-analytics-portable-reader .panel.table-panel,
+  .quant-report #data-analytics-portable-reader .panel.chart-panel,
+  .quant-report #data-analytics-portable-reader .panel.viz-card {
+    padding: 22px 18px !important;
+  }
+
+  .quant-report #data-analytics-portable-reader [data-artifact-block-id^="01-from-scripts"] .panel {
+    padding: 26px 22px !important;
+  }
+
+  .quant-report .portable-block:not([data-artifact-block-id="report-chapter-navigation"]) {
+    padding: 22px 18px !important;
+  }
+
+  .quant-report .portable-table-scroll {
+    overflow-x: auto !important;
+  }
+}
+
+@media print {
+  .quant-report .report-back-link,
+  .quant-report .control-bubbles {
+    display: none !important;
+  }
+}
