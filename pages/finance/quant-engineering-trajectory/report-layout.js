@@ -1,29 +1,13 @@
-const backRow = document.querySelector(".report-site-back-row");
 const fallback = document.querySelector("#data-analytics-portable-fallback");
 const reader = document.querySelector("#data-analytics-portable-reader");
 
-function placeBackRowInFallback() {
-  const header = fallback?.querySelector(".portable-page-header");
-  if (!backRow || !header) return;
-  header.insertAdjacentElement("afterend", backRow);
-  backRow.classList.add("is-placed");
-}
-
-function placeBackRowInReader() {
-  const cover = reader
-    ?.querySelector('[data-artifact-block-id^="01-from-scripts"]')
-    ?.closest(".analytics-layout-row");
-  if (!backRow || !cover) return false;
-  cover.insertAdjacentElement("afterend", backRow);
-  backRow.classList.add("is-placed");
-  return true;
-}
+let layoutObserver = null;
+let fallbackTimer = null;
 
 function buildReaderLayout() {
-  if (!window.matchMedia("(min-width: 761px)").matches) return true;
-
   const stack = reader?.querySelector(".report-block-stack");
   if (!stack) return false;
+  if (!window.matchMedia("(min-width: 761px)").matches) return true;
   if (stack.querySelector(":scope > .report-reading-layout")) return true;
 
   const navigationRow = stack
@@ -48,20 +32,29 @@ function buildReaderLayout() {
   return true;
 }
 
-function syncReaderLayout() {
-  if (!placeBackRowInReader()) return false;
-  return buildReaderLayout();
+function revealReaderWhenReady() {
+  if (reader?.getAttribute("aria-hidden") === "true") return false;
+  if (!buildReaderLayout()) return false;
+
+  clearTimeout(fallbackTimer);
+  document.body.classList.add("report-ready");
+  layoutObserver?.disconnect();
+  layoutObserver = null;
+  return true;
 }
 
-placeBackRowInFallback();
-
-if (!syncReaderLayout() && reader) {
-  const observer = new MutationObserver(() => {
-    if (!syncReaderLayout()) return;
-    observer.disconnect();
-  });
-  observer.observe(reader, { childList: true, subtree: true });
+if (!revealReaderWhenReady() && reader) {
+  layoutObserver = new MutationObserver(revealReaderWhenReady);
+  layoutObserver.observe(reader, { attributes: true, childList: true, subtree: true });
 }
 
-window.addEventListener("data-analytics-portable-reader-ready", syncReaderLayout, { once: true });
-document.addEventListener("data-analytics-portable-reader-ready", syncReaderLayout, { once: true });
+window.addEventListener("data-analytics-portable-reader-ready", revealReaderWhenReady, { once: true });
+document.addEventListener("data-analytics-portable-reader-ready", revealReaderWhenReady, { once: true });
+
+fallbackTimer = window.setTimeout(() => {
+  if (document.body.classList.contains("report-ready")) return;
+  fallback?.classList.remove("portable-enhanced-hidden");
+  document.body.classList.add("report-fallback-ready");
+  layoutObserver?.disconnect();
+  layoutObserver = null;
+}, 5000);
