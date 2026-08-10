@@ -672,7 +672,7 @@ h3 {
 }
 
 .article__body {
-    font-family: "Songti SC", STSong, "Noto Serif CJK SC", SimSun, serif;
+    font-family: inherit;
     font-size: clamp(1rem, 2.1vw, 1.12rem);
 }
 
