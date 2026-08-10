@@ -13,12 +13,15 @@
       document.documentElement.classList.toggle("theme-light", theme === "light");
       window.__fzPreferredTheme = theme;
       window.__fzThemeMode = mode;
+      const language = localStorage.getItem("fz-language") || localStorage.getItem("fz-article-language") || "en";
+      document.documentElement.lang = language === "zh" ? "zh-CN" : "en";
+      document.documentElement.dataset.language = language === "zh" ? "zh" : "en";
     })();
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="../../assets/css/site.css?v=6" />
+  <link rel="stylesheet" href="../../assets/css/site.css?v=11" />
 </head>
 <body>
   <div class="page">
@@ -117,11 +120,8 @@
     </footer>
   </div>
 
-  <div class="control-bubbles" aria-label="Display controls">
-    <button class="bubble" data-toggle="theme" aria-pressed="false" title="Switch theme">☀</button>
-    <button class="bubble bubble--ghost" data-toggle="lens" aria-pressed="true" title="Disable liquid lens">FX</button>
-  </div>
+  <div class="control-bubbles" aria-label="Display controls"></div>
 
-  <script type="module" src="../../assets/js/site.js?v=7"></script>
+  <script type="module" src="../../assets/js/site.js?v=10"></script>
 </body>
 </html>

@@ -14,12 +14,15 @@
       document.documentElement.classList.toggle("theme-light", theme === "light");
       window.__fzPreferredTheme = theme;
       window.__fzThemeMode = mode;
+      const language = localStorage.getItem("fz-language") || localStorage.getItem("fz-article-language") || "en";
+      document.documentElement.lang = language === "zh" ? "zh-CN" : "en";
+      document.documentElement.dataset.language = language === "zh" ? "zh" : "en";
     })();
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;500;600;700&amp;display=swap">
-  <link rel="stylesheet" href="../../assets/css/site.css?v=10" />
+  <link rel="stylesheet" href="../../assets/css/site.css?v=11" />
 </head>
 <body>
   <div class="page page--article">
@@ -38,12 +41,8 @@
       <p class="lede article-header__subtitle" id="article-subtitle">—— 再度回首开悟之旅有感</p>
     </header>
 
-    <div class="back-row article-toolbar">
+    <div class="back-row">
       <a class="pill pill--ghost" href="./self-cultivation-notes.html">← Back to Notes</a>
-      <div class="language-switch" role="group" aria-label="Article language">
-        <button class="language-switch__button is-active" type="button" data-language-option="zh" aria-pressed="true">中文</button>
-        <button class="language-switch__button" type="button" data-language-option="en" aria-pressed="false">English</button>
-      </div>
     </div>
 
     <main class="content article">
@@ -57,8 +56,8 @@
         <p>也正是在那时，我发现，除了认识世界，还有另一个同样重要的方向：认识那个正在认识世界的人。</p>
 
         <blockquote>
-          <p>“Isn't it odd. We can only see our outsides, but nearly everything happens on the inside.”</p>
-          <cite>— <em>The Boy, the Mole, the Fox and the Horse</em></cite>
+          <p>“这不是很奇怪吗？我们只能看见自己的外在，然而几乎所有事情都发生在内在。”</p>
+          <cite>— <em>《男孩、鼹鼠、狐狸和马》</em></cite>
         </blockquote>
 
         <p>我们只能直接看见自己的外在，然而几乎所有真正重要的变化，都发生在内部。于是，我开始向内求。</p>
@@ -107,7 +106,7 @@
 
         <p>I once tried to approach omniscience through extensive reading. I kept seeking knowledge outside myself, as though reading enough would allow me to exhaust everything the world contained.</p>
 
-        <p>The turning point came one day in 2024. I had twelve hours of classes scheduled, yet I still challenged myself to finish three serious books of more than 100,000 words each. The next day, however, I realized with unprecedented clarity that the brain is not a vessel that can be filled without limit. Taking in knowledge has a cost: comprehension, memory, and recall all draw on finite cognitive resources. Simply continuing to reach outward will eventually bring us up against our own limits.</p>
+        <p>The turning point came one day in 2024. I had twelve hours of classes scheduled, yet I still challenged myself to finish three substantial, serious books, each more than 100,000 Chinese characters long. The next day, however, I realized with unprecedented clarity that the brain is not a vessel that can be filled without limit. Taking in knowledge has a cost: comprehension, memory, and recall all draw on finite cognitive resources. Simply continuing to reach outward will eventually bring us up against our own limits.</p>
 
         <p>It was then that I discovered another direction, one just as important as understanding the world: understanding the person who is doing the understanding.</p>
 
@@ -163,96 +162,8 @@
     </footer>
   </div>
 
-  <div class="control-bubbles" aria-label="Display controls">
-    <button class="bubble" data-toggle="theme" aria-pressed="false" title="Switch theme">☀</button>
-    <button class="bubble bubble--ghost" data-toggle="lens" aria-pressed="true" title="Disable liquid lens">FX</button>
-  </div>
+  <div class="control-bubbles" aria-label="Display controls"></div>
 
-  <script>
-    (function () {
-      const languageKey = "fz-article-language";
-      const content = {
-        zh: {
-          language: "zh-CN",
-          title: "向内求：一场迟来的自我修行",
-          subtitle: "—— 再度回首开悟之旅有感",
-          documentTitle: "向内求：一场迟来的自我修行 | Fujia Zhang",
-          description: "向内求：一场迟来的自我修行——再度回首开悟之旅有感。"
-        },
-        en: {
-          language: "en",
-          title: "Seeking Within: A Belated Journey of Self-Cultivation",
-          subtitle: "— Reflections on Looking Back at My Journey of Awakening",
-          documentTitle: "Seeking Within: A Belated Journey of Self-Cultivation | Fujia Zhang",
-          description: "A reflection on awakening, responsibility, and the deliberate allocation of finite attention."
-        }
-      };
-
-      const titleElement = document.getElementById("article-title");
-      const subtitleElement = document.getElementById("article-subtitle");
-      const descriptionElement = document.querySelector('meta[name="description"]');
-      const languageButtons = document.querySelectorAll("[data-language-option]");
-      const articleBodies = document.querySelectorAll("[data-article-language]");
-
-      function getSavedLanguage() {
-        try {
-          return localStorage.getItem(languageKey);
-        } catch (error) {
-          return null;
-        }
-      }
-
-      function saveLanguage(language) {
-        try {
-          localStorage.setItem(languageKey, language);
-        } catch (error) {
-          // The switch still works when browser storage is unavailable.
-        }
-      }
-
-      function applyLanguage(language, updateUrl) {
-        const selected = language === "en" ? "en" : "zh";
-        const selectedContent = content[selected];
-
-        articleBodies.forEach((article) => {
-          article.hidden = article.getAttribute("data-article-language") !== selected;
-        });
-
-        languageButtons.forEach((button) => {
-          const isActive = button.getAttribute("data-language-option") === selected;
-          button.classList.toggle("is-active", isActive);
-          button.setAttribute("aria-pressed", String(isActive));
-        });
-
-        document.documentElement.lang = selectedContent.language;
-        document.title = selectedContent.documentTitle;
-        titleElement.textContent = selectedContent.title;
-        subtitleElement.textContent = selectedContent.subtitle;
-        descriptionElement.setAttribute("content", selectedContent.description);
-        saveLanguage(selected);
-
-        if (updateUrl) {
-          const url = new URL(window.location.href);
-          if (selected === "en") {
-            url.searchParams.set("lang", "en");
-          } else {
-            url.searchParams.delete("lang");
-          }
-          window.history.replaceState(null, "", url);
-        }
-      }
-
-      languageButtons.forEach((button) => {
-        button.addEventListener("click", function () {
-          applyLanguage(button.getAttribute("data-language-option"), true);
-        });
-      });
-
-      const queryLanguage = new URLSearchParams(window.location.search).get("lang");
-      const initialLanguage = queryLanguage === "en" || queryLanguage === "zh" ? queryLanguage : getSavedLanguage();
-      applyLanguage(initialLanguage, false);
-    })();
-  </script>
-  <script type="module" src="../../assets/js/site.js?v=9"></script>
+  <script type="module" src="../../assets/js/site.js?v=10"></script>
 </body>
 </html>

@@ -14,12 +14,15 @@
       document.documentElement.classList.toggle("theme-light", theme === "light");
       window.__fzPreferredTheme = theme;
       window.__fzThemeMode = mode;
+      const language = localStorage.getItem("fz-language") || localStorage.getItem("fz-article-language") || "en";
+      document.documentElement.lang = language === "zh" ? "zh-CN" : "en";
+      document.documentElement.dataset.language = language === "zh" ? "zh" : "en";
     })();
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;500;600;700&amp;display=swap">
-  <link rel="stylesheet" href="../../../assets/css/site.css?v=10" />
+  <link rel="stylesheet" href="../../../assets/css/site.css?v=11" />
 </head>
 <body>
   <div class="page page--article">
@@ -42,7 +45,7 @@
     </div>
 
     <main class="content article">
-      <article class="article__body">
+      <article class="article__body" data-article-language="zh" lang="zh-CN">
         <p class="article__meta"><em>Journal entry — Thursday, May 28, 2026</em></p>
 
         <p>人并不是凭空选择自己的人。所谓“我”的判断、偏好、意志与价值观，都是先天禀赋、身体状态、社会环境、语言结构与后天经历长期塑造后的结果。人脑并不直接拥有完整的世界，而是在不断抽象、压缩和解释输入；而所有压缩都必然有损，因此每个人看到的世界都带有自身历史的痕迹。我们之所以能沟通，是因为社会、语言和共同经验塑造出了一部分共享的抽象空间；而我们之所以彼此不同，则是因为在快乐、意义、尊严、恐惧、爱憎和人生目标这些更高层的概念上，每个人都承载着不同的压缩方式。</p>
@@ -55,6 +58,20 @@
 
         <p class="article__closing">既然我看见了我的模型，我就不必永远被它支配。</p>
       </article>
+
+      <article class="article__body" data-article-language="en" lang="en" hidden>
+        <p class="article__meta"><em>Journal entry — Thursday, May 28, 2026</em></p>
+
+        <p>No one chooses who they are in a vacuum. What we call the “self”—our judgments, preferences, will, and values—is the product of long-term shaping by innate dispositions, physical condition, social environment, the structures of language, and accumulated experience. The human brain does not hold a complete representation of the world directly; instead, it continually abstracts, compresses, and interprets what it receives. All compression is necessarily lossy, so the world each of us sees bears the traces of our own history. We are able to communicate because society, language, and shared experience have created a partly shared space of abstraction. We differ because, when it comes to higher-level concepts such as happiness, meaning, dignity, fear, love and hatred, and the aims of life, each of us encodes them through a different pattern of compression.</p>
+
+        <p>To understand someone, then, we should not merely judge what they say, but try to understand why they say it. Their account is not necessarily correct, but it always has a path by which it came to be. Nor is my own judgment inherently superior to anyone else’s; it is simply the conclusion produced by the information, experience, and model currently available to me. Respecting others does not mean accepting every view. It means recognizing and respecting the process by which each view took shape. Maintaining one’s own judgment does not mean clinging to the self; it means testing that judgment against reality while remaining willing to revise oneself.</p>
+
+        <p>Truly mature thought is able to recognize the “notion of self” even after it arises: to see how one’s emotions influence judgment, how one’s experience disguises itself as universal law, and how one’s standpoint filters the evidence. Stepping outside the “self” does not mean denying it, but making the self another object of observation. It does not mean giving up action, but adding another layer of awareness before acting. A person who can do this will not readily look down on others or exalt themselves. They will not deny responsibility because they understand causality, nor abandon growth because they recognize how deeply people are shaped.</p>
+
+        <p>Perhaps freedom is not an absolute power of choice outside cause and effect, but the ability to reshape ourselves after seeing how we have been shaped. We cannot step entirely outside our past, but we can reinterpret it. We cannot become someone else from nothing, but through reflection, training, and the environments we choose, we can gradually alter our default responses. Recognizing that the “self” was formed is not an attempt to dissolve it, but a way of no longer being completely ruled by who we once were. True lucidity may simply be the refusal to mistake our compressed model of the world for the world itself.</p>
+
+        <p class="article__closing">Once I can see my model, I need not remain ruled by it forever.</p>
+      </article>
     </main>
 
     <footer class="site-footer">
@@ -62,11 +79,8 @@
     </footer>
   </div>
 
-  <div class="control-bubbles" aria-label="Display controls">
-    <button class="bubble" data-toggle="theme" aria-pressed="false" title="Switch theme">☀</button>
-    <button class="bubble bubble--ghost" data-toggle="lens" aria-pressed="true" title="Disable liquid lens">FX</button>
-  </div>
+  <div class="control-bubbles" aria-label="Display controls"></div>
 
-  <script type="module" src="../../../assets/js/site.js?v=9"></script>
+  <script type="module" src="../../../assets/js/site.js?v=10"></script>
 </body>
 </html>

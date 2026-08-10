@@ -14,12 +14,15 @@
       document.documentElement.classList.toggle("theme-light", theme === "light");
       window.__fzPreferredTheme = theme;
       window.__fzThemeMode = mode;
+      const language = localStorage.getItem("fz-language") || localStorage.getItem("fz-article-language") || "en";
+      document.documentElement.lang = language === "zh" ? "zh-CN" : "en";
+      document.documentElement.dataset.language = language === "zh" ? "zh" : "en";
     })();
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;500;600;700&amp;display=swap">
-  <link rel="stylesheet" href="../../../assets/css/site.css?v=10" />
+  <link rel="stylesheet" href="../../../assets/css/site.css?v=11" />
 </head>
 <body>
   <div class="page page--article">
@@ -35,7 +38,7 @@
 
     <header class="sub-hero article-header" data-lens>
       <h1>说破四相</h1>
-      <p class="lede article-header__subtitle">(摘录他人语句)</p>
+      <p class="lede article-header__subtitle">—— 摘录他人语句</p>
     </header>
 
     <div class="back-row">
@@ -43,7 +46,7 @@
     </div>
 
     <main class="content article">
-      <article class="article__body">
+      <article class="article__body" data-article-language="zh" lang="zh-CN">
         <p class="article__meta"><em>Journal entry — Wednesday, August 13, 2025</em></p>
 
         <p>破除四相，离执去妄。</p>
@@ -52,6 +55,16 @@
 
         <p>当我们不再用“我相”画地为牢、用“人相”制造对立、用“众生相”编织偏见、用“寿者相”恐惧变迁，便能以“空明之心”如实观照万物——如镜子映照山河，不迎不拒，不执不留，在虚妄中见真实，于波动中得安宁。</p>
       </article>
+
+      <article class="article__body" data-article-language="en" lang="en" hidden>
+        <p class="article__meta"><em>Journal entry — Wednesday, August 13, 2025</em></p>
+
+        <p>See through the Four Marks; let go of attachment and illusion.</p>
+
+        <p>No mark of self, no mark of person, no mark of sentient beings, no mark of lifespan.</p>
+
+        <p>When we no longer use the “mark of self” to imprison ourselves within boundaries of our own making, the “mark of person” to set ourselves against others, the “mark of sentient beings” to weave prejudice, or the “mark of lifespan” to fear change, we can contemplate all things as they truly are with an “empty and lucid mind”—like a mirror reflecting mountains and rivers, neither welcoming nor rejecting, neither grasping nor retaining; seeing truth within illusion and finding peace within flux.</p>
+      </article>
     </main>
 
     <footer class="site-footer">
@@ -59,11 +72,8 @@
     </footer>
   </div>
 
-  <div class="control-bubbles" aria-label="Display controls">
-    <button class="bubble" data-toggle="theme" aria-pressed="false" title="Switch theme">☀</button>
-    <button class="bubble bubble--ghost" data-toggle="lens" aria-pressed="true" title="Disable liquid lens">FX</button>
-  </div>
+  <div class="control-bubbles" aria-label="Display controls"></div>
 
-  <script type="module" src="../../../assets/js/site.js?v=9"></script>
+  <script type="module" src="../../../assets/js/site.js?v=10"></script>
 </body>
 </html>
