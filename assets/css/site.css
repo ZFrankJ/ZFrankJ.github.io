@@ -644,6 +644,75 @@ h3 {
     box-shadow: var(--shadow);
 }
 
+.page--article {
+    max-width: 900px;
+}
+
+.article-header h1 {
+    font-size: clamp(1.85rem, 5vw, 3rem);
+    line-height: 1.25;
+}
+
+.article-header__subtitle {
+    max-width: none;
+    margin: 0;
+    text-align: right;
+}
+
+.article {
+    padding: clamp(24px, 5vw, 52px);
+}
+
+.article__body .article__meta {
+    margin-bottom: 2rem;
+    color: var(--accent);
+    font-family: "MuseoModerno", "Segoe UI", sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
+}
+
+.article__body {
+    font-family: "Songti SC", STSong, "Noto Serif CJK SC", SimSun, serif;
+    font-size: clamp(1rem, 2.1vw, 1.12rem);
+}
+
+.article__body p {
+    color: var(--text);
+    line-height: 2;
+    margin-bottom: 1.45em;
+    text-align: justify;
+    text-justify: inter-ideograph;
+}
+
+.article__body blockquote {
+    margin: 2rem 0;
+    padding: 1.25rem 1.5rem;
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    background: var(--panel-strong);
+}
+
+.article__body blockquote p {
+    margin: 0;
+    color: var(--muted);
+    text-align: left;
+}
+
+.article__body blockquote cite {
+    display: block;
+    margin-top: 0.75rem;
+    color: var(--accent);
+    font-size: 0.9em;
+    text-align: right;
+}
+
+.article__closing {
+    margin-top: 2.25rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-weight: 700;
+}
+
 .profile-hero {
     display: grid;
     grid-template-columns: 120px 1fr;
@@ -860,5 +929,9 @@ h3 {
 
     .timeline-media {
         object-fit: contain;
+    }
+
+    .article__body p {
+        text-align: left;
     }
 }
