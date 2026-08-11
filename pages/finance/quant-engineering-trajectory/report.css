@@ -71,6 +71,17 @@ body.quant-report {
   line-height: 1.72 !important;
 }
 
+html[data-language="zh"] body.quant-report,
+html[data-language="zh"] body.quant-report *:not(code):not(pre) {
+  font-family: "LXGW WenKai", "LXGW WenKai Screen", "STKaiti", "KaiTi", sans-serif !important;
+}
+
+html[data-language="zh"] body.quant-report code,
+html[data-language="zh"] body.quant-report pre,
+html[data-language="zh"] body.quant-report pre * {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+}
+
 .quant-report a {
   color: var(--accent) !important;
 }
