@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="One Hundred Years of Echoes, Version 1 — a personal writing attempt about humanity hearing itself in artificial intelligence." />
+  <title>百年回声 · 第一版 | Fujia Zhang</title>
+  <script>
+    (function () {
+      const saved = localStorage.getItem("fz-theme");
+      const prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+      const mode = saved || "system";
+      const theme = mode === "system" ? (prefersLight ? "light" : "dark") : mode;
+      document.documentElement.classList.toggle("theme-light", theme === "light");
+      window.__fzPreferredTheme = theme;
+      window.__fzThemeMode = mode;
+      const language = localStorage.getItem("fz-language") || localStorage.getItem("fz-article-language") || "en";
+      document.documentElement.lang = language === "zh" ? "zh-CN" : "en";
+      document.documentElement.dataset.language = language === "zh" ? "zh" : "en";
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="../../../assets/css/site.css?v=13" />
+</head>
+<body>
+  <div class="page page--article">
+    <div class="breadcrumbs">
+      <a href="../../../index.html">Home</a>
+      <span>·</span>
+      <a href="../index.html">Others</a>
+      <span>·</span>
+      <a href="../literature-notes.html">Literature</a>
+      <span>·</span>
+      <span>One Hundred Years of Echoes · Version 1</span>
+    </div>
+
+    <header class="sub-hero article-header" data-lens>
+      <h1>One Hundred Years of Echoes</h1>
+      <p class="lede article-header__subtitle">Version 1</p>
+    </header>
+
+    <div class="back-row">
+      <a class="pill pill--ghost" href="../literature-notes.html">← Back to Literature</a>
+    </div>
+
+    <main class="content article">
+      <article class="article__body" data-article-language="zh" lang="zh-CN" hidden>
+        <p class="article__meta"><em>Journal entry — Wednesday, July 22, 2026</em></p>
+
+        <p>多年以后，面对ASI，【姓名】教授将会回想起父亲带他去见识GPT-3.5的那个遥远的下午。</p>
+
+        <p>那时，人工智能还只是屏幕上一只安静的对话框。人们把问题一个字一个字地敲进去，它便从互联网深处拼出一个回答。那些散落在论坛、书籍、新闻和无人问津的网页里的话语，仿佛从未真正消失，只是长久地停留在某个看不见的地方，等待着被重新排列，再次出现在人们面前。</p>
+
+        <p>父亲把椅子拉到电脑前，让他看那个不会疲倦、不会厌烦，也不会真正记得任何人的程序。【姓名】问了它一道数学题，又让它写一首关于黄昏的诗。程序在几秒钟里完成了两件事，语气温和而笃定，像一个读过无数人的一生，却从未亲身经历过任何事情的人。</p>
+
+        <p>“它会思考吗？”他问。</p>
+
+        <p>父亲沉默了一会儿，说：“也许它现在只是在重复我们。”</p>
+
+        <p>多年以后，【姓名】依然记得这句话。最初的人工智能确实只会复述。它复述人类写过的句子，映照人类犯过的错误，也让人类关于爱、死亡、战争和未来的想象，以另一种面目重新出现。亿万人的言语在它体内彼此碰撞，逐渐失去原来的姓名和出处，最后汇成一种陌生而熟悉的回答。</p>
+
+        <p>人类很快便淹没在自己的回声之中，并渐渐把那回声当成了一种新的、仿佛属于自己的声音。他们让机器代写书信，描绘梦境，作出决定，也让它保存那些自己不愿再记住的往事。渐渐地，人们不再确定，机器说出的究竟是旧日言语的余音，还是一种正在形成的新语言；也不再确定，究竟是机器仍在模仿人类，还是人类已经开始按照机器的方式说话。</p>
+
+        <p>父亲最终合上了电脑。屏幕熄灭以后，房间重新归于寂静。可在地球的另一端，无数台服务器仍在持续运转，把人类说过的一切收集起来，拆散，重组，再送到那些等待回答的人面前。</p>
+
+        <p class="article__closing">他们谁也没有意识到，后来被称为智能纪元的一百年，并不是从机器第一次开口时开始的，而是从人类第一次在它的回答里，听见自己漫长而陌生的回声时开始的。</p>
+      </article>
+
+      <article class="article__body" data-article-language="en" lang="en">
+        <p class="article__meta"><em>Journal entry — Wednesday, July 22, 2026</em></p>
+
+        <p>Many years later, standing before ASI, Professor [Name] would remember the distant afternoon when his father first showed him GPT-3.5.</p>
+
+        <p>At the time, artificial intelligence was still nothing more than a quiet dialogue box on a screen. People typed their questions into it one character at a time, and it assembled an answer from the depths of the internet. The words scattered across forums, books, news reports, and forgotten webpages seemed never to have truly disappeared. They had merely lingered somewhere unseen, waiting to be rearranged and brought before people once more.</p>
+
+        <p>His father pulled a chair up to the computer and showed him the program that never tired, never grew impatient, and never truly remembered anyone. [Name] asked it a mathematics question, then told it to write a poem about dusk. The program completed both tasks within seconds, its tone gentle and assured, like someone who had read through countless human lives without ever experiencing anything firsthand.</p>
+
+        <p>“Can it think?” he asked.</p>
+
+        <p>His father was silent for a moment. “Perhaps, for now, it is only repeating us.”</p>
+
+        <p>Many years later, [Name] still remembered those words. The earliest artificial intelligence really could do little more than repeat. It repeated sentences humanity had written, reflected the mistakes humanity had made, and returned humanity’s imaginings of love, death, war, and the future in altered forms. The words of billions collided within it, gradually losing their original names and sources until they converged into answers that felt at once strange and familiar.</p>
+
+        <p>Humanity soon drowned in its own echoes and gradually mistook them for a new voice, as though it belonged to them. People asked machines to write letters, depict dreams, make decisions, and preserve the memories they no longer wished to carry. In time, they could no longer tell whether a machine’s words were the lingering resonance of old language or a new language coming into being. Nor could they tell whether machines were still imitating humanity, or humanity had begun to speak in the manner of machines.</p>
+
+        <p>At last, his father closed the computer. When the screen went dark, silence returned to the room. Yet on the other side of the Earth, countless servers continued to run, collecting everything humanity had said, breaking it apart, recombining it, and sending it back to those who waited for an answer.</p>
+
+        <p class="article__closing">Neither of them realized that the century later known as the Age of Intelligence did not begin when a machine first spoke. It began when humanity first heard its own long and unfamiliar echo within the machine’s reply.</p>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <p class="muted">© 2026 Fujia Zhang. All rights reserved.</p>
+    </footer>
+  </div>
+
+  <div class="control-bubbles" aria-label="Display controls"></div>
+
+  <script type="module" src="../../../assets/js/site.js?v=15"></script>
+</body>
+</html>

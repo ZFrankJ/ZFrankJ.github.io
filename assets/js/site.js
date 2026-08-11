@@ -1,5 +1,5 @@
 import { LiquidLens } from "./liquid-lens.js";
-import { getLanguage, initI18n, setLanguage, translate } from "./i18n.js";
+import { getLanguage, initI18n, setLanguage, translate } from "./i18n.js?v=6";
 
 // Warn if loaded via file:// which can block ES modules and FX filter
 if (window.location.protocol === "file:") {
@@ -439,8 +439,8 @@ function positionThemeMenu() {
   if (!themeMenu || !themeButton) return;
   const rect = themeButton.getBoundingClientRect();
   const menuWidth = themeMenu.offsetWidth || 48;
-  const left = Math.max(8, rect.left + rect.width / 2 - menuWidth / 2);
-  const top = rect.bottom + 8;
+  const left = Math.max(8, window.scrollX + rect.left + rect.width / 2 - menuWidth / 2);
+  const top = window.scrollY + rect.bottom + 8;
   themeMenu.style.left = `${left}px`;
   themeMenu.style.top = `${top}px`;
 }

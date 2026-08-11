@@ -720,6 +720,28 @@ h3 {
     font-weight: 700;
 }
 
+.article__media {
+    margin: 2.5rem 0 0;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--panel-strong);
+    box-shadow: var(--shadow);
+}
+
+.article__media img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.article__media figcaption {
+    padding: 12px 16px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
 .notes-gallery {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
@@ -810,7 +832,7 @@ h3 {
 }
 
 .control-bubbles {
-    position: fixed;
+    position: absolute;
     top: max(18px, env(safe-area-inset-top));
     right: max(18px, env(safe-area-inset-right));
     display: flex;
@@ -824,7 +846,6 @@ h3 {
     align-items: center;
     gap: 8px;
     max-width: 0;
-    overflow: hidden;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -947,7 +968,7 @@ h3 {
 }
 
 .theme-menu {
-    position: fixed;
+    position: absolute;
     display: none;
     flex-direction: column;
     gap: 8px;
