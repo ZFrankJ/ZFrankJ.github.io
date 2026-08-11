@@ -27,6 +27,7 @@ let languageButton = null;
 let settingsButton = null;
 let settingsControls = null;
 let settingsItems = null;
+let settingsOriginRaf = 0;
 let themeMode = "system";
 const systemQuery =
   typeof window.matchMedia === "function" ? window.matchMedia("(prefers-color-scheme: light)") : null;
@@ -240,6 +241,10 @@ function initTimelineSpines() {
 function setSettingsOpen(open, { focusTrigger = false } = {}) {
   if (!settingsControls || !settingsItems || !settingsButton) return;
 
+  if (open) {
+    updateSettingsAnimationOrigins();
+    void settingsItems.offsetWidth;
+  }
   settingsControls.setAttribute("data-open", open ? "true" : "false");
   settingsItems.setAttribute("aria-hidden", open ? "false" : "true");
   settingsButton.setAttribute("aria-expanded", String(open));
@@ -251,6 +256,31 @@ function setSettingsOpen(open, { focusTrigger = false } = {}) {
 
   if (!open) setThemeMenuOpen(false);
   if (focusTrigger) settingsButton.focus();
+}
+
+function updateSettingsAnimationOrigins() {
+  if (!settingsItems || !settingsButton) return;
+
+  const triggerRect = settingsButton.getBoundingClientRect();
+  const triggerCenter = triggerRect.left + triggerRect.width / 2;
+  const itemsRect = settingsItems.getBoundingClientRect();
+  const buttons = Array.from(settingsItems.querySelectorAll(".control-chip"));
+
+  buttons.forEach((button, index) => {
+    const buttonCenter = itemsRect.left + button.offsetLeft + button.offsetWidth / 2;
+    const shift = Math.round(triggerCenter - buttonCenter);
+    const revealOrder = buttons.length - index - 1;
+    button.style.setProperty("--settings-shift-x", `${shift}px`);
+    button.style.setProperty("--settings-open-delay", `${revealOrder * 36}ms`);
+  });
+}
+
+function scheduleSettingsAnimationOrigins() {
+  if (settingsOriginRaf) cancelAnimationFrame(settingsOriginRaf);
+  settingsOriginRaf = requestAnimationFrame(() => {
+    settingsOriginRaf = 0;
+    updateSettingsAnimationOrigins();
+  });
 }
 
 function renderSettingsLabels() {
@@ -278,6 +308,8 @@ function renderSettingsLabels() {
     settingsButton.title = translate(isOpen ? "Close settings" : "Open settings");
     settingsButton.setAttribute("aria-label", translate(isOpen ? "Close settings" : "Open settings"));
   }
+
+  scheduleSettingsAnimationOrigins();
 }
 
 function buildSettingsControls() {
@@ -350,6 +382,11 @@ function buildSettingsControls() {
     renderThemeMenuLabels();
     scheduleTimelineSpineUpdate();
   });
+
+  window.addEventListener("resize", scheduleSettingsAnimationOrigins);
+  if (document.fonts?.ready) {
+    document.fonts.ready.then(scheduleSettingsAnimationOrigins).catch(() => {});
+  }
 
   renderSettingsLabels();
   setSettingsOpen(false);
