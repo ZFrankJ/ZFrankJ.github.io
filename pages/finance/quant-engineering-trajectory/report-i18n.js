@@ -2,6 +2,10 @@ const LANGUAGE_KEY = "fz-language";
 
 const translations = new Map([
   ["Data Analytics report", "数据分析报告"],
+  ["Home", "首页"],
+  ["Finance", "金融"],
+  ["Return links", "返回导航"],
+  ["Engineering trajectory", "工程历程"],
   ["From Scripts to a System: How a Quant Project Changed the Way I Build with AI", "从脚本到系统：一个量化项目如何改变了我与 AI 协作开发的方式"],
   ["A first-person software-engineering history of learning to build a governed private product in cooperation with AI.", "一篇第一人称的软件工程史：我如何在与 AI 的协作中，学会构建一套治理完善的私有产品。"],
   ["Aug 10, 2026, 6:00 AM UTC", "2026 年 8 月 10 日 06:00（UTC）"],

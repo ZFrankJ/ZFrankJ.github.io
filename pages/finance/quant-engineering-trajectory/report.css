@@ -1092,9 +1092,188 @@ html[data-language="zh"] body.quant-report pre * {
   }
 }
 
+.quant-report .report-return-links {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.quant-report .report-site-frame {
+  width: min(1180px, calc(100% - 48px)) !important;
+  margin-right: auto !important;
+  margin-left: auto !important;
+}
+
+.quant-report .report-site-top {
+  margin-top: 24px !important;
+}
+
+.quant-report .report-site-top .breadcrumbs {
+  margin-bottom: 0 !important;
+}
+
+.quant-report .report-site-top .breadcrumbs a {
+  color: var(--muted) !important;
+}
+
+.quant-report .report-site-top .breadcrumbs a:hover,
+.quant-report .report-site-top .breadcrumbs a:focus-visible {
+  color: var(--accent) !important;
+}
+
+.quant-report .report-site-footer {
+  margin-top: 32px !important;
+  padding-top: 8px !important;
+}
+
+.quant-report .portable-page-header,
+.quant-report #data-analytics-portable-reader .portable-page-header {
+  margin-top: 12px !important;
+}
+
+.quant-report .report-return-link,
+.quant-report .report-return-link:hover,
+.quant-report .report-return-link:focus-visible {
+  color: var(--text) !important;
+}
+
+:root.theme-light .quant-report .report-return-link,
+:root.theme-light .quant-report .report-return-link:hover,
+:root.theme-light .quant-report .report-return-link:focus-visible {
+  color: #1a2d4a !important;
+}
+
+.quant-report .report-sidebar-sticky {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 16px !important;
+  width: 100% !important;
+}
+
+@media (min-width: 761px) {
+  .quant-report #data-analytics-portable-fallback .portable-block-stack:has(> .report-reading-layout),
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-block-stack:has(> .report-reading-layout) {
+    display: block !important;
+    width: min(1180px, 100%) !important;
+    max-width: 1180px !important;
+  }
+
+  .quant-report #data-analytics-portable-fallback .report-reading-layout,
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-reading-layout {
+    display: grid !important;
+    grid-template-columns: 240px minmax(0, 1fr) !important;
+    gap: 18px !important;
+    align-items: stretch !important;
+    width: 100% !important;
+  }
+
+  .quant-report #data-analytics-portable-fallback .report-reading-sidebar,
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-reading-sidebar {
+    position: relative !important;
+    align-self: stretch !important;
+    min-width: 0 !important;
+  }
+
+  .quant-report #data-analytics-portable-fallback .report-sidebar-sticky,
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-sidebar-sticky {
+    position: sticky !important;
+    top: 18px !important;
+  }
+
+  .quant-report #data-analytics-portable-fallback .report-reading-main,
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-reading-main {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 22px !important;
+    align-content: start !important;
+    min-width: 0 !important;
+  }
+
+  .quant-report #data-analytics-portable-fallback .report-reading-main > .portable-block,
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-reading-main > .analytics-layout-row {
+    grid-column: 1 !important;
+    margin: 0 !important;
+  }
+
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-sidebar-sticky > .analytics-layout-row {
+    position: static !important;
+    inset: auto !important;
+    width: 240px !important;
+    max-width: 240px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .quant-report #data-analytics-portable-fallback .report-sidebar-sticky > [data-artifact-block-id="report-chapter-navigation"],
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-sidebar-sticky [data-artifact-block-id="report-chapter-navigation"] {
+    position: static !important;
+    inset: auto !important;
+    width: 240px !important;
+    max-width: 240px !important;
+    margin: 0 !important;
+  }
+
+  .quant-report #data-analytics-portable-fallback .report-sidebar-sticky > [data-artifact-block-id="report-chapter-navigation"],
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-sidebar-sticky #report-chapter-navigation {
+    width: 240px !important;
+    max-width: 240px !important;
+    max-height: calc(100vh - 106px) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .quant-report .report-site-frame {
+    width: calc(100% - 28px) !important;
+  }
+
+  .quant-report .portable-page-header,
+  .quant-report #data-analytics-portable-reader .portable-page-header {
+    margin-top: 12px !important;
+  }
+
+  .quant-report #data-analytics-portable-reader .analytics-layout-canvas {
+    padding-top: 12px !important;
+  }
+
+  .quant-report .report-return-links {
+    flex-wrap: wrap !important;
+  }
+
+  .quant-report .report-sidebar-sticky {
+    margin-bottom: 16px !important;
+  }
+
+  .quant-report #data-analytics-portable-fallback .report-reading-main,
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-reading-main {
+    display: grid !important;
+    gap: 16px !important;
+  }
+
+  .quant-report #data-analytics-portable-fallback .report-sidebar-sticky > [data-artifact-block-id="report-chapter-navigation"],
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-sidebar-sticky > .analytics-layout-row,
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-sidebar-sticky [data-artifact-block-id="report-chapter-navigation"],
+  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-sidebar-sticky #report-chapter-navigation {
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+  }
+}
+
 @media print {
   .quant-report .report-loading-shell,
-  .quant-report .control-bubbles {
+  .quant-report .control-bubbles,
+  .quant-report .report-return-links {
     display: none !important;
   }
 }
