@@ -125,7 +125,7 @@ const entries = [
   ["My own investing outlook --after reading", "读完以下书籍后的个人投资展望："],
   ["High returns from low risk", "《低风险高回报》"],
   ["Building a theory that fits to predict all financial products in revenue and risk.", "构建一套理论，用于预测各类金融产品的收益与风险。"],
-  ["My WeChat article (English translation needed)", "我的微信公众号文章（仅中文，尚需英文翻译）"],
+  ["My WeChat Official Account article (English translation needed)", "我的微信公众号文章（仅中文，尚需英文翻译）"],
   ["Early quantitative trading&Compound interest", "早期量化交易与复利"],
   ["Based on ETFs to do quantitative tradings and realize the benefit of compound interest in long-term.", "以 ETF 为基础进行量化交易，并认识到长期复利的价值。"],
   ["Normal distribution and other analysis after reading Thinking, fast and slow", "读完《思考，快与慢》后的正态分布及其他分析"],
