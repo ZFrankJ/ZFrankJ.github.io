@@ -9,6 +9,7 @@ const translations = new Map([
   ["From Scripts to a System: How a Quant Project Changed the Way I Build with AI", "从脚本到系统：一个量化项目如何改变了我与 AI 协作开发的方式"],
   ["A first-person software-engineering history of learning to build a governed private product in cooperation with AI.", "一篇第一人称的软件工程史：我如何在与 AI 的协作中，学会构建一套治理完善的私有产品。"],
   ["Aug 10, 2026, 6:00 AM UTC", "2026 年 8 月 10 日 06:00（UTC）"],
+  ["Aug 10, 2026, 2:00 PM", "2026 年 8 月 10 日 14:00"],
   ["Chapters", "章节"],
   ["01 · Intro", "01 · 引言"],
   ["02 · 2024–mid-2025 · Artifact workbench", "02 · 2024—2025 年中 · 以成果为中心的工作台"],
@@ -273,6 +274,7 @@ const translations = new Map([
   ["Maximum drawdown", "最大回撤"],
   ["The separate ten-year result is the basis for describing the outcome as approximately ten times the starting capital in profit. A cumulative yield of", "单独的十年结果，是将成果描述为约赚取初始资本十倍利润的依据。累计收益率为"],
   ["percent represents profit equal to 10.2744 times the starting capital and an ending value of 11.2744 times the starting capital. These figures are owner-provided aggregate results, not independently audited calculations. Exact evaluation dates were not supplied, so the reported CAGR and cumulative yield are reproduced separately rather than treating one as a recomputation of the other. They describe historical performance, not guaranteed future returns or investment advice.", "%，表示利润相当于初始资本的 10.2744 倍，期末价值为初始资本的 11.2744 倍。这些数字是所有者提供的汇总结果，并非经独立审计的计算。由于未提供确切评估日期，所报告的复合年增长率与累计收益率被分别复现，而不把其中一项视为对另一项的重新计算。它们描述历史表现，不保证未来回报，也不构成投资建议。"],
+  ["The separate ten-year result is the basis for describing the outcome as approximately ten times the starting capital in profit. A cumulative yield of 1,027.44 percent represents profit equal to 10.2744 times the starting capital and an ending value of 11.2744 times the starting capital. These figures are owner-provided aggregate results, not independently audited calculations. Exact evaluation dates were not supplied, so the reported CAGR and cumulative yield are reproduced separately rather than treating one as a recomputation of the other. They describe historical performance, not guaranteed future returns or investment advice.", "这份单独列示的十年期结果，是将成果描述为利润约为初始本金十倍的依据。1,027.44% 的累计收益率意味着利润相当于初始本金的 10.2744 倍，期末资产价值则为初始本金的 11.2744 倍。这些数据是由所有者提供的汇总结果，并非经独立审计的计算结果。由于未提供确切的评估日期，报告中的复合年增长率（CAGR）和累计收益率分别按原值呈现，而不将其中一项视为由另一项重新计算所得。它们描述的是历史表现，不构成对未来收益的保证，也不构成投资建议。"],
   ["Owner-provided ten-year result", "所有者提供的十年结果"],
   ["Owner-provided ten-year performance summary", "所有者提供的十年业绩摘要"],
   ["Name", "名称"],
@@ -336,6 +338,26 @@ const translations = new Map([
   ["Guides, architecture map, canonical APIs, bootstrap, and DEVLOG appeared", "指南、架构图、规范 API、启动文档与 DEVLOG 出现"],
   ["Architectural memory became versioned and usable by future people and AI agents.", "架构记忆被版本化，可供未来的人与 AI 代理使用。"],
   ["25 results · Showing first 15", "共 25 条结果 · 显示前 15 条"],
+  ["25 results", "共 25 条结果"],
+  ["Page", "页码"],
+  ["of", "/"],
+  ["Previous page", "上一页"],
+  ["Next page", "下一页"],
+  ["Pure Git commits 32f92cc–38d6363", "Pure Git 提交 32f92cc–38d6363"],
+  ["Pure Git commits c19a7de and e720ec7", "Pure Git 提交 c19a7de 与 e720ec7"],
+  ["Annotated v0.1.0 and Git 329e6551–43332640", "带注释标签 v0.1.0 与 Git 329e6551–43332640"],
+  ["Git daf148ea and annotated v0.4.0", "Git daf148ea 与带注释标签 v0.4.0"],
+  ["Git ed71561f, 147c587d and annotated v0.8.0", "Git ed71561f、147c587d 与带注释标签 v0.8.0"],
+  ["Git and PRs #7, #9, #11, #12", "Git 与 PR #7、#9、#11、#12"],
+  ["Annotated v0.9.0 and Git 9f1ed730", "带注释标签 v0.9.0 与 Git 9f1ed730"],
+  ["PRs #15–#16 and Git af5dcec5, 1ed9f72e, 4ae9255f, e8c4d778", "PR #15–#16 与 Git af5dcec5、1ed9f72e、4ae9255f、e8c4d778"],
+  ["PRs #17–#46", "PR #17–#46"],
+  ["Annotated v0.9.2", "带注释标签 v0.9.2"],
+  ["PRs #47–#111", "PR #47–#111"],
+  ["Selected PRs #112–#166", "精选 PR #112–#166"],
+  ["PRs #167–#171", "PR #167–#171"],
+  ["PRs #172–#186; one unmerged experiment excluded", "PR #172–#186；排除一项未合并实验"],
+  ["PRs #187–#196", "PR #187–#196"],
   ["Each control closed a failure the previous one left open", "每项控制都补上前一项留下的缺口"],
   ["The project is a technical record, but its stronger result is a change in how I reason about software and AI.", "这个项目是一份技术记录，但更重要的成果，是它改变了我思考软件与 AI 的方式。"],
   ["Git could recover a damaging edit, but it could not tell an agent where behavior belonged. Guides, maps, invariants, and local sidecars made ownership legible, but written rules alone could not guarantee that the right workflow was followed.", "Git 能恢复破坏性编辑，却无法告诉代理行为应归属何处。指南、架构图、不变量和本地伴随文档让职责清晰可读，但书面规则本身无法保证正确工作流得到执行。"],
@@ -433,6 +455,26 @@ function normalized(value) {
 function translateDynamic(value) {
   const text = normalized(value);
   if (translations.has(text)) return translations.get(text);
+  if (text.startsWith("Last updated ")) {
+    const date = text.slice(13);
+    return `最后更新：${translations.get(date) || date}`;
+  }
+  if (text === "Report blocks") return "报告内容";
+  if (text.startsWith("Open options for ")) {
+    const subject = text.slice(17);
+    const translatedSubject = translations.get(subject)
+      || (subject.length > 80 ? "此段内容" : subject);
+    return `打开“${translatedSubject}”的选项`;
+  }
+  if (text === "Edit markdown for markdown") return "编辑 Markdown";
+  if (text.startsWith("Edit markdown header for ")) {
+    const subject = text.slice(25);
+    return `编辑“${translations.get(subject) || subject}”标题`;
+  }
+  if (text.startsWith("Scrollable table: ")) {
+    const subject = text.slice(18);
+    return `可滚动表格：${translations.get(subject) || subject}`;
+  }
   if (text.startsWith("Source for ")) {
     const subject = text.slice(11);
     const translatedSubject = translations.get(subject)
