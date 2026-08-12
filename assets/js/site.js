@@ -1,5 +1,5 @@
 import { LiquidLens } from "./liquid-lens.js";
-import { getLanguage, initI18n, setLanguage, translate } from "./i18n.js?v=7";
+import { getLanguage, initI18n, setLanguage, translate } from "./i18n.js?v=8";
 
 // Warn if loaded via file:// which can block ES modules and FX filter
 if (window.location.protocol === "file:") {
