@@ -172,7 +172,7 @@ const entries = [
   ["Sight Trainer", "Sight Trainer"],
   ["Fast visual recognition training with quick-response rounds.", "通过快速反应回合训练视觉识别能力。"],
   ["Airplane Fight", "Airplane Fight"],
-  ["3D airplane combat gameplay.", "3D 飞机空战游戏。"],
+  ["WWII airfield defence with realistic aircraft, changing weather, and solo or split-screen combat.", "二战空军基地保卫战：写实飞机、多变天气，支持单人或分屏空战。"],
   ["Sport exercise, aesthetic accomplishment and internal journey of myself.", "我的运动锻炼、审美修养与向内探索之旅。"],
   ["Karate", "空手道"],
   ["Persisting for over 6 years and achieve black belt.", "坚持练习六年有余，并取得黑带。"],

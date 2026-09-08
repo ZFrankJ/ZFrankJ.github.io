@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Voxel Dogfight — 3D Plane Fighting</title>
+<title>LOW ALTITUDE — Realistic Plane Fight</title>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <style>
   :root {
@@ -218,50 +218,31 @@
   #gameover small .say { display:block; color:#dff3ff; font-weight:700; letter-spacing:.02em; }
   #gameover small .restart { display:block; margin-top:4px; opacity:.82; }
 </style>
+<link rel="stylesheet" href="realism.css">
 </head>
 <body>
 <div id="view">
+  <div id="flight-header"><span class="brand">LA <i>/</i> FLIGHT OPERATIONS</span><span id="mission-status">DEFEND THE AIRFIELD</span><button id="briefing-button" title="Return to briefing (Esc)">BRIEFING ↗</button></div>
+  <div id="flight-telemetry"><span id="flight-speed">000 <small>KM/H</small></span><span id="flight-alt">000 <small>M AGL</small></span></div>
+  <div id="flight-hint">↑ CLIMB &nbsp; ← → TURN &nbsp; SPACE FIRE &nbsp; C VIEW &nbsp; P PAUSE</div>
+  <div id="pause-overlay">FLIGHT PAUSED<small>P to resume · Esc for briefing</small></div>
+
   <div id="menu">
     <div class="card">
-      <h1>Voxel Dogfight</h1>
-      <div>Choose mode</div>
-      <div style="margin-top:8px; font-size:12px; opacity:.82; line-height:1.45;">
-        1P: take off, intercept the naval raider, and stop it before it strikes or escapes.
-        <br>
-        2P: split-screen duel; P1 defends the base while P2 attacks with one missile, then escapes.
-        Scale: 1u = 10 m; aircraft speed range 3-18u/s.
-      </div>
-      <div class="menu-brief">
-        <section>
-          <strong>Background</strong>
-          P1 is a land-based interceptor scrambling from the runway. The navy raider carries one heavy missile to break the runways, then tries to escape the 35 km combat radius.
-        </section>
-        <section>
-          <strong>1 Player</strong>
-          Arrow keys turn and pitch. Q / E adjust throttle. Space fires twin wing guns. C switches cockpit / chase view. X continues the chase after base loss.
-        </section>
-        <section>
-          <strong>2 Players</strong>
-          P1 uses WASD + Space. P2 uses Arrow keys + Enter. Right Shift launches P2's missile toward the gunsight aim point.
-        </section>
-        <section>
-          <strong>System</strong>
-          1 / 2 choose mode. 7 / 8 / 9 choose weather. F toggles fullscreen. R or Space restarts after game over.
-        </section>
-      </div>
-      <div class="btns">
-        <button id="btn-single">1 Player</button>
-        <button id="btn-duo">2 Players</button>
-      </div>
-      <div style="margin-top:12px;">Weather</div>
-      <div class="btns weather">
-        <button id="btn-sunny" class="weather-btn">Sunny</button>
-        <button id="btn-cloudy" class="weather-btn">Cloudy</button>
-        <button id="btn-rainy" class="weather-btn">Rainy</button>
-      </div>
-      <div id="weather-label">Current: Sunny</div>
-      <div style="margin-top:12px; font-size:12px; opacity:.8;">Press 1/2 for mode, 7/8/9 for weather</div>
+      <div class="eyebrow">REALISTIC PLANE FIGHT <span> / 01</span></div>
+      <h1>LOW<br><em>ALTITUDE</em></h1>
+      <p class="intro">The runway is yours.<br>Keep it that way.</p>
+      <p class="brief">Fly a British Spitfire over the valley. Intercept the German Bf 109 raider before its missile reaches your airfield.</p>
+      <div class="btns"><button id="btn-single">Launch sortie <span>↗</span></button><button id="btn-duo">2-player duel</button></div>
+      <div class="weather-heading">FLIGHT CONDITIONS</div>
+      <div class="btns weather"><button id="btn-sunny" class="weather-btn">01 &nbsp; Clear</button><button id="btn-cloudy" class="weather-btn">02 &nbsp; Overcast</button><button id="btn-rainy" class="weather-btn">03 &nbsp; Rain</button></div>
+      <div id="weather-label">Current: Clear</div>
+      <details><summary>Flight controls &amp; mission briefing <span>+</span></summary>
+        <div class="menu-brief"><section><strong>Solo flight</strong>↑ / ↓ pitch · ← / → turn<br>Q / E throttle · Space guns<br>C cockpit / chase · P pause · Esc briefing<br>M sound · H instruments · F fullscreen</section><section><strong>Split-screen duel</strong>P1: WASD + Space<br>P2: Arrows + Enter<br>Right Shift: P2 missile<br>1 / 2 mode · 7 / 8 / 9 weather<br>R restart after game over</section></div>
+      </details>
+      <div class="menu-footer"><span>VALLEY AIR STATION</span><span>LOCAL CO-OP / SOLO</span></div>
     </div>
+    <div class="aircraft-caption"><span>RAF / SPITFIRE</span><strong>Ready on the flight line.</strong><span>PISTON ENGINE &nbsp; · &nbsp; TWIN WING GUNS</span></div>
   </div>
   <div id="gameover">
     <div id="gameover-title">GAME OVER</div>
@@ -292,7 +273,7 @@ Ammo  : ME 320 / ENY 220
 Speed : 0.0 u/s
 Thr   : 50 %
 Hit   : -</div>
-      <div class="panel-caption">1u = 10 m / Speed capped 18u/s</div>
+      <div class="panel-caption">Q / E throttle · M sound · H instruments</div>
     </div>
     <div class="panel" id="altitude-panel">
       <div class="panel-title">Alt / HP</div>
@@ -363,6 +344,8 @@ ENY : 0.0 u</div>
   </div>
 </div>
 
+<script src="assets/cloud-volumes.js?v=20260908d"></script>
+<script src="realism.js?v=20260908d"></script>
 <script>
 // Non-module loader for maximum compatibility (file:// safe)
 async function loadThree() {
@@ -405,6 +388,9 @@ async function loadThree() {
     };
   }
 
+const realism = createRealism(THREE);
+let paused = false;
+let cameraDt = 1 / 60;
 let scene, camera, camera2, renderer;
 let plane, planeBody, enemy, enemyBody, worldRoot;
 let buildings = [];
@@ -498,21 +484,17 @@ const RUNWAY_CENTER_Z = 40;
 // Story target: runway edge beside hangars. Air-base bombing usually disables the runway first,
 // then damages nearby infrastructure.
 const BASE_TARGET = new THREE.Vector3(0, groundY + 0.2, 20);
-const GUN_MOUNT_X = 0.78;
-const GUN_MOUNT_Y = -0.02;
-const GUN_MOUNT_Z = -0.39;
-const GUN_BARREL_LEN = 0.2;
 const renderScaleSingle = Math.min(window.devicePixelRatio || 1, 1.35);
 const renderScaleDuo = Math.min(window.devicePixelRatio || 1, 1.2);
 const weatherProfiles = {
   sunny: {
-    label: "Sunny",
-    sky: 0x87ceeb,
-    fog: 0x87ceeb,
-    fogNear: 120,
-    fogFar: 6800,
-    ambient: 0.82,
-    sunIntensity: 4.8,
+    label: "Clear",
+    sky: 0xbcd5df,
+    fog: 0xbcd5df,
+    fogNear: 900,
+    fogFar: 3900,
+    ambient: 0.3,
+    sunIntensity: 2.7,
     sunVisible: true,
     deckCount: 240,
     deckAltitude: 74,
@@ -530,11 +512,11 @@ const weatherProfiles = {
     rainCount: 0
   },
   cloudy: {
-    label: "Cloudy",
-    sky: 0x93afbf,
-    fog: 0x93afbf,
-    fogNear: 100,
-    fogFar: 5600,
+    label: "Overcast",
+    sky: 0xbac2c6,
+    fog: 0xbac2c6,
+    fogNear: 600,
+    fogFar: 3400,
     ambient: 0.72,
     sunIntensity: 0.58,
     sunVisible: false,
@@ -555,10 +537,10 @@ const weatherProfiles = {
   },
   rainy: {
     label: "Rainy",
-    sky: 0x6f8797,
-    fog: 0x6f8797,
-    fogNear: 70,
-    fogFar: 4300,
+    sky: 0x959b9e,
+    fog: 0x959b9e,
+    fogNear: 200,
+    fogFar: 2600,
     ambient: 0.6,
     sunIntensity: 0.22,
     sunVisible: false,
@@ -573,9 +555,9 @@ const weatherProfiles = {
     highAltitudeSpan: 32,
     highChunksMin: 2,
     highChunksVar: 2,
-    cloudColor: 0xbecad2,
+    cloudColor: 0x6e7c8c,
     rain: true,
-    rainCount: 12000
+    rainCount: 2200
   }
 };
 
@@ -627,23 +609,50 @@ const attitudeCtxSingle = attitudeCanvasSingle ? attitudeCanvasSingle.getContext
 const attitudeCtxP1 = attitudeCanvasP1 ? attitudeCanvasP1.getContext("2d") : null;
 const attitudeCtxP2 = attitudeCanvasP2 ? attitudeCanvasP2.getContext("2d") : null;
 
+let audioContext, engineOsc, engineGain, windSource, windGain, audioMuted = false;
+function startAudio() {
+  if (audioContext) { audioContext.resume().catch(()=>{}); return; }
+  const Audio = window.AudioContext || window.webkitAudioContext;
+  if (!Audio) return;
+  try {
+    audioContext=new Audio();
+    engineOsc=audioContext.createOscillator();engineOsc.type='sawtooth';
+    const filter=audioContext.createBiquadFilter();filter.type='lowpass';filter.frequency.value=180;
+    engineGain=audioContext.createGain();engineGain.gain.value=0;
+    engineOsc.connect(filter);filter.connect(engineGain);engineGain.connect(audioContext.destination);engineOsc.start();
+    const buffer=audioContext.createBuffer(1,audioContext.sampleRate*2,audioContext.sampleRate),data=buffer.getChannelData(0);
+    for(let i=0;i<data.length;i++)data[i]=(Math.random()-.5)*.3;
+    windSource=audioContext.createBufferSource();windSource.buffer=buffer;windSource.loop=true;
+    const windFilter=audioContext.createBiquadFilter();windFilter.frequency.value=400;
+    windGain=audioContext.createGain();windGain.gain.value=0;
+    windSource.connect(windFilter);windFilter.connect(windGain);windGain.connect(audioContext.destination);windSource.start();
+  } catch(error) { console.warn('Audio unavailable',error.message); }
+}
+function updateAudio() {
+  if(!engineGain||!windGain) return;
+  const active=modeState==='playing'&&!paused&&!gameOver&&!audioMuted;
+  engineGain.gain.setTargetAtTime(active?.045:0,audioContext.currentTime,.1);
+  windGain.gain.setTargetAtTime(active?speed*.012:0,audioContext.currentTime,.1);
+  engineOsc.frequency.setTargetAtTime(32+speed*3+throttle*18,audioContext.currentTime,.15);
+}
+
 // Init
 init();
-animate(0);
+if (renderer) animate(0);
 
 function init() {
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x87ceeb);
   scene.fog = new THREE.Fog(0x87ceeb, 120, 6800);
 
-  camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.12, 8200);
-  camera2 = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.12, 8200);
+  camera = new THREE.PerspectiveCamera(52, window.innerWidth/window.innerHeight, 0.018, 8200);
+  camera2 = new THREE.PerspectiveCamera(52, window.innerWidth/window.innerHeight, 0.018, 8200);
 
   try {
-    renderer = new THREE.WebGLRenderer({ antialias:true, powerPreference:"high-performance" });
+    renderer = new THREE.WebGLRenderer({ antialias:true, logarithmicDepthBuffer:true, powerPreference:"high-performance" });
   } catch (e) {
     const stats = document.getElementById('stats');
-    if (stats) stats.textContent = 'WebGL not available: ' + (e && e.message ? e.message : e);
+    menuEl.innerHTML='<div class=card><h1>WebGL unavailable</h1><p>This game needs a browser with hardware acceleration enabled.</p></div>';
     console.error(e);
     return;
   }
@@ -667,24 +676,21 @@ function init() {
   sunLight.castShadow = false;
   scene.add(sunLight);
 
-  // Voxel "sun"
-  const sunGeom = new THREE.BoxGeometry(22,22,22);
-  const sunMat  = new THREE.MeshBasicMaterial({ color: 0xffffcc });
-  sunMesh = new THREE.Mesh(sunGeom, sunMat);
-  sunMesh.position.set(260, 520, -420);
-  scene.add(sunMesh);
+  realism.atmosphere(scene, renderer, sunLight);
 
   // Root for world content
   worldRoot = new THREE.Group();
   scene.add(worldRoot);
 
-  // Ground (voxel tiles for Minecraft-ish vibe)
+  // Continuous textured terrain
   createGround();
   createBuildings();
+  realism.airfield(worldRoot, buildings, runwayPieces);
   applyWeather(weather);
 
   // Planes
   const playerColors = {
+    nation: "britain",
     body: 0x5e7b4f,
     nose: 0xe3edd7,
     tail: 0x5e7b4f,
@@ -697,6 +703,7 @@ function init() {
   plane.userData.propeller = player.propeller;
 
   const enemyColors = {
+    nation: "germany",
     body: 0x274d7e,
     nose: 0xb8d3ef,
     tail: 0x274d7e,
@@ -730,11 +737,22 @@ function init() {
     depthWrite: false
   });
 
+  // Clear held controls when focus leaves the game, and pause rather than flying unattended.
+  window.addEventListener('blur',()=>{keys.clear();fireHeld=fireHeld2=false;if(modeState==='playing'&&!gameOver){paused=true;document.getElementById('pause-overlay').style.display='flex';}});
+  document.getElementById('briefing-button').addEventListener('click',()=>{resetGame();setModeState('menu');});
+  document.addEventListener('pointerdown',startAudio,{once:true});
   // Events
   window.addEventListener('resize', onResize);
   document.addEventListener('fullscreenchange', onResize);
   window.addEventListener('keydown', (e) => {
+    if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','Enter'].includes(e.code)) e.preventDefault();
+    startAudio();
     if (e.repeat) return;
+    if (e.code === 'Escape') { resetGame(); setModeState('menu'); return; }
+    if (e.code === 'KeyP' && modeState === 'playing' && !gameOver) { paused=!paused; document.getElementById('pause-overlay').style.display=paused?'flex':'none'; return; }
+    if (e.code === 'KeyH') document.body.classList.toggle('hide-instruments');
+    if (e.code === 'KeyM') audioMuted=!audioMuted;
+
     keys.add(e.key.toLowerCase());
     if ((e.key === 'x' || e.key === 'X') && gameOver && baseLostContinueAvailable) {
       continueAfterBaseDestroyed();
@@ -771,167 +789,21 @@ function init() {
   setGameMode(gameMode);
 }
 
-function createGround() {
-  // Green ground plane + voxel bumps
-  const groundMat = new THREE.MeshLambertMaterial({
-    color: 0x2f6b34,
-    polygonOffset: true,
-    polygonOffsetFactor: 4,
-    polygonOffsetUnits: 8
-  });
-  const base = new THREE.Mesh(
-    new THREE.PlaneGeometry(8200, 8200),
-    groundMat
-  );
-  base.rotation.x = -Math.PI/2;
-  base.position.y = groundY;
-  base.receiveShadow = false;
-  worldRoot.add(base);
+function createGround() { realism.ground(worldRoot); }
 
-  const boundary = new THREE.Mesh(
-    new THREE.RingGeometry(OPERATION_RADIUS - 2, OPERATION_RADIUS, 96),
-    new THREE.MeshBasicMaterial({ color: 0xe8f6ff, transparent: true, opacity: 0.38, side: THREE.DoubleSide })
-  );
-  boundary.rotation.x = -Math.PI / 2;
-  boundary.position.y = groundY + 0.08;
-  worldRoot.add(boundary);
-
-  // Gentle voxel grass/hills spread across the enlarged operation area.
-  const tile = new THREE.BoxGeometry(4, 0.18, 4);
-  const greens = [0x245c2b, 0x2f7335, 0x3f873d, 0x4d9447, 0x356b2f, 0x5a7f37, 0x6a8e45];
-  const grassRadius = OPERATION_RADIUS * 0.96;
-  for (let i = 0; i < 900; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const radius = Math.sqrt(Math.random()) * grassRadius;
-    const x = Math.cos(angle) * radius;
-    const z = Math.sin(angle) * radius;
-    // Keep clear corridors around both parallel runways to avoid green patch intrusions.
-    const nearRunwayL = Math.abs(x - RUNWAY_LEFT_X) < 8;
-    const nearRunwayR = Math.abs(x - RUNWAY_RIGHT_X) < 8;
-    const inRunway = (nearRunwayL || nearRunwayR) && z > -140 && z < 210;
-    const nearBaseCore = Math.abs(x) < 115 && z > -140 && z < 210;
-    if (inRunway || (nearBaseCore && Math.random() < 0.72)) continue;
-    const h = 0.45 + Math.random() * 1.3;
-    const mat = new THREE.MeshLambertMaterial({ color: greens[Math.floor(Math.random() * greens.length)] });
-    const box = new THREE.Mesh(tile, mat);
-    box.scale.set(0.6 + Math.random() * 2.0, h, 0.6 + Math.random() * 2.0);
-    box.position.set(x, groundY + 0.09 * h, z);
-    worldRoot.add(box);
-  }
-}
-
-function createClouds(cfg) {
-  if (cloudGroup) worldRoot.remove(cloudGroup);
-  cloudGroup = new THREE.Group();
-  const cloudMat = new THREE.MeshLambertMaterial({ color: cfg.cloudColor });
-  const cloudRadius = OPERATION_RADIUS * 0.92;
-  const addCloudCluster = (altitude, chunksMin, chunksVar, flatness, placement) => {
-    const g = new THREE.Group();
-    const chunks = chunksMin + Math.floor(Math.random() * chunksVar);
-    for (let j=0; j<chunks; j++) {
-      const geom = new THREE.BoxGeometry(
-        9 + Math.random() * 10,
-        2 + Math.random() * 2.2 * flatness,
-        9 + Math.random() * 10
-      );
-      const p = new THREE.Mesh(geom, cloudMat);
-      p.position.set((j-1.5)*5 + (Math.random()*2-1), (Math.random()*2-1), (Math.random()*2-1));
-      g.add(p);
-    }
-    if (placement) {
-      g.position.set(placement.x, altitude, placement.z);
-    } else {
-      const angle = Math.random() * Math.PI * 2;
-      const radius = Math.sqrt(Math.random()) * cloudRadius;
-      g.position.set(Math.cos(angle) * radius, altitude, Math.sin(angle) * radius);
-    }
-    cloudGroup.add(g);
-  };
-
-  for (let i = 0; i < cfg.deckCount; i++) {
-    if (Math.random() < cfg.deckHoleChance) continue;
-    const y = cfg.deckAltitude + (Math.random() - 0.5) * cfg.deckThickness;
-    addCloudCluster(y, cfg.deckChunksMin, cfg.deckChunksVar, 0.75);
-  }
-  for (let i = 0; i < cfg.highCloudCount; i++) {
-    const y = cfg.highAltitudeMin + Math.random() * cfg.highAltitudeSpan;
-    addCloudCluster(y, cfg.highChunksMin, cfg.highChunksVar, 1.0);
-  }
-
-  // Extra local cloud decks keep the sky above the base populated after the map radius grew.
-  const localDeckCount = Math.round(cfg.deckCount * 0.72);
-  const localHighCount = Math.round(cfg.highCloudCount * 0.75);
-  const addLocal = (count, minAlt, altSpan, chunksMin, chunksVar, flatness, radiusMax, runwayBias) => {
-    for (let i = 0; i < count; i++) {
-      if (Math.random() < cfg.deckHoleChance * 0.35) continue;
-      const y = minAlt + Math.random() * altSpan;
-      let x;
-      let z;
-      if (Math.random() < runwayBias) {
-        x = -220 + Math.random() * 440;
-        z = -380 + Math.random() * 760;
-      } else {
-        const angle = Math.random() * Math.PI * 2;
-        const radius = Math.sqrt(Math.random()) * radiusMax;
-        x = Math.cos(angle) * radius;
-        z = Math.sin(angle) * radius;
-      }
-      addCloudCluster(y, chunksMin, chunksVar + 1, flatness, { x, z });
-    }
-  };
-  addLocal(localDeckCount, cfg.deckAltitude - cfg.deckThickness * 0.5, cfg.deckThickness, cfg.deckChunksMin + 1, cfg.deckChunksVar + 1, 0.7, 1250, 0.55);
-  addLocal(localHighCount, cfg.highAltitudeMin, cfg.highAltitudeSpan, cfg.highChunksMin, cfg.highChunksVar + 1, 0.95, 1500, 0.35);
-  if (cfg.rain) {
-    // Rainy weather uses stacked bands instead of one flat overcast layer.
-    const stormLayers = [
-      { count: Math.round(cfg.deckCount * 0.28), minAlt: 34, altSpan: 20, chunksMin: 2, chunksVar: 3, flatness: 0.55, radiusMax: 1450, runwayBias: 0.65 },
-      { count: Math.round(cfg.deckCount * 0.34), minAlt: 76, altSpan: 28, chunksMin: 3, chunksVar: 4, flatness: 0.75, radiusMax: 1750, runwayBias: 0.45 },
-      { count: Math.round(cfg.highCloudCount * 0.8), minAlt: 128, altSpan: 46, chunksMin: 2, chunksVar: 3, flatness: 0.95, radiusMax: 1900, runwayBias: 0.25 },
-    ];
-    stormLayers.forEach((layer) => {
-      addLocal(layer.count, layer.minAlt, layer.altSpan, layer.chunksMin, layer.chunksVar, layer.flatness, layer.radiusMax, layer.runwayBias);
-    });
-  }
-  worldRoot.add(cloudGroup);
-}
+function createClouds(cfg) { cloudGroup = realism.clouds(worldRoot, cfg, cloudGroup); }
 
 function createRain(count) {
-  if (rainGroup) worldRoot.remove(rainGroup);
-  rainGroup = new THREE.InstancedMesh(
-    new THREE.CylinderGeometry(0.012, 0.012, 0.9, 6),
-    new THREE.MeshBasicMaterial({
-      color: 0xbfe8ff,
-      transparent: true,
-      opacity: 0.48
-    }),
-    count
-  );
-  const dummy = new THREE.Object3D();
-  const drops = [];
-  for (let i = 0; i < count; i++) {
-    const drop = {
-      x: -680 + Math.random() * 1360,
-      y: 8 + Math.random() * 230,
-      z: -680 + Math.random() * 1360,
-      fall: 34 + Math.random() * 36
-    };
-    drops.push(drop);
-    dummy.position.set(drop.x, drop.y, drop.z);
-    dummy.rotation.set(0, 0, -0.18);
-    dummy.updateMatrix();
-    rainGroup.setMatrixAt(i, dummy.matrix);
-  }
-  rainGroup.userData.drops = drops;
-  rainGroup.userData.dummy = dummy;
-  rainGroup.userData.count = count;
-  rainGroup.instanceMatrix.needsUpdate = true;
-  worldRoot.add(rainGroup);
+  if(rainGroup){worldRoot.remove(rainGroup);rainGroup.geometry.dispose();rainGroup.material.dispose();}
+  rainGroup=realism.createRain(worldRoot,count);
 }
 
 function applyWeather(nextWeather) {
   const cfg = weatherProfiles[nextWeather];
   if (!cfg || !scene || !worldRoot) return;
   weather = nextWeather;
+  realism.weather(nextWeather, cfg);
+  [btnSunny,btnCloudy,btnRainy].forEach((b,i)=>{if(b)b.setAttribute("aria-pressed", String(["sunny","cloudy","rainy"][i]===weather));});
   scene.background = new THREE.Color(cfg.sky);
   if (scene.fog) {
     scene.fog.color.setHex(cfg.fog);
@@ -953,40 +825,8 @@ function applyWeather(nextWeather) {
 }
 
 function updateWeatherEffects(dt) {
-  if (!rainGroup || !rainGroup.visible) return;
-  if (rainGroup.isInstancedMesh) {
-    const drops = rainGroup.userData.drops || [];
-    const dummy = rainGroup.userData.dummy || new THREE.Object3D();
-    for (let i = 0; i < drops.length; i++) {
-      const drop = drops[i];
-      drop.y -= drop.fall * dt;
-      drop.x += 1.9 * dt;
-      if (drop.y < groundY + 1) {
-        drop.y = 125 + Math.random() * 115;
-        drop.x = -680 + Math.random() * 1360;
-        drop.z = -680 + Math.random() * 1360;
-      } else if (drop.x > 680) {
-        drop.x = -680;
-      }
-      dummy.position.set(drop.x, drop.y, drop.z);
-      dummy.rotation.set(0, 0, -0.18);
-      dummy.updateMatrix();
-      rainGroup.setMatrixAt(i, dummy.matrix);
-    }
-    rainGroup.instanceMatrix.needsUpdate = true;
-    return;
-  }
-  for (const drop of rainGroup.children) {
-    drop.position.y -= drop.userData.fall * dt;
-    drop.position.x += 1.4 * dt;
-    if (drop.position.y < groundY + 1) {
-      drop.position.y = 120 + Math.random() * 90;
-      drop.position.x = -430 + Math.random() * 860;
-      drop.position.z = -430 + Math.random() * 860;
-    } else if (drop.position.x > 430) {
-      drop.position.x = -430;
-    }
-  }
+  if (cloudGroup) cloudGroup.position.x = (cloudGroup.position.x + dt * .8) % 700;
+  if (rainGroup?.visible) rainGroup.material.uniforms.time.value += dt;
 }
 
 function createBuildings() {
@@ -1023,8 +863,8 @@ function createBuildings() {
   const stripeMat = new THREE.MeshLambertMaterial({ color: 0xd9d9d9, polygonOffset: true, polygonOffsetFactor: -10, polygonOffsetUnits: -20 });
   runwayCenters.forEach((cx) => {
     for (let i = -5; i <= 5; i++) {
-      const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.04, 3.6), stripeMat);
-      stripe.position.set(cx, groundY + 0.185, RUNWAY_CENTER_Z + i * 20);
+      const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.002, 2.7), stripeMat);
+      stripe.position.set(cx, groundY + 0.162, RUNWAY_CENTER_Z + i * 20);
       stripe.renderOrder = 3;
       worldRoot.add(stripe);
       runwayStripes.push(stripe);
@@ -1043,23 +883,14 @@ function createBuildings() {
   ];
   hangarPositions.forEach(([x, y, z]) => {
     const h = new THREE.Mesh(hangarGeom, hangarMat);
-    h.position.set(x, groundY + y, z);
+    h.position.set(x, groundY + y + .16, z);
+    h.rotation.y=x<0?Math.PI/2:-Math.PI/2;
+    h.name="runway-facing-hangar";h.userData.kind="hangar";
     addBuilding(h);
   });
 
-  // Control tower
-  const towerBase = new THREE.Mesh(
-    new THREE.BoxGeometry(2.2, 3.4, 2.2),
-    new THREE.MeshLambertMaterial({ color: 0x4c5865 })
-  );
-  towerBase.position.set(-24, groundY + 1.7, -70);
-  addBuilding(towerBase);
-  const towerTop = new THREE.Mesh(
-    new THREE.BoxGeometry(3.0, 1.0, 3.0),
-    new THREE.MeshLambertMaterial({ color: 0x8da2b8 })
-  );
-  towerTop.position.set(-24, groundY + 3.9, -70);
-  addBuilding(towerTop);
+  // WWII watch office and service access form one destructible building.
+  addBuilding(realism.controlTower(new THREE.Vector3(-24,0,-70)));
 
   // Barracks + storage
   const barracksMat = new THREE.MeshLambertMaterial({ color: 0x55614d });
@@ -1078,132 +909,7 @@ function rebuildBuildingBoxes() {
     .map((mesh) => new THREE.Box3().setFromObject(mesh).expandByScalar(0.4));
 }
 
-function createPlane(colors, position) {
-  const group = new THREE.Group();
-  const planeModelScale = 0.42; // ~12 m aircraft length when 1u = 10 m.
-  const bodyMat = new THREE.MeshLambertMaterial({ color: colors.body });
-  const wingMat = new THREE.MeshLambertMaterial({ color: colors.wing });
-  const tailMat = new THREE.MeshLambertMaterial({ color: colors.tail });
-  const noseMat = new THREE.MeshLambertMaterial({ color: colors.nose });
-  const vstabMat = new THREE.MeshLambertMaterial({ color: colors.vstab });
-
-  // Two-section tapered fuselage: broad front, tighter rear taper.
-  const fuselage = new THREE.Group();
-  const fuselageNoseZ = -1.17;
-  const fuselageSplitZ = 0.16;
-  const fuselageTailZ = 1.53;
-  const fuselageMidRadius = 0.18;
-  const fuselageFront = new THREE.Mesh(
-    new THREE.CylinderGeometry(fuselageMidRadius, 0.20, fuselageSplitZ - fuselageNoseZ, 18),
-    bodyMat
-  );
-  fuselageFront.rotation.x = Math.PI / 2;
-  fuselageFront.position.set(0, 0.03, (fuselageNoseZ + fuselageSplitZ) * 0.5);
-  fuselage.add(fuselageFront);
-  const fuselageRear = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.03, fuselageMidRadius, fuselageTailZ - fuselageSplitZ, 18),
-    bodyMat
-  );
-  fuselageRear.rotation.x = Math.PI / 2;
-  fuselageRear.position.set(0, 0.03, (fuselageSplitZ + fuselageTailZ) * 0.5);
-  fuselage.add(fuselageRear);
-  group.add(fuselage);
-
-  // Engine cowling + spinner
-  const cowling = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.21, 0.21, 0.34, 14),
-    noseMat
-  );
-  cowling.rotation.x = Math.PI / 2;
-  cowling.position.set(0, 0.03, -1.2);
-  group.add(cowling);
-
-  const spinner = new THREE.Mesh(
-    new THREE.ConeGeometry(0.16, 0.16, 14),
-    noseMat
-  );
-  spinner.rotation.x = -Math.PI / 2;
-  spinner.position.set(0, 0.04, -1.44);
-  group.add(spinner);
-
-  // Canopy bubble
-  const canopy = new THREE.Mesh(
-    new THREE.SphereGeometry(0.16, 10, 8),
-    new THREE.MeshLambertMaterial({ color: 0x9ec7ff })
-  );
-  canopy.scale.set(1.05, 0.72, 1.55);
-  canopy.position.set(0, 0.2, 0.03);
-  group.add(canopy);
-
-  // Dorsal cone fairing: starts just behind canopy and tapers to tail.
-  const dorsalCone = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.03, 0.135, 1.5, 14),
-    bodyMat
-  );
-  dorsalCone.rotation.x = Math.PI / 2 + 0.10;
-  dorsalCone.position.set(0, 0.10, 0.80);
-  group.add(dorsalCone);
-
-  // Elliptical wings/tailplanes
-  const wingMain = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 12), wingMat);
-  wingMain.scale.set(1.52, 0.05, 0.34);
-  wingMain.position.set(0, -0.04, -0.2);
-  group.add(wingMain);
-  const tailPlane = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 10), tailMat);
-  tailPlane.scale.set(0.56, 0.035, 0.16);
-  tailPlane.position.set(0, 0.07, 1.3);
-  group.add(tailPlane);
-
-  const vstab = new THREE.Mesh(new THREE.SphereGeometry(1, 14, 10), vstabMat);
-  vstab.scale.set(0.028, 0.31, 0.28);
-  vstab.position.set(0, 0.22, 1.32);
-  group.add(vstab);
-
-  // Fixed propeller pivot: hub remains centered, blades rotate around hub axis only.
-  const propGroup = new THREE.Group();
-  const propMat = new THREE.MeshLambertMaterial({ color: 0x2a2a2a });
-  const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.16, 10), propMat);
-  hub.rotation.x = Math.PI / 2;
-  propGroup.add(hub);
-
-  const bladeGeometry = new THREE.BoxGeometry(0.07, 0.42, 0.1);
-  for (let i = 0; i < 3; i++) {
-    const bladePivot = new THREE.Group();
-    bladePivot.rotation.z = (Math.PI * 2 * i) / 3;
-    const blade = new THREE.Mesh(bladeGeometry, propMat);
-    blade.position.set(0, 0.21, 0);
-    bladePivot.add(blade);
-    propGroup.add(bladePivot);
-  }
-  propGroup.position.set(0, 0.04, -1.50);
-  group.add(propGroup);
-
-  // Wing gun barrels (aligned with bullet spawn points)
-  const barrelMat = new THREE.MeshLambertMaterial({ color: 0x2f343a });
-  const barrelL = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, GUN_BARREL_LEN, 10), barrelMat);
-  barrelL.rotation.x = Math.PI / 2;
-  barrelL.position.set(-GUN_MOUNT_X, GUN_MOUNT_Y, GUN_MOUNT_Z);
-  group.add(barrelL);
-  const barrelR = barrelL.clone();
-  barrelR.position.x = GUN_MOUNT_X;
-  group.add(barrelR);
-
-  // Subtle wheel hints
-  const wheelMat = new THREE.MeshLambertMaterial({ color: 0x1c2229 });
-  const tailWheel = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.025, 10), wheelMat);
-  tailWheel.rotation.z = Math.PI / 2;
-  tailWheel.position.set(0, -0.12, 1.38);
-  group.add(tailWheel);
-
-  const planeGroup = new THREE.Group();
-  group.scale.setScalar(planeModelScale);
-  planeGroup.add(group);
-  planeGroup.position.copy(position);
-  planeGroup.rotation.order = "ZYX"; // roll (Z), pitch (X), yaw (Y) stability
-  worldRoot.add(planeGroup);
-
-  return { plane: planeGroup, body: group, propeller: propGroup };
-}
+function createPlane(colors, position) { return realism.aircraft(worldRoot, colors, position); }
 
 function createMissionMissile() {
   const missile = new THREE.Group();
@@ -1338,6 +1044,12 @@ function setGameMode(nextMode) {
 
 function setModeState(nextState) {
   modeState = nextState;
+  document.body.dataset.state = nextState;
+  paused = false;
+  document.getElementById('pause-overlay').style.display='none';
+  keys.clear(); fireHeld = fireHeld2 = false;
+  if (nextState === 'menu') { gameOver = false; gameoverEl.style.display='none'; }
+
   if (menuEl) menuEl.style.display = modeState === "menu" ? "flex" : "none";
   if (crosshairSingle && crosshairLeft && crosshairRight) {
     const duo = gameMode === "duo";
@@ -1362,18 +1074,22 @@ function toggleFullscreen() {
 }
 
 function setCameras(targetPlane, cam) {
+  if (modeState === "menu") {
+    const a = -0.65 + Math.sin(performance.now() * .00009) * .11;
+    cam.position.copy(targetPlane.position).add(new THREE.Vector3(Math.sin(a)*2.6, .59, -Math.cos(a)*2.6));
+    cam.up.set(0,1,0);
+    cam.lookAt(targetPlane.position.clone().add(new THREE.Vector3(.85,.12,0)));
+    return;
+  }
   if (mode === "chase") {
-    // Behind and slightly above the plane (positive Z is behind in local space)
-    const offset = new THREE.Vector3(0, 1.2, 6);
-    cam.position.copy(targetPlane.localToWorld(offset));
-    cam.quaternion.copy(targetPlane.quaternion);
+    const desired = targetPlane.localToWorld(new THREE.Vector3(0,.72,2.75));
+    cam.position.lerp(desired, 1-Math.exp(-cameraDt*9));
+    cam.up.set(0,1,0).lerp(new THREE.Vector3(0,1,0).applyQuaternion(targetPlane.quaternion),.35);
+    cam.lookAt(targetPlane.localToWorld(new THREE.Vector3(0,.18,-5)));
   } else {
-    // Pilot view from inside the cockpit canopy, looking over the cowling.
-    const camPos = targetPlane.localToWorld(new THREE.Vector3(0, 0.28, -0.08));
-    const lookAt = targetPlane.localToWorld(new THREE.Vector3(0, 0.18, -28));
-    cam.position.copy(camPos);
-    cam.up.set(0, 1, 0).applyQuaternion(targetPlane.quaternion);
-    cam.lookAt(lookAt);
+    cam.position.copy(targetPlane.localToWorld(new THREE.Vector3(0,.113,.035)));
+    cam.up.set(0,1,0).applyQuaternion(targetPlane.quaternion);
+    cam.lookAt(targetPlane.localToWorld(new THREE.Vector3(0,.12,-28)));
   }
 }
 
@@ -1408,7 +1124,7 @@ function updateHUD() {
         `HP    : ${playerHP.toFixed(0)}`,
         `Fuel  : ${playerFuel.toFixed(0)}`,
         `Ammo  : ${playerAmmo}`,
-        `Speed : ${speed.toFixed(1)} u/s`,
+        `Speed : ${Math.round(speed*36)} km/h`,
         `Base  : ${baseDestroyed ? "DESTROYED" : "OK"}`,
         `Hit   : ${playerHitTimer > 0 ? "HIT" : "-"}`,
       ].join("\n");
@@ -1418,7 +1134,7 @@ function updateHUD() {
         `HP    : ${enemyHP.toFixed(0)}`,
         `Fuel  : ${enemyFuel.toFixed(0)}`,
         `Ammo  : ${enemyAmmo}`,
-        `Speed : ${speedP2.toFixed(1)} u/s`,
+        `Speed : ${Math.round(speedP2*36)} km/h`,
         `Missile: ${missileLaunched ? "USED" : "RShift"}`,
         `Base  : ${baseDestroyed ? "DESTROYED" : "OK"}`,
         `Hit   : ${enemyHitTimer > 0 ? "HIT" : "-"}`,
@@ -1430,7 +1146,7 @@ function updateHUD() {
       `HP    : ME ${playerHP.toFixed(0)} / ENY ${enemyHP.toFixed(0)}`,
       `Fuel  : ME ${playerFuel.toFixed(0)} / ENY ${enemyFuel.toFixed(0)}`,
       `Ammo  : ME ${playerAmmo} / ENY ${enemyAmmo}`,
-      `Speed : ${speed.toFixed(1)} u/s`,
+      `Speed : ${Math.round(speed*36)} km/h`,
       `Thr   : ${(throttle * 100).toFixed(0)} %`,
       `Mission: ${missionPhase === "attack-run" ? "INTERCEPT" : (missionPhase === "missile-away" ? "MISSILE" : (missionPhase === "base-hit" ? "IMPACT" : (missionPhase === "revenge" ? "CHASE" : "DOGFIGHT")))}`,
       `Hit   : ${enemyHitTimer > 0 ? "ENEMY" : (playerHitTimer > 0 ? "YOU" : "-")}`,
@@ -1440,16 +1156,21 @@ function updateHUD() {
 }
 
 function applyControls(targetPlane, yawInput, pitchInput, dt, yawRateValue = yawRate, pitchRateValue = pitchRate) {
+  const previous = targetPlane.userData.control || {yaw:0,pitch:0};
+  previous.yaw=THREE.MathUtils.damp(previous.yaw,yawInput,4,dt);
+  previous.pitch=THREE.MathUtils.damp(previous.pitch,pitchInput,4,dt);
+  targetPlane.userData.control=previous;
+  yawInput=previous.yaw; pitchInput=previous.pitch;
   let yawDelta = 0;
-  if (yawInput > 0) yawDelta += yawRateValue * dt;
-  if (yawInput < 0) yawDelta -= yawRateValue * dt;
+  if (yawInput > 0) yawDelta += yawRateValue * yawInput * dt;
+  if (yawInput < 0) yawDelta += yawRateValue * yawInput * dt;
   if (yawDelta !== 0) {
     const upAxis = new THREE.Vector3(0,1,0).applyQuaternion(targetPlane.quaternion).normalize();
     targetPlane.rotateOnWorldAxis(upAxis, yawDelta);
   }
 
-  if (pitchInput > 0) targetPlane.rotateOnAxis(new THREE.Vector3(1,0,0), +pitchRateValue * dt);
-  if (pitchInput < 0) targetPlane.rotateOnAxis(new THREE.Vector3(1,0,0), -pitchRateValue * dt);
+  if (pitchInput > 0) targetPlane.rotateOnAxis(new THREE.Vector3(1,0,0), pitchRateValue * pitchInput * dt);
+  if (pitchInput < 0) targetPlane.rotateOnAxis(new THREE.Vector3(1,0,0), pitchRateValue * pitchInput * dt);
 
   const xAxis = new THREE.Vector3();
   const yAxis = new THREE.Vector3();
@@ -1468,7 +1189,7 @@ function applyControls(targetPlane, yawInput, pitchInput, dt, yawRateValue = yaw
   const nearVertical = Math.abs(pitchBase) > THREE.MathUtils.degToRad(70);
 
   if (!nearVertical && !inverted) {
-    const desiredRoll = -yawInput * THREE.MathUtils.degToRad(25);
+    const desiredRoll = -yawInput * THREE.MathUtils.degToRad(38);
     const rollDiff = desiredRoll - rollRad;
     const rollStep = clamp(rollDiff, -rollRate * dt, rollRate * dt);
     if (Math.abs(rollStep) > 1e-5) {
@@ -1502,7 +1223,9 @@ function handleInput(dt) {
 }
 
 function integrateMotion(dt) {
-  speed = THREE.MathUtils.damp(speed, targetPlayerSpeed(), 2.0, dt);
+  const forward = new THREE.Vector3(0,0,-1).applyQuaternion(plane.quaternion);
+  const energyTarget = clamp(targetPlayerSpeed() - forward.y * 3, minSpeed, maxSpeed);
+  speed = THREE.MathUtils.damp(speed, energyTarget, .7, dt);
   playerFuel = burnFuelByDistance(playerFuel, playerTankFuel, speed * dt);
 
   // Move along the plane's forward direction (-Z in local space)
@@ -1543,7 +1266,10 @@ function updateEnemy(dt) {
     const tailDetectRange = missionPhase === "attack-run" ? 90 : 280;
     const aimDetectRange = missionPhase === "attack-run" ? 75 : 240;
     const playerOnTail = enemyMoveDir.dot(playerFromEnemy) < -0.35 && playerAim > 0.35 && enemyDistance < tailDetectRange;
-    const threat = (playerAim > 0.72 && enemyDistance < aimDetectRange) || playerOnTail || enemyDistance < 70;
+    const relativeVelocity=enemyMoveDir.clone().multiplyScalar(speedP2).addScaledVector(playerMoveDir,-speed);
+    const closestTime=-enemyFromPlayer.dot(relativeVelocity)/Math.max(.001,relativeVelocity.lengthSq());
+    const collisionThreat=closestTime>0&&closestTime<3.5&&enemyFromPlayer.clone().addScaledVector(relativeVelocity,closestTime).length()<14;
+    const threat = collisionThreat || (playerAim > 0.72 && enemyDistance < aimDetectRange) || playerOnTail || enemyDistance < 70;
 
     if (threat && enemyEvadeTimer <= 0.05) {
       enemyEvadeSide = Math.abs(sideCross) > 0.05 ? (sideCross >= 0 ? 1 : -1) : -enemyEvadeSide;
@@ -1560,7 +1286,21 @@ function updateEnemy(dt) {
     let targetX;
     let targetZ;
     let desiredAlt;
-    if (enemyEvadeTimer > 0) {
+    const escaping=missileLaunched||missionPhase==="revenge";
+    if (escaping) {
+      // Keep the climbing departure as the baseline, with short lateral breaks under pursuit.
+      const radius=Math.max(1,horizontalRadius(enemy));
+      const radialX=radius>10?enemy.position.x/radius:enemyMoveDir.x;
+      const radialZ=radius>10?enemy.position.z/radius:enemyMoveDir.z;
+      targetX=enemy.position.x+radialX*350;
+      targetZ=enemy.position.z+radialZ*350;
+      desiredAlt=realism.cloudCeiling()+65;
+      if(enemyEvadeTimer>0){
+        targetX+=-radialZ*enemyEvadeSide*230+awayVec.x*65;
+        targetZ+=radialX*enemyEvadeSide*230+awayVec.z*65;
+        desiredAlt=Math.max(desiredAlt,enemy.position.y+18);
+      }
+    } else if (enemyEvadeTimer > 0) {
       const tailPressure = playerOnTail ? 1.25 : 1.0;
       const forwardBias = enemyEvadeMode === 0 ? 15 : -20;
       targetX = enemy.position.x + awayVec.x * 75 * tailPressure + sideVec.x * 120 * tailPressure + playerMoveDir.x * forwardBias;
@@ -1571,13 +1311,6 @@ function updateEnemy(dt) {
       targetX = BASE_TARGET.x;
       targetZ = BASE_TARGET.z;
       desiredAlt = clamp(24, groundY + 18, 42);
-    } else if (missionPhase === "revenge") {
-      const radial = new THREE.Vector3(enemy.position.x, 0, enemy.position.z);
-      if (radial.lengthSq() < 0.001) radial.set(1, 0, 0);
-      radial.normalize();
-      targetX = enemy.position.x + radial.x * 220;
-      targetZ = enemy.position.z + radial.z * 220;
-      desiredAlt = clamp(enemy.position.y + 8, groundY + 18, 110);
     } else if (enemyDistance > 170) {
       targetX = plane.position.x + playerMoveDir.x * 70 + sideVec.x * 35;
       targetZ = plane.position.z + playerMoveDir.z * 70 + sideVec.z * 35;
@@ -1588,7 +1321,15 @@ function updateEnemy(dt) {
       desiredAlt = clamp(plane.position.y + 18, groundY + 16, 130);
     }
 
-    if (missionPhase !== "revenge") {
+    if(collisionThreat){
+      // Break across our own heading before the predicted closest approach.
+      // Retain the chosen side through the manoeuvre instead of oscillating every frame.
+      targetX=enemy.position.x+enemyMoveDir.x*70-enemyMoveDir.z*enemyEvadeSide*160+awayVec.x*50;
+      targetZ=enemy.position.z+enemyMoveDir.z*70+enemyMoveDir.x*enemyEvadeSide*160+awayVec.z*50;
+      desiredAlt=Math.max(desiredAlt,enemy.position.y+25);
+    }
+
+    if (!escaping) {
       const radius = horizontalRadius(enemy);
       if (radius > OPERATION_RADIUS - 90) {
         targetX += -enemy.position.x / Math.max(1, radius) * 180;
@@ -1596,26 +1337,38 @@ function updateEnemy(dt) {
       }
     }
 
-    const boundedTarget = missionPhase === "revenge"
+    const boundedTarget = escaping
       ? { x: targetX, z: targetZ }
       : clampTargetToOperationCircle(targetX, targetZ);
     const dx = wrapDelta(enemy.position.x, boundedTarget.x);
     const dz = wrapDelta(enemy.position.z, boundedTarget.z);
     const horizontal = Math.max(0.001, Math.hypot(dx, dz));
+    // Sample both the current flight path and intended turn corridor before pitching.
+    // Terrain safety takes precedence over attack altitude and evasive dives.
+    let terrainPitch=-Math.PI/2;
+    const currentHorizontal=Math.max(.001,Math.hypot(enemyMoveDir.x,enemyMoveDir.z));
+    for(const [hx,hz] of [[enemyMoveDir.x/currentHorizontal,enemyMoveDir.z/currentHorizontal],[dx/horizontal,dz/horizontal]]){
+      for(const ahead of [0,35,80,160,300])for(const side of [-12,0,12]){
+        const x=enemy.position.x+hx*ahead-hz*side,z=enemy.position.z+hz*ahead+hx*side;
+        const safeAltitude=realism.surfaceHeight(x,z)+30;
+        terrainPitch=Math.max(terrainPitch,Math.atan2(safeAltitude-enemy.position.y,Math.max(35,ahead)));
+      }
+    }
     const dy = desiredAlt - enemy.position.y;
 
-    const yawTarget = Math.atan2(dx, -dz);
-    const pitchTarget = clamp(Math.atan2(dy, horizontal), THREE.MathUtils.degToRad(-28), THREE.MathUtils.degToRad(28));
+    const yawTarget = Math.atan2(-dx, -dz);
+    const pitchTarget = clamp(Math.max(Math.atan2(dy, horizontal),terrainPitch), THREE.MathUtils.degToRad(-28), THREE.MathUtils.degToRad(escaping?35:40));
 
     const yawDiff = ((yawTarget - enemyYaw + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
-    const yawStep = clamp(yawDiff, -p2YawRate * dt, p2YawRate * dt);
+    const turnRate=collisionThreat?p2YawRate*1.4:p2YawRate;
+    const yawStep = clamp(yawDiff, -turnRate * dt, turnRate * dt);
     enemyYaw += yawStep;
 
     const pitchDiff = pitchTarget - enemyPitch;
     enemyPitch += clamp(pitchDiff, -p2PitchRate * dt, p2PitchRate * dt);
 
-    const turnFraction = clamp(yawStep / Math.max(0.0001, p2YawRate * dt), -1, 1);
-    const targetRoll = turnFraction * THREE.MathUtils.degToRad(30);
+    const turnFraction = clamp(yawStep / Math.max(0.0001, turnRate * dt), -1, 1);
+    const targetRoll = turnFraction * THREE.MathUtils.degToRad(collisionThreat?40:30);
     enemyRoll += clamp(targetRoll - enemyRoll, -rollRate * dt, rollRate * dt);
 
     enemy.quaternion.setFromEuler(new THREE.Euler(enemyPitch, enemyYaw, enemyRoll, "YXZ"));
@@ -1623,23 +1376,17 @@ function updateEnemy(dt) {
     speedP2 = THREE.MathUtils.damp(speedP2, targetEnemySpeed(), 2.0, dt);
     const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(enemy.quaternion);
     enemy.position.addScaledVector(dir, speedP2 * dt);
-    enemy.position.y = clamp(enemy.position.y, groundY + 12, 160);
 
-    enemyFuel = burnFuelByDistance(enemyFuel, enemyTankFuel, speedP2 * dt);
+    // Solo sorties include the inbound leg, climbing departure and a turn after release.
+    enemyFuel = burnFuelByDistance(enemyFuel, enemyTankFuel, speedP2 * dt / 1.4);
 
   }
 }
 
 function spawnBullet(fromPlane, collection, material) {
-  const modelRoot = fromPlane.children[0] || fromPlane;
-  const muzzleOffsets = [
-    new THREE.Vector3(-GUN_MOUNT_X, GUN_MOUNT_Y, GUN_MOUNT_Z - GUN_BARREL_LEN * 0.5 + 0.01),
-    new THREE.Vector3(GUN_MOUNT_X, GUN_MOUNT_Y, GUN_MOUNT_Z - GUN_BARREL_LEN * 0.5 + 0.01),
-  ];
-  const convergencePoint = modelRoot.localToWorld(new THREE.Vector3(0, 0.02, -120));
-  for (const muzzleOffset of muzzleOffsets) {
+  const {origins, target:convergencePoint} = realism.gunSolution(fromPlane);
+  for (const muzzleWorld of origins) {
     const bullet = new THREE.Mesh(bulletGeom, material);
-    const muzzleWorld = modelRoot.localToWorld(muzzleOffset.clone());
     const velocityDir = convergencePoint.clone().sub(muzzleWorld).normalize();
     bullet.position.copy(muzzleWorld);
     bullet.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), velocityDir);
@@ -1722,6 +1469,16 @@ function updateCombat(dt) {
 }
 
 function updatePropellers(dt) {
+  for (const aircraft of [plane,enemy]) {
+    const agl = aircraft.position.y-realism.height(aircraft.position.x,aircraft.position.z);
+    const gear = aircraft.userData.gear;
+    // Hysteresis prevents cycling when skimming the automatic gear altitude threshold.
+    if(agl>2.5)gear.userData.target=1;
+    else if(agl<1.5)gear.userData.target=0;
+    const current=gear.userData.retracted||0,target=gear.userData.target||0;
+    realism.setGear(aircraft,THREE.MathUtils.damp(current,target,1.8,dt));
+  }
+  updateAudio();
   const playerThrottleForSpin = gameMode === "single" ? throttle : 0.6;
   const spin = 42 + speed * 1.25 + playerThrottleForSpin * 90;
   if (plane.userData.propeller) {
@@ -1747,8 +1504,9 @@ function launchEnemyMissile(target = BASE_TARGET.clone()) {
 
 function getGunAimGroundPoint(shooter) {
   shooter.updateMatrixWorld(true);
-  const origin = new THREE.Vector3(0, GUN_MOUNT_Y, GUN_MOUNT_Z).applyMatrix4(shooter.matrixWorld);
-  const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(shooter.quaternion).normalize();
+  const solution=realism.gunSolution(shooter);
+  const origin=solution.origins[0].clone().add(solution.origins[1]).multiplyScalar(.5);
+  const forward=solution.target.clone().sub(origin).normalize();
   const ground = groundY + 0.2;
   let t = forward.y < -0.04 ? (ground - origin.y) / forward.y : 220;
   t = clamp(t, 35, 360);
@@ -1791,10 +1549,7 @@ function updateMission(dt) {
   missileTrailTimer -= dt;
   if (missileTrailTimer <= 0) {
     missileTrailTimer = 0.045;
-    const puff = new THREE.Mesh(
-      new THREE.SphereGeometry(0.18, 8, 6),
-      new THREE.MeshBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0.65, depthWrite: false })
-    );
+    const puff = realism.particle(new THREE.Vector3(.22,.22,.22),0xd0c5b3,"smoke");
     puff.position.copy(enemyMissile.position);
     puff.userData.life = 0.55;
     puff.userData.maxLife = 0.55;
@@ -1846,7 +1601,7 @@ function detonateMissileAt(position, directBuilding = null) {
   if (directBuilding && directBuilding.visible) collapseBuildingsNear(position, 7, directBuilding);
   createExplosion(position.clone());
   applyBlastDamage(position);
-  if (gameMode === "single") missionEndTimer = 1.6;
+  if (gameMode === "single" && !gameOver) missionEndTimer = 1.6;
 }
 
 function collapseBuildingsNear(position, radius = 22, directBuilding = null) {
@@ -1906,38 +1661,30 @@ function createExplosion(position) {
 
   const surfacePalette = getExplosionSurfacePalette(position);
   const fireColors = [0xfff08a, 0xffb229, 0xff6f1e, 0xb72c16];
-  const smokeColors = [0x171a1c, 0x2a2e31, 0x42474a, 0x5a5d5b];
+  const smokeColors = surfacePalette.smoke;
   const debrisColors = surfacePalette.debris;
-  const cube = (size, color, kind, pos, velocity, opacity = 1) => {
-    const matParams = {
-      color,
-      transparent: opacity < 1 || kind === "fire" || kind === "debris" || kind === "dust",
-      opacity,
-      depthWrite: false
-    };
-    const mat = kind === "fire"
-      ? new THREE.MeshBasicMaterial({ ...matParams, depthWrite: false })
-      : new THREE.MeshLambertMaterial(matParams);
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(size.x, size.y, size.z), mat);
+  const particle = (size, color, kind, pos, velocity, opacity = 1) => {
+    const mesh = realism.particle(size, color, kind);
+    mesh.material.opacity = opacity;
     mesh.position.copy(pos);
-    mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+    if (!mesh.isSprite) mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
     mesh.userData.kind = kind;
     mesh.userData.velocity = velocity;
     mesh.userData.spin = new THREE.Vector3((Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4);
-    mesh.userData.baseScale = mesh.scale.x;
+    mesh.userData.baseScale = 1;
     mesh.userData.fadeOffset = Math.random() * 0.22;
     group.add(mesh);
     return mesh;
   };
 
-  // Voxel fireball: dense hot blocks expanding upward/outward, not smooth circles.
+  // Layered additive fire, soft smoke, and irregular physical debris.
   for (let i = 0; i < 42; i++) {
     const angle = Math.random() * Math.PI * 2;
     const radius = Math.random() * 4.6;
     const up = 7.5 + Math.random() * 17.0;
     const dir = new THREE.Vector3(Math.cos(angle) * (0.4 + Math.random()), 0.7 + Math.random() * 0.9, Math.sin(angle) * (0.4 + Math.random())).normalize();
     const size = 0.42 + Math.random() * 1.05;
-    cube(
+    particle(
       new THREE.Vector3(size, size * (0.8 + Math.random() * 0.7), size),
       fireColors[i % fireColors.length],
       "fire",
@@ -1946,12 +1693,12 @@ function createExplosion(position) {
     );
   }
 
-  // Smoke column: larger black/gray voxels rise and drift after the bright blast fades.
+  // Smoke column: soft black/gray particles rise and drift after the bright blast fades.
   for (let i = 0; i < 96; i++) {
     const angle = Math.random() * Math.PI * 2;
     const radius = 1.8 + Math.random() * 8.2;
     const size = 0.65 + Math.random() * 1.8;
-    cube(
+    particle(
       new THREE.Vector3(size * 1.25, size, size * 1.25),
       smokeColors[i % smokeColors.length],
       "smoke",
@@ -1961,11 +1708,11 @@ function createExplosion(position) {
     );
   }
 
-  // Hard fragments: metal/concrete voxels fly out and fall back down.
+  // Hard fragments: metal/concrete fragments fly out and fall back down.
   for (let i = 0; i < 56; i++) {
     const dir = new THREE.Vector3(Math.random() - 0.5, 0.2 + Math.random() * 0.95, Math.random() - 0.5).normalize();
     const size = 0.12 + Math.random() * 0.38;
-    cube(
+    particle(
       new THREE.Vector3(size * (0.8 + Math.random() * 2.2), size, size * (0.8 + Math.random() * 2.2)),
       debrisColors[i % debrisColors.length],
       "debris",
@@ -1974,12 +1721,12 @@ function createExplosion(position) {
     );
   }
 
-  // Ground blast/dust front, voxel-style instead of a circular torus.
+  // Ground-hugging dust front.
   for (let i = 0; i < 42; i++) {
     const angle = Math.random() * Math.PI * 2;
     const dir = new THREE.Vector3(Math.cos(angle), 0.06 + Math.random() * 0.15, Math.sin(angle)).normalize();
     const size = 0.22 + Math.random() * 0.58;
-    cube(
+    particle(
       new THREE.Vector3(size * 1.8, size * 0.35, size),
       surfacePalette.dust[i % surfacePalette.dust.length],
       "dust",
@@ -1989,9 +1736,9 @@ function createExplosion(position) {
     );
   }
 
-  // Persistent blocky scorch plates.
+  // Irregular scorch marks at the impact point.
   for (let i = 0; i < 12; i++) {
-    const plate = cube(
+    const plate = particle(
       new THREE.Vector3(2 + Math.random() * 4, 0.05, 1.2 + Math.random() * 3.0),
       0x14100c,
       "scorch",
@@ -2021,8 +1768,6 @@ function destroyBaseAt(position) {
 }
 
 function damageRunwayAt(position) {
-  const runwayPalette = [0x050607, 0x161b1f, 0x2b333a, 0x4a5258, 0x8a8f8d, 0xd9d9d9];
-  const grassPalette = [0x173d1d, 0x245c2b, 0x2f6b34, 0x3b7439, 0x4f6a36];
   const damaged = new THREE.Group();
   damaged.name = "damaged-runway";
   const impact = position.clone();
@@ -2037,7 +1782,7 @@ function damageRunwayAt(position) {
 
   const materialCache = new Map();
   const materialFor = (color, opacity = 1) => {
-    const key = `${color}:${opacity}`;
+    const key = `${color.isColor ? color.getHexString() : color}:${opacity}`;
     if (!materialCache.has(key)) {
       materialCache.set(key, new THREE.MeshLambertMaterial({
         color,
@@ -2058,7 +1803,7 @@ function damageRunwayAt(position) {
 
   const makeFlatPatch = (x, z, sx, sz, color, opacity = 0.96) => {
     const patch = new THREE.Mesh(new THREE.BoxGeometry(sx, 0.024, sz), materialFor(color, opacity));
-    patch.position.set(x, groundY + 0.18 + Math.random() * 0.006, z);
+    patch.position.set(x, Math.max(realism.height(x,z),isRunwaySurface(x,z)?.16:0) + .018, z);
     patch.rotation.y = Math.random() * Math.PI;
     damaged.add(patch);
   };
@@ -2073,7 +1818,7 @@ function damageRunwayAt(position) {
     const edgeFade = radius / damageRadius;
     const sx = 0.75 + Math.random() * (edgeFade > 0.72 ? 2.2 : 3.8);
     const sz = 0.75 + Math.random() * (edgeFade > 0.72 ? 2.2 : 3.8);
-    const palette = isRunwaySurface(x, z) ? runwayPalette : grassPalette;
+    const palette = realism.surfacePalette(x,z,isRunwaySurface(x,z)).debris;
     let color = palette[Math.floor(Math.random() * palette.length)];
     if (edgeFade < 0.38 && Math.random() < 0.52) color = Math.random() < 0.65 ? 0x050607 : 0x1b1f22;
     makeFlatPatch(x, z, sx, sz, color, edgeFade > 0.86 ? 0.78 : 0.96);
@@ -2085,12 +1830,12 @@ function damageRunwayAt(position) {
     const radius = Math.sqrt(Math.random()) * damageRadius * 0.65;
     const x = impact.x + Math.cos(angle) * radius;
     const z = impact.z + Math.sin(angle) * radius;
-    const palette = isRunwaySurface(x, z) ? runwayPalette : grassPalette;
+    const palette = realism.surfacePalette(x,z,isRunwaySurface(x,z)).debris;
     const chip = new THREE.Mesh(
       new THREE.BoxGeometry(0.22 + Math.random() * 0.8, 0.05, 0.22 + Math.random() * 0.9),
       materialFor(palette[Math.floor(Math.random() * palette.length)], 0.92)
     );
-    chip.position.set(x, groundY + 0.22, z);
+    chip.position.set(x, Math.max(realism.height(x,z),isRunwaySurface(x,z)?.16:0) + .035, z);
     chip.rotation.set(0, Math.random() * Math.PI, 0);
     damaged.add(chip);
   }
@@ -2100,16 +1845,7 @@ function damageRunwayAt(position) {
 }
 
 function getExplosionSurfacePalette(position) {
-  if (isNearRunway(position)) {
-    return {
-      debris: [0x050607, 0x2d3338, 0x7c858c, 0xdcdcdc, 0xf4f4ef],
-      dust: [0x1c1f22, 0x4f575d, 0xa7a9a5, 0xe2e2dc]
-    };
-  }
-  return {
-    debris: [0x2f6d32, 0x3e7f3f, 0x5b8a4b, 0x6b6251],
-    dust: [0x3d7138, 0x527f3e, 0x756e56]
-  };
+  return realism.surfacePalette(position.x,position.z,isNearRunway(position));
 }
 
 function isNearRunway(position) {
@@ -2131,15 +1867,15 @@ function isRunwayDisabledByBlast(position) {
 }
 
 function applyBlastDamage(position) {
-  const blast = (target, label) => {
+  const blast = (target, hp) => {
     const dist = target.position.distanceTo(position);
     if (dist > 5) return 0;
-    if (dist <= 2.5) return 1200;
+    if (dist <= 2.5) return hp; // The lethal core destroys either aircraft regardless of HP.
     return Math.round((1 - (dist - 2.5) / 2.5) * 700);
   };
 
-  const playerDamage = blast(plane, "player");
-  const enemyDamage = blast(enemy, "enemy");
+  const playerDamage = blast(plane, playerHP);
+  const enemyDamage = blast(enemy, enemyHP);
   if (playerDamage > 0) {
     playerHP = Math.max(0, playerHP - playerDamage);
     playerHitTimer = 0.35;
@@ -2162,15 +1898,20 @@ function applyBlastDamage(position) {
   }
 }
 
+function disposeEffect(group) {
+  group.traverse(part=>{if(part.geometry && !part.isSprite)part.geometry.dispose();if(part.material)part.material.dispose();});
+}
 function updateEffects(dt) {
   for (let i = missileTrail.length - 1; i >= 0; i--) {
     const puff = missileTrail[i];
     puff.userData.life -= dt;
     const t = Math.max(0, puff.userData.life / puff.userData.maxLife);
-    puff.scale.setScalar(1 + (1 - t) * 2.5);
+    puff.scale.copy(puff.userData.particleSize).multiplyScalar(1 + (1 - t) * 2.5);
     puff.material.opacity = 0.65 * t;
     if (puff.userData.life <= 0) {
       worldRoot.remove(puff);
+      if(puff.geometry && !puff.isSprite)puff.geometry.dispose();
+      puff.material.dispose();
       missileTrail.splice(i, 1);
     }
   }
@@ -2214,9 +1955,11 @@ function updateEffects(dt) {
       } else if (part.userData.kind === "scorch") {
         part.material.opacity = 0.58 * Math.pow(Math.max(0, t), 1.1);
       }
+      if (part.userData.particleSize) part.scale.multiply(part.userData.particleSize);
     });
     if (explosion.userData.life <= 0) {
       worldRoot.remove(explosion);
+      disposeEffect(explosion);
       explosions.splice(i, 1);
     }
   }
@@ -2414,7 +2157,7 @@ function updateAltitudePanel(readoutEl, originPlane, targetPlane, labels) {
   const enemyLabel = labels && labels.enemy ? labels.enemy : "ENY";
   const altPlayer = Math.max(0, originPlane.position.y - groundY);
   const altEnemy = Math.max(0, targetPlane.position.y - groundY);
-  readoutEl.textContent = `GL  : 0.0 u\n${selfLabel}  : ${altPlayer.toFixed(1)} u\n${enemyLabel} : ${altEnemy.toFixed(1)} u`;
+  readoutEl.textContent = `GND : ${Math.round(realism.height(originPlane.position.x,originPlane.position.z)*10)} m\n${selfLabel}  : ${Math.round(altPlayer*10)} m\n${enemyLabel} : ${Math.round(altEnemy*10)} m`;
 }
 
 function updateAttitudeIndicator(ctx, canvas, attitude) {
@@ -2527,12 +2270,13 @@ function updateAttitudeIndicator(ctx, canvas, attitude) {
 
 function checkCollisionFor(body, planeGroup) {
   if (!body || !planeGroup) return false;
-  // Ground
-  if (planeGroup.position.y <= groundY + 0.12) return true;
+  // Test the aircraft's actual lower envelope against terrain and raised pavement.
+  const pbox = new THREE.Box3().setFromObject(body);
+  if(pbox.min.y < realism.surfaceHeight(planeGroup.position.x,planeGroup.position.z)-.002) return true;
 
   // Buildings (AABB vs plane bounding box)
-  const pbox = new THREE.Box3().setFromObject(body).expandByScalar(0.05);
-  for (const bbox of buildingBoxes) {
+  pbox.expandByScalar(0.05);
+  for (const bbox of [...buildingBoxes,...realism.sceneryBoxes]) {
     if (bbox.intersectsBox(pbox)) return true;
   }
   return false;
@@ -2634,6 +2378,10 @@ function gameOverSaying(message) {
 
 function continueAfterBaseDestroyed() {
   gameOver = false;
+  paused = false;
+  keys.clear();
+  document.getElementById('pause-overlay').style.display='none';
+  plane.userData.control = enemy.userData.control = null;
   baseLostContinueAvailable = false;
   outcome = "";
   missionPhase = "revenge";
@@ -2643,12 +2391,19 @@ function continueAfterBaseDestroyed() {
 
 function resetGame() {
   gameOver = false;
+  paused = false;
+  keys.clear();
+  document.getElementById('pause-overlay').style.display='none';
+  plane.userData.control = enemy.userData.control = null;
+  realism.setGear(plane,0);plane.userData.gear.userData.target=0;
+  realism.setGear(enemy,1);enemy.userData.gear.userData.target=1;
   baseLostContinueAvailable = false;
   outcome = "";
   gameoverEl.style.display = "none";
   // Reset player
   plane.position.set(RUNWAY_LEFT_X, 0.35, 140);
   plane.rotation.set(0, 0, 0);
+  realism.placeOnSurface(plane);
   throttle = 0.5;
   speed = targetPlayerSpeed();
   playerFuel = playerTankFuel;
@@ -2657,7 +2412,7 @@ function resetGame() {
   fireHeld2 = false;
   playerFireTimer = 0;
 
-  // Reset enemy. Both modes now start with the navy plane farther out, approaching the base.
+  // Reset enemy. Both modes now start with the German plane farther out, approaching the base.
   const enemyStartY = 26;
   const enemyStartZ = -360;
   enemy.position.set(RUNWAY_RIGHT_X, enemyStartY, enemyStartZ);
@@ -2678,9 +2433,9 @@ function resetGame() {
   missileTarget.copy(BASE_TARGET);
   missileTrailTimer = 0;
   missionEndTimer = -1;
-  missileTrail.forEach((puff) => worldRoot.remove(puff));
-  explosions.forEach((explosion) => worldRoot.remove(explosion));
-  baseRubble.forEach((rubble) => worldRoot.remove(rubble));
+  missileTrail.forEach((puff) => {worldRoot.remove(puff);disposeEffect(puff);});
+  explosions.forEach((explosion) => {worldRoot.remove(explosion);disposeEffect(explosion);});
+  baseRubble.forEach((rubble) => {worldRoot.remove(rubble);disposeEffect(rubble);});
   missileTrail = [];
   explosions = [];
   baseRubble = [];
@@ -2718,8 +2473,10 @@ function resetGame() {
 }
 
 function update(dt) {
+  if (paused) return;
   if (modeState !== "playing") {
-    render();
+    updatePropellers(dt);
+    updateWeatherEffects(dt);
     return;
   }
   if (!gameOver) {
@@ -2790,6 +2547,12 @@ function update(dt) {
         setGameOver("CRASHED");
         return;
       }
+      if (checkCollisionFor(enemyBody, enemy)) {
+        enemyHP=0;score+=1;setGameOver("ENEMY CRASHED");return;
+      }
+      if (checkPlaneCollision(planeBody, enemyBody)) {
+        setGameOver("MID-AIR COLLISION");return;
+      }
       if (playerHP <= 0 && enemyHP <= 0) {
         setGameOver("MID-AIR COLLISION");
         return;
@@ -2809,13 +2572,34 @@ function update(dt) {
   }
 }
 
+function prepareView(subject) {
+  realism.prepareRain(rainGroup,subject.position,subject);
+  for (const aircraft of [plane,enemy]) {
+    const hide = modeState === 'playing' && mode === 'cockpit' && subject === aircraft;
+    aircraft.userData.canopy.visible = !hide;
+    aircraft.userData.pilot.visible = !hide;
+    aircraft.userData.propeller.visible = !hide;
+  }
+}
+
+function updateGunsight(element,aircraft,cam,viewport) {
+  const aim=realism.projectGunsight(aircraft,cam,viewport);
+  element.style.left=`${aim.x}px`;element.style.top=`${aim.y}px`;
+  element.style.visibility=aim.visible?'visible':'hidden';
+}
+
 function render() {
+  realism.followSun(sunLight, plane.position);
   plane.updateMatrixWorld(true);
   enemy.updateMatrixWorld(true);
   const p1Att = computeAttitude(plane);
   const p2Att = computeAttitude(enemy);
 
   updateHUD();
+  document.getElementById('flight-speed').innerHTML = `${Math.round(speed*36)} <small>KM/H</small>`;
+  document.getElementById('flight-alt').innerHTML = `${Math.max(0, Math.round((plane.position.y-realism.height(plane.position.x,plane.position.z))*10))} <small>M AGL</small>`;
+  document.getElementById('mission-status').textContent = baseDestroyed ? 'AIRFIELD LOST · INTERCEPT RAIDER' : missileLaunched ? 'MISSILE INBOUND' : 'DEFEND THE AIRFIELD';
+
   if (gameMode === "duo") {
     updateRadar(radarCtxP1, radarCanvasP1, plane, enemy, p1Att.yaw);
     updateRadar(radarCtxP2, radarCanvasP2, enemy, plane, p2Att.yaw);
@@ -2836,28 +2620,37 @@ function render() {
     renderer.setScissorTest(true);
     renderer.setViewport(0, 0, w / 2, h);
     renderer.setScissor(0, 0, w / 2, h);
+    prepareView(plane);
     setCameras(plane, camera);
-    renderer.render(scene, camera);
+    updateGunsight(gameMode === "duo" ? crosshairLeft : crosshairSingle,plane,camera,{x:0,y:0,width:gameMode === "duo" ? w/2 : w,height:h});
+    realism.renderView(renderer,scene,camera,{x:0,y:0,width:gameMode==="duo"?w/2:w,height:h});
 
     renderer.setViewport(w / 2, 0, w / 2, h);
     renderer.setScissor(w / 2, 0, w / 2, h);
+    prepareView(enemy);
     setCameras(enemy, camera2);
-    renderer.render(scene, camera2);
+    updateGunsight(crosshairRight,enemy,camera2,{x:w/2,y:0,width:w/2,height:h});
+    realism.renderView(renderer,scene,camera2,{x:w/2,y:0,width:w/2,height:h});
     renderer.setScissorTest(false);
   } else {
     renderer.setViewport(0, 0, w, h);
     renderer.setScissorTest(false);
+    prepareView(plane);
     setCameras(plane, camera);
-    renderer.render(scene, camera);
+    updateGunsight(gameMode === "duo" ? crosshairLeft : crosshairSingle,plane,camera,{x:0,y:0,width:gameMode === "duo" ? w/2 : w,height:h});
+    realism.renderView(renderer,scene,camera,{x:0,y:0,width:gameMode==="duo"?w/2:w,height:h});
   }
 }
 
 function animate(t) {
   try {
     requestAnimationFrame(animate);
+    realism.beginFrame((t-last)/1000);
     const dt = Math.min((t - last) / 1000, 0.05); // clamp big frame gaps
     last = t;
+    cameraDt = dt;
 
+    updateAudio();
     update(dt);
     render();
   } catch (e) {
@@ -2871,6 +2664,9 @@ function renderGameToText() {
   const round = (v) => Math.round(v * 10) / 10;
   const payload = {
     mode,
+    modeState,
+    paused,
+    gameMode,
     gameOver,
     outcome,
     coordinate_system: "Origin at world center; +Y up; +X right; +Z forward. Plane forward is -Z in local space.",
@@ -2894,6 +2690,7 @@ function renderGameToText() {
     weather,
     operation_radius: OPERATION_RADIUS,
     base_destroyed: baseDestroyed,
+    effects: {explosions: explosions.length, smoke: missileTrail.length},
     mission: {
       phase: missionPhase,
       missile_launched: missileLaunched,
