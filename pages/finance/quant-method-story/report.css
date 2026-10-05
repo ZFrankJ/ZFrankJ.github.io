@@ -1,0 +1,354 @@
+:root {
+  --journal-ink: var(--text);
+  --journal-secondary: var(--muted);
+  --journal-surface: var(--panel);
+  --journal-raised: var(--panel-strong);
+  --journal-border: var(--border);
+  --journal-accent: var(--accent);
+  --background: var(--bg) !important;
+  --surface: var(--panel) !important;
+  --surface-raised: var(--panel-strong) !important;
+  --secondary: var(--journal-secondary) !important;
+  --control: var(--panel) !important;
+  --control-hover: var(--panel-strong) !important;
+  --interaction-hover: var(--panel-strong) !important;
+  --interaction-active: var(--panel-strong) !important;
+  --font-sans: "MuseoModerno", "LXGW WenKai", "Segoe UI", sans-serif !important;
+  --data-app-report-body-text: var(--journal-secondary) !important;
+  --data-app-report-evidence-width: 920px;
+  background: var(--bg-gradient) !important;
+  background-attachment: fixed !important;
+}
+
+body.journal-report {
+  /* Keep the first child's top margin inside the painted page canvas. */
+  display: flow-root;
+  background: var(--bg-gradient) !important;
+  background-attachment: fixed !important;
+  color: var(--journal-ink);
+  font-family: var(--font-sans) !important;
+  font-size: 15px;
+  line-height: 1.72;
+  padding-bottom: 48px;
+}
+
+.journal-report #root,
+.journal-report .dashboard-root {
+  --text: var(--journal-ink) !important;
+  --secondary: var(--journal-secondary) !important;
+  --text-muted: var(--journal-secondary) !important;
+  --muted: var(--journal-raised) !important;
+  --background: var(--bg) !important;
+  --surface: var(--journal-surface) !important;
+  --surface-raised: var(--journal-raised) !important;
+  --control: var(--journal-surface) !important;
+  --control-hover: var(--journal-raised) !important;
+  --border: var(--journal-border) !important;
+  --border-strong: color-mix(in srgb, var(--journal-ink) 24%, transparent) !important;
+  --accent: var(--journal-accent) !important;
+  --story-accent: var(--journal-accent) !important;
+  --data-app-report-body-text: var(--journal-secondary) !important;
+  font-family: var(--font-sans) !important;
+  min-width: 0;
+}
+
+.report-site-frame,
+.journal-frame {
+  width: min(1180px, calc(100% - 112px));
+}
+.report-site-top { margin: 24px auto 0; }
+.report-site-top .breadcrumbs { margin-bottom: 0; }
+.report-site-top .breadcrumbs a { color: var(--journal-secondary); }
+.report-site-top .breadcrumbs a:is(:hover, :focus-visible) { color: var(--journal-accent); }
+
+.journal-frame {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+  margin: 28px auto 32px;
+}
+
+.journal-sidebar { align-self: stretch; min-width: 0; }
+.journal-main { display: grid; gap: 22px; min-width: 0; }
+.journal-sidebar-sticky {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  width: 100%;
+  position: sticky;
+  top: 18px;
+}
+
+.journal-chapter-card {
+  width: 100%;
+  max-height: calc(100dvh - 106px);
+  overflow-y: auto;
+  border: 1px solid var(--journal-border);
+  border-radius: 20px;
+  padding: 18px;
+  background: color-mix(in srgb, var(--journal-surface) 96%, transparent);
+  box-shadow: var(--shadow);
+}
+
+.journal-chapter-card h2 {
+  color: var(--journal-accent);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin: 0 0 14px;
+}
+
+.journal-chapters { display: grid; gap: 6px; }
+.journal-chapters a {
+  display: block;
+  border: 1px solid var(--journal-border);
+  border-radius: 11px;
+  padding: 9px 11px;
+  color: var(--journal-secondary);
+  background: var(--journal-surface);
+  line-height: 1.4;
+  font-size: 13px;
+}
+
+.journal-chapters a:hover,
+.journal-chapters a:focus-visible,
+.journal-chapters a[aria-current="location"] {
+  color: var(--journal-ink);
+  border-color: var(--journal-accent);
+  background: var(--journal-raised);
+}
+
+.journal-report .report-return-links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+}
+.journal-report .report-return-link,
+.journal-report .report-return-link:hover,
+.journal-report .report-return-link:focus-visible {
+  color: var(--journal-ink);
+}
+
+.journal-report .dashboard-topbar,
+.journal-report .theme-drawer,
+.journal-report .section-navigator { display: none !important; }
+
+.journal-report .report-page {
+  width: 100%;
+  max-width: none;
+  padding: 0;
+  margin: 0;
+}
+.journal-report .report-content { gap: 22px; }
+.journal-report .method-story { --story-accent: var(--journal-accent); }
+.journal-report .report-hero,
+.journal-report .story-chapter,
+.journal-downloads {
+  min-width: 0;
+  border: 1px solid var(--journal-border);
+  border-radius: 20px;
+  padding: clamp(22px, 3vw, 34px);
+  background: color-mix(in srgb, var(--journal-surface) 96%, transparent);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .14);
+}
+.journal-report .report-hero {
+  padding: clamp(28px, 4vw, 48px);
+  background: linear-gradient(145deg, rgba(212, 175, 55, .12), rgba(10, 22, 40, .92));
+}
+:root.theme-light .journal-report .report-hero {
+  background: linear-gradient(145deg, rgba(30, 58, 95, .08), rgba(212, 175, 55, .12));
+}
+.journal-report .report-hero h1 {
+  color: var(--journal-ink);
+  font: 650 clamp(30px, 4.3vw, 46px)/1.12 var(--font-sans);
+  letter-spacing: -.035em;
+}
+.journal-report .method-story .story-kicker {
+  margin: 0;
+  color: var(--journal-accent);
+  font-size: 11px;
+}
+.journal-report .method-story .story-chapter { margin: 0; scroll-margin-top: 24px; }
+.journal-report .method-story .story-evidence { padding-bottom: 34px; }
+.journal-report .report-page :is(.rich-narrative-content, .report-rich-editable) {
+  color: var(--journal-secondary) !important;
+  font-size: 15px;
+  line-height: 1.78;
+}
+/* The report uses --muted for a surface, while site.css uses it for prose.
+   Set paragraph colors directly so the inherited surface token cannot hide text. */
+.journal-report :is(.report-page, .popover, .source-sidebar, .dialog) p,
+.journal-report #root .muted {
+  color: var(--journal-secondary);
+}
+.journal-report .method-story :is(.provenance-table, .provenance-details) {
+  color: var(--journal-secondary);
+}
+.journal-report .method-story :is(.provenance-table th, .provenance-details dt) {
+  color: var(--journal-ink);
+}
+.journal-report .report-page :is(.rich-narrative-content, .report-rich-editable) :is(h2,h3,strong,b),
+.journal-report .component-title,
+.journal-downloads h2 { color: var(--journal-ink); }
+.journal-report .report-page :is(.rich-narrative-content, .report-rich-editable) h2 {
+  font-size: clamp(22px, 3vw, 28px);
+  line-height: 1.28;
+  font-weight: 650;
+}
+.journal-report .method-story .story-equation {
+  font-family: var(--font-sans);
+  color: var(--journal-ink);
+  border-color: var(--journal-accent);
+  background: var(--journal-raised);
+  padding: 18px 20px;
+  border-radius: 0 12px 12px 0;
+  font-size: 14px;
+  overflow-x: auto;
+}
+.journal-report .method-story .story-math-note { color: var(--journal-secondary); opacity: 1; }
+.journal-report .method-story .story-end { font-family: var(--font-sans); color: var(--journal-ink); }
+.journal-report .report-page .dashboard-component[data-component-kind="chart"],
+.journal-report .report-page [data-component-id="std-manifold"] {
+  --data-card-background: var(--journal-raised);
+  border: 1px solid var(--journal-border);
+  border-radius: 14px;
+  background: var(--journal-raised);
+  box-shadow: none;
+  color: var(--journal-ink);
+}
+.journal-report .report-page .dashboard-component[data-component-kind="chart"],
+.journal-report .report-page [data-component-id="std-manifold"] {
+  margin: 22px 0;
+  padding: 22px;
+}
+.journal-report [data-component-id="threshold-density"] {
+  --chart-1: var(--journal-accent);
+}
+.journal-report [data-component-id="threshold-density"] .recharts-line-curve {
+  stroke: var(--journal-accent);
+}
+.journal-report .method-story .cloud-presets button,
+.journal-report .method-story .cloud-inspect select {
+  border-radius: 10px;
+  background: var(--journal-surface);
+  border-color: var(--journal-border);
+  color: var(--journal-ink);
+}
+.journal-report [data-component-id="std-manifold"] > .report-narrative-actions {
+  top: 22px !important;
+  left: auto !important;
+  right: 22px !important;
+  width: 44px !important;
+  max-width: 44px;
+  pointer-events: none;
+}
+.journal-report [data-component-id="std-manifold"] > .report-narrative-actions :is(.component-custom-actions, .component-native-actions) {
+  pointer-events: auto;
+}
+.journal-report .method-story .cloud-presets {
+  position: relative;
+  z-index: 1;
+}
+.journal-report [data-editable-id="std:figure-heading"] {
+  padding-right: 44px;
+}
+.journal-report .report-page [data-component-id="std-manifold"] [data-editable-id="std:figure-heading"] .rich-narrative-content h2,
+.journal-report [data-component-id="threshold-density"] .component-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+.journal-report .method-story .cloud-presets button:hover {
+  background: var(--journal-raised);
+  border-color: var(--journal-accent);
+}
+.journal-report .method-story .cloud-plot,
+.journal-report .method-story .cloud-plot * {
+  -webkit-user-select: none;
+  user-select: none;
+}
+.journal-report .method-story .cloud-plot {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  cursor: grab;
+  touch-action: none;
+  outline: none;
+}
+.journal-report .method-story .cloud-plot[data-dragging="true"] {
+  cursor: grabbing;
+}
+.journal-report .method-story .cloud-plot:focus-visible {
+  outline: 2px solid var(--journal-accent);
+  outline-offset: 4px;
+}
+.journal-report .cloud-return-legend,
+.journal-report .cloud-inspect { color: var(--journal-ink); }
+.journal-report [data-component-id="std-patterns"] { margin-top: 30px; }
+.journal-report .popover,
+.journal-report .dialog,
+.journal-report .source-sidebar {
+  --muted: var(--journal-raised);
+  color: var(--journal-ink);
+  background: var(--journal-surface);
+  border-color: var(--journal-border);
+  font-family: var(--font-sans);
+}
+.journal-report .menu-trigger {
+  color: var(--journal-secondary);
+  background: var(--journal-surface);
+  border: 1px solid color-mix(in srgb, var(--journal-ink) 12%, transparent);
+  border-radius: 50%;
+  box-shadow: none;
+}
+.journal-report .menu-trigger:is(:hover, :focus-visible, [data-state="open"]) {
+  color: var(--journal-ink);
+  border-color: color-mix(in srgb, var(--journal-ink) 22%, transparent);
+  background: var(--journal-raised);
+  box-shadow: none;
+}
+.journal-report .journal-downloads h2 { font-size: 22px; }
+.journal-download-links { display: grid; gap: 10px; font-size: 13px; }
+.journal-report .control-bubbles { z-index: 150; }
+.journal-report #root:empty::before {
+  content: "Loading journal…";
+  display: block;
+  min-height: 340px;
+  padding: 48px;
+  background: var(--journal-surface);
+  border: 1px solid var(--journal-border);
+  border-radius: 20px;
+  color: var(--journal-secondary);
+}
+
+@media (max-width: 760px) {
+  .report-site-frame, .journal-frame { width: calc(100% - 32px); }
+  .journal-frame { grid-template-columns: minmax(0, 1fr); margin-top: 24px; }
+  .journal-sidebar-sticky { position: static; }
+  .journal-chapter-card { max-height: none; }
+  .journal-report .report-return-links { flex-wrap: wrap; }
+  .journal-chapters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .journal-report .report-page .dashboard-component[data-component-kind="chart"],
+  .journal-report .report-page [data-component-id="std-manifold"] { padding: 16px 12px; }
+  .journal-report [data-component-id="std-manifold"] > .report-narrative-actions {
+    top: 16px !important;
+    right: 12px !important;
+  }
+  .journal-report .method-story .cloud-plot { min-width: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journal-report * { scroll-behavior: auto !important; }
+}
+
+@media print {
+  .report-site-top, .journal-sidebar, .journal-report .control-bubbles { display: none !important; }
+  .journal-frame { display: block; width: 100%; margin: 0; }
+  .journal-report .report-hero, .journal-report .story-chapter, .journal-downloads { box-shadow: none; }
+}
