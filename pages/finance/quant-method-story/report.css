@@ -20,6 +20,10 @@
   background-attachment: fixed !important;
 }
 
+:root[data-language="zh"] {
+  --font-sans: "LXGW WenKai", "MuseoModerno", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif !important;
+}
+
 body.journal-report {
   /* Keep the first child's top margin inside the painted page canvas. */
   display: flow-root;
