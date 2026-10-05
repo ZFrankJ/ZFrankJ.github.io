@@ -64,6 +64,12 @@ function applyTheme(mode) {
 
   root.classList.toggle("theme-light", isLight);
   root.style.colorScheme = isLight ? "light" : "dark";
+  window.__fzThemeMode = mode;
+
+  const favicon = document.getElementById("site-favicon");
+  if (favicon?.dataset[effectiveTheme]) {
+    favicon.href = favicon.dataset[effectiveTheme];
+  }
 
   if (themeButton) {
     const icon = themeButton.querySelector(".control-chip__icon");

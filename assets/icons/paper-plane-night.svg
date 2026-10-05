@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-labelledby="title desc">
+  <title id="title">Paper plane - night</title>
+  <desc id="desc">A bright gold paper plane with matching wings, fine tapered navy creases, and a deeper gold underside. All folds meet at the nose and bottom tip.</desc>
+  <rect width="64" height="64" rx="14" fill="#0a1628"/>
+  <g>
+    <path id="underside" d="M20.5 32L55 14L24.5 46Z" fill="#d4af37"/>
+    <path id="upper-wing" d="M9 28L55 14L20.5 32Z" fill="#f0d77a"/>
+    <path id="lower-wing" d="M28 36L55 14L44 42Z" fill="#f0d77a"/>
+    <g id="creases" fill="#0a1628">
+      <path id="upper-crease" d="M20.350 31.712L55 14L20.650 32.288Z"/>
+      <path id="lower-crease" d="M27.723 35.806L55 14L28.277 36.194Z"/>
+      <path id="handle-crease" d="M27.723 35.806L24.5 46L28.277 36.194Z"/>
+    </g>
+  </g>
+</svg>

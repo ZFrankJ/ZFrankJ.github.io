@@ -10,6 +10,8 @@ Personal site for Fujia Zhang with a simple structure:
 
 Light/dark and the liquid-lens FX can be toggled from the floating bubbles on any page; a one-time note explains the FX control the first time you visit.
 
+The paper-plane favicon follows the selected Light, Dark, or System theme, including on initial page load. Its SVG colors match the shared CSS theme tokens. Run `node --test tests/favicon.test.cjs` to check theme switching, page coverage, and palette consistency.
+
 © 2026 Fujia Zhang. All rights reserved.
 
 ## Unified Image Loading
@@ -22,4 +24,3 @@ All regular `<img>` elements now use a shared loading indicator style across pag
 - Opt out for custom image viewers/components by adding `data-loader-skip="true"` on the `<img>`.
 
 The self-cultivation gallery uses the same visual loading style for manual next/previous transitions.
-
