@@ -1,5 +1,5 @@
 import { LiquidLens } from "./liquid-lens.js";
-import { getLanguage, initI18n, setLanguage, translate } from "./i18n.js?v=11";
+import { getLanguage, initI18n, setLanguage, translate } from "./i18n.js?v=12";
 
 // Warn if loaded via file:// which can block ES modules and FX filter
 if (window.location.protocol === "file:") {
@@ -16,8 +16,6 @@ if (window.location.protocol === "file:") {
 
 const THEME_KEY = "fz-theme";
 const LENS_KEY = "fz-lens";
-const LENS_INFO_KEY = "fz-lens-info-shown-v4";
-const LENS_SUPPORT_INFO_KEY = "fz-lens-support-info-shown-v2";
 
 const storage = createStorage();
 
@@ -27,7 +25,6 @@ let languageButton = null;
 let settingsButton = null;
 let settingsControls = null;
 let settingsItems = null;
-let settingsOriginRaf = 0;
 let themeMode = "system";
 const systemQuery =
   typeof window.matchMedia === "function" ? window.matchMedia("(prefers-color-scheme: light)") : null;
@@ -73,15 +70,15 @@ function applyTheme(mode) {
 
   if (themeButton) {
     const icon = themeButton.querySelector(".control-chip__icon");
-    let title = "System theme";
+    let title = "Automatic";
     if (mode === "system") {
-      if (icon) icon.textContent = "🖥";
-      themeButton.setAttribute("aria-pressed", "mixed");
+      if (icon) icon.innerHTML = svgIcon("system");
     } else {
-      if (icon) icon.textContent = isLight ? "☀" : "☾";
-      title = isLight ? "Light theme" : "Dark theme";
-      themeButton.setAttribute("aria-pressed", String(isLight));
+      if (icon) icon.innerHTML = svgIcon(isLight ? "light" : "dark");
+      title = isLight ? "Day" : "Night";
     }
+    const value = themeButton.querySelector(".control-chip__value");
+    if (value) value.textContent = translate(title);
     themeButton.title = translate(title);
     themeButton.setAttribute("aria-label", translate(title));
   }
@@ -117,7 +114,9 @@ function applyLens(enabled, { persist = true } = {}) {
   if (lensButton) {
     const icon = lensButton.querySelector(".control-chip__icon");
     const title = enabled ? "Disable liquid lens" : "Enable liquid lens";
-    if (icon) icon.textContent = enabled ? "FX" : "OFF";
+    if (icon) icon.innerHTML = svgIcon("sparkles");
+    const value = lensButton.querySelector(".control-chip__value");
+    if (value) value.textContent = translate(enabled ? "On" : "Off");
     lensButton.title = translate(title);
     lensButton.setAttribute("aria-label", translate(title));
     lensButton.setAttribute("aria-pressed", String(enabled));
@@ -127,65 +126,6 @@ function applyLens(enabled, { persist = true } = {}) {
   if (persist) {
     storage.setItem(LENS_KEY, enabled ? "on" : "off");
   }
-}
-
-function showLensNoteOnce() {
-  if (storage.getItem(LENS_INFO_KEY) === "1") return;
-
-  const note = document.createElement("div");
-  note.className = "lens-note";
-  note.innerHTML = `
-    <div class="lens-note__title">${translate("Liquid Lens")}</div>
-    <p class="lens-note__text">
-      ${translate("Liquid FX is on by default to make the page feel alive. Tap the FX setting any time to return to normal. Safari and touch devices stay on the normal display because they do not support this FX reliably.")}
-    </p>
-    <div class="lens-note__actions">
-      <button class="pill pill--ghost" data-note-action="dismiss">${translate("Keep FX")}</button>
-      <button class="pill" data-note-action="disable">${translate("Turn off FX")}</button>
-    </div>
-    <button class="lens-note__dismiss" aria-label="${translate("Close")}">×</button>
-  `;
-
-  const dismiss = () => {
-    storage.setItem(LENS_INFO_KEY, "1");
-    note.remove();
-  };
-
-  note.querySelector("[data-note-action='dismiss']")?.addEventListener("click", dismiss);
-  note.querySelector(".lens-note__dismiss")?.addEventListener("click", dismiss);
-  note.querySelector("[data-note-action='disable']")?.addEventListener("click", () => {
-    applyLens(false);
-    dismiss();
-  });
-
-  document.body.appendChild(note);
-}
-
-function showUnsupportedLensNoteOnce(message) {
-  if (storage.getItem(LENS_SUPPORT_INFO_KEY) === "1") return;
-
-  const note = document.createElement("div");
-  note.className = "lens-note";
-  note.innerHTML = `
-    <div class="lens-note__title">${translate("FX Support Note")}</div>
-    <p class="lens-note__text">
-      ${translate(message)}
-    </p>
-    <div class="lens-note__actions">
-      <button class="pill" data-note-action="dismiss">${translate("Understood")}</button>
-    </div>
-    <button class="lens-note__dismiss" aria-label="${translate("Close")}">×</button>
-  `;
-
-  const dismiss = () => {
-    storage.setItem(LENS_SUPPORT_INFO_KEY, "1");
-    note.remove();
-  };
-
-  note.querySelector("[data-note-action='dismiss']")?.addEventListener("click", dismiss);
-  note.querySelector(".lens-note__dismiss")?.addEventListener("click", dismiss);
-
-  document.body.appendChild(note);
 }
 
 function setTimelineSpine(timeline) {
@@ -261,31 +201,22 @@ function setSettingsOpen(open, { focusTrigger = false } = {}) {
   });
 
   if (!open) setThemeMenuOpen(false);
+  else if (themeMenu?.getAttribute("data-open") !== "true") {
+    themeMenu?.querySelectorAll("button").forEach(button => { button.tabIndex = -1; });
+  }
   if (focusTrigger) settingsButton.focus();
 }
 
 function updateSettingsAnimationOrigins() {
   if (!settingsItems || !settingsButton) return;
-
-  const triggerRect = settingsButton.getBoundingClientRect();
-  const triggerCenter = triggerRect.left + triggerRect.width / 2;
-  const itemsRect = settingsItems.getBoundingClientRect();
-  const buttons = Array.from(settingsItems.querySelectorAll(".control-chip"));
-
+  const trigger = settingsButton.getBoundingClientRect();
+  const items = settingsItems.getBoundingClientRect();
+  settingsItems.style.setProperty("--settings-clip-right", `${items.right - trigger.right}px`);
+  const buttons = [...settingsItems.querySelectorAll(".control-chip")];
   buttons.forEach((button, index) => {
-    const buttonCenter = itemsRect.left + button.offsetLeft + button.offsetWidth / 2;
-    const shift = Math.round(triggerCenter - buttonCenter);
-    const revealOrder = buttons.length - index - 1;
-    button.style.setProperty("--settings-shift-x", `${shift}px`);
-    button.style.setProperty("--settings-open-delay", `${revealOrder * 36}ms`);
-  });
-}
-
-function scheduleSettingsAnimationOrigins() {
-  if (settingsOriginRaf) cancelAnimationFrame(settingsOriginRaf);
-  settingsOriginRaf = requestAnimationFrame(() => {
-    settingsOriginRaf = 0;
-    updateSettingsAnimationOrigins();
+    button.style.setProperty("--settings-shift-x", `${trigger.left + trigger.width / 2 - items.left - button.offsetLeft - button.offsetWidth / 2}px`);
+    button.style.setProperty("--settings-shift-y", `${trigger.top + trigger.height / 2 - items.top - button.offsetTop - button.offsetHeight / 2}px`);
+    button.style.setProperty("--settings-open-delay", `${(buttons.length - index - 1) * 36}ms`);
   });
 }
 
@@ -295,12 +226,12 @@ function renderSettingsLabels() {
   settingsControls.setAttribute("aria-label", translate("Display controls"));
 
   const languageLabel = languageButton?.querySelector(".control-chip__label");
-  const languageIcon = languageButton?.querySelector(".control-chip__icon");
+  const languageValue = languageButton?.querySelector(".control-chip__value");
   const themeLabel = themeButton?.querySelector(".control-chip__label");
   const lensLabel = lensButton?.querySelector(".control-chip__label");
 
   if (languageLabel) languageLabel.textContent = translate("Language");
-  if (languageIcon) languageIcon.textContent = getLanguage() === "zh" ? "中" : "EN";
+  if (languageValue) languageValue.textContent = getLanguage() === "zh" ? "中文" : "EN";
   if (languageButton) {
     languageButton.title = translate("Switch language");
     languageButton.setAttribute("aria-label", translate("Switch language"));
@@ -314,8 +245,56 @@ function renderSettingsLabels() {
     settingsButton.title = translate(isOpen ? "Close settings" : "Open settings");
     settingsButton.setAttribute("aria-label", translate(isOpen ? "Close settings" : "Open settings"));
   }
+}
 
-  scheduleSettingsAnimationOrigins();
+function svgIcon(name) {
+  const paths = {
+    settings: '<path d="M9.1299 5.0709L10.3129 4.6922L10.4357 2.1231L13.5643 2.1231L13.6871 4.6922L14.8701 5.0709L15.9744 5.6396L17.8779 3.9098L20.0902 6.1221L18.3604 8.0256L18.9291 9.1299L19.3078 10.3129L21.8769 10.4357L21.8769 13.5643L19.3078 13.6871L18.9291 14.8701L18.3604 15.9744L20.0902 17.8779L17.8779 20.0902L15.9744 18.3604L14.8701 18.9291L13.6871 19.3078L13.5643 21.8769L10.4357 21.8769L10.3129 19.3078L9.1299 18.9291L8.0256 18.3604L6.1221 20.0902L3.9098 17.8779L5.6396 15.9744L5.0709 14.8701L4.6922 13.6871L2.1231 13.5643L2.1231 10.4357L4.6922 10.3129L5.0709 9.1299L5.6396 8.0256L3.9098 6.1221L6.1221 3.9098L8.0256 5.6396Z"/><circle cx="12" cy="12" r="3.1"/>',
+    system: '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/>',
+    light: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/>',
+    dark: '<path d="M20.5 14A8.7 8.7 0 0 1 10 3.5 8.7 8.7 0 1 0 20.5 14Z"/>',
+    language: '<path d="M3 5h12M9 3v2m3 0c0 6-4 10-8 12m1-9c1 4 4 7 8 9m1 4 4-11 4 11m-6.5-4h5"/>',
+    sparkles: '<path d="m10 3 2 6 6 2-6 2-2 6-2-6-6-2 6-2Zm9 12 1 3 3 1-3 1-1 3-1-3-3-1 3-1Z"/>',
+    check: '<path d="m5 12 4 4L19 6"/>'
+  };
+  return `<svg class="site-icon" viewBox="0 0 24 24" aria-hidden="true">${paths[name]}</svg>`;
+}
+
+function buildTopbar() {
+  const base = new URL("../../", import.meta.url);
+  const routes = [["Home", ""], ["Science", "pages/science/"], ["Finance", "pages/finance/"], ["Others", "pages/others/"], ["Profile", "pages/profile/"]];
+  const bar = document.createElement("header");
+  bar.className = "site-topbar";
+  const backdrop = document.createElement("div");
+  backdrop.className = "site-topbar__backdrop";
+  backdrop.setAttribute("aria-hidden", "true");
+  bar.appendChild(backdrop);
+  const inner = document.createElement("div");
+  inner.className = "site-topbar__inner";
+  const nav = document.createElement("nav");
+  nav.className = "site-nav";
+  nav.setAttribute("aria-label", "Main navigation");
+  routes.forEach(([label, path]) => {
+    const link = document.createElement("a");
+    link.href = new URL(path, base).href;
+    link.textContent = label;
+    const current = path ? location.pathname.startsWith(new URL(path, base).pathname) : [base.pathname, `${base.pathname}index.html`].includes(location.pathname);
+    if (current) link.setAttribute("aria-current", "page");
+    nav.appendChild(link);
+  });
+  inner.appendChild(nav);
+  const controls = document.querySelector(".control-bubbles") || document.createElement("div");
+  controls.className = "control-bubbles";
+  inner.appendChild(controls);
+  bar.appendChild(inner);
+  document.body.prepend(bar);
+  const syncTopbarHeight = () => {
+    document.documentElement.style.setProperty("--site-topbar-height", `${bar.offsetHeight}px`);
+  };
+  syncTopbarHeight();
+  if (typeof ResizeObserver === "function") new ResizeObserver(syncTopbarHeight).observe(bar);
+  else window.addEventListener("resize", syncTopbarHeight);
+
 }
 
 function buildSettingsControls() {
@@ -329,23 +308,26 @@ function buildSettingsControls() {
   settingsControls.setAttribute("role", "toolbar");
   settingsControls.setAttribute("data-open", "false");
   settingsControls.innerHTML = `
-    <div class="control-bubbles__items" data-settings-items aria-hidden="true">
+    <button class="settings-trigger" data-toggle="settings" type="button" aria-expanded="false" aria-controls="display-settings-items">
+      ${svgIcon("settings")}
+    </button>
+    <div class="control-bubbles__items" data-settings-items aria-hidden="true" data-i18n-skip>
       <button class="control-chip" data-toggle="language" type="button" aria-pressed="false" tabindex="-1">
-        <span class="control-chip__icon" aria-hidden="true">EN</span>
+        <span class="control-chip__icon">${svgIcon("language")}</span>
         <span class="control-chip__label">Language</span>
+        <span class="control-chip__value">EN</span>
       </button>
-      <button class="control-chip" data-toggle="theme" type="button" aria-pressed="mixed" tabindex="-1">
-        <span class="control-chip__icon" aria-hidden="true">🖥</span>
+      <button class="control-chip" data-toggle="theme" type="button" aria-expanded="false" tabindex="-1">
+        <span class="control-chip__icon">${svgIcon("system")}</span>
         <span class="control-chip__label">Theme</span>
+        <span class="control-chip__value"></span>
       </button>
-      <button class="control-chip" data-toggle="lens" type="button" aria-pressed="true" tabindex="-1">
-        <span class="control-chip__icon" aria-hidden="true">FX</span>
+      <button class="control-chip" data-toggle="lens" type="button" aria-pressed="false" tabindex="-1">
+        <span class="control-chip__icon">${svgIcon("sparkles")}</span>
         <span class="control-chip__label">FX</span>
+        <span class="control-chip__value"></span>
       </button>
     </div>
-    <button class="bubble settings-trigger" data-toggle="settings" type="button" aria-expanded="false" aria-controls="display-settings-items">
-      <span aria-hidden="true">⚙</span>
-    </button>
   `;
 
   settingsItems = settingsControls.querySelector("[data-settings-items]");
@@ -382,18 +364,19 @@ function buildSettingsControls() {
     if (lensButton) {
       const lensEnabled = LiquidLens.active;
       const title = lensEnabled ? "Disable liquid lens" : "Enable liquid lens";
-      lensButton.title = translate(title);
-      lensButton.setAttribute("aria-label", translate(title));
+      lensButton.title = translate(lensButton.disabled ? (LiquidLens.isSafariBrowser() ? "FX unavailable in Safari" : "FX unavailable on touch devices") : title);
+      lensButton.querySelector(".control-chip__value").textContent = translate(lensEnabled ? "On" : "Off");
+      lensButton.setAttribute("aria-label", lensButton.title);
     }
     renderThemeMenuLabels();
     scheduleTimelineSpineUpdate();
   });
 
-  window.addEventListener("resize", scheduleSettingsAnimationOrigins);
-  if (document.fonts?.ready) {
-    document.fonts.ready.then(scheduleSettingsAnimationOrigins).catch(() => {});
-  }
-
+  window.addEventListener("resize", () => {
+    updateSettingsAnimationOrigins();
+    if (themeMenu?.getAttribute("data-open") === "true") positionThemeMenu();
+  });
+  document.fonts?.ready.then(updateSettingsAnimationOrigins).catch(() => {});
   renderSettingsLabels();
   setSettingsOpen(false);
 }
@@ -410,7 +393,6 @@ function initTheme() {
 
   if (themeButton) {
     buildThemeMenu();
-    themeButton.setAttribute("aria-haspopup", "true");
     themeButton.addEventListener("click", () => {
       toggleThemeMenu();
     });
@@ -423,12 +405,15 @@ function buildThemeMenu() {
   themeMenu = document.createElement("div");
   themeMenu.className = "theme-menu";
   themeMenu.setAttribute("data-open", "false");
-  themeMenu.innerHTML = `
-    <button class="theme-menu__item" data-theme-option="system" aria-pressed="false">🖥</button>
-    <button class="theme-menu__item" data-theme-option="light" aria-pressed="false">☀</button>
-    <button class="theme-menu__item" data-theme-option="dark" aria-pressed="false">☾</button>
-  `;
-  document.body.appendChild(themeMenu);
+  themeMenu.id = "appearance-options";
+  themeMenu.setAttribute("role", "group");
+  themeButton.setAttribute("aria-controls", themeMenu.id);
+  themeMenu.innerHTML = ["system", "light", "dark"].map(mode => `
+    <button class="theme-menu__item" data-theme-option="${mode}" aria-pressed="false" type="button">
+      ${svgIcon(mode)}<span data-theme-label></span><span class="theme-menu__check">${svgIcon("check")}</span>
+    </button>
+  `).join("");
+  settingsControls.appendChild(themeMenu);
   renderThemeMenuLabels();
 
   themeMenu.addEventListener("click", (event) => {
@@ -437,6 +422,7 @@ function buildThemeMenu() {
     themeMode = button.getAttribute("data-theme-option") || "system";
     applyTheme(themeMode);
     setThemeMenuOpen(false);
+    themeButton.focus();
   });
 
   document.addEventListener("click", (event) => {
@@ -457,7 +443,8 @@ function renderThemeMenuLabels() {
   if (!themeMenu) return;
   themeMenu.querySelectorAll("[data-theme-option]").forEach((button) => {
     const option = button.getAttribute("data-theme-option") || "system";
-    const label = option === "light" ? "Light" : option === "dark" ? "Dark" : "System";
+    const label = option === "light" ? "Day" : option === "dark" ? "Night" : "Automatic";
+    button.querySelector("[data-theme-label]").textContent = translate(label);
     button.title = translate(label);
     button.setAttribute("aria-label", translate(label));
   });
@@ -473,19 +460,17 @@ function setThemeMenuOpen(open) {
   if (!themeMenu || !themeButton) return;
   themeMenu.setAttribute("data-open", open ? "true" : "false");
   themeButton.setAttribute("aria-expanded", open ? "true" : "false");
-  if (open) {
-    requestAnimationFrame(positionThemeMenu);
-  }
+  themeMenu.querySelectorAll("button").forEach(button => { button.tabIndex = open ? 0 : -1; });
+  if (open) positionThemeMenu();
 }
 
 function positionThemeMenu() {
-  if (!themeMenu || !themeButton) return;
-  const rect = themeButton.getBoundingClientRect();
-  const menuWidth = themeMenu.offsetWidth || 48;
-  const left = Math.max(8, window.scrollX + rect.left + rect.width / 2 - menuWidth / 2);
-  const top = window.scrollY + rect.bottom + 8;
-  themeMenu.style.left = `${left}px`;
-  themeMenu.style.top = `${top}px`;
+  if (!themeMenu || !themeButton || !settingsControls) return;
+  const trigger = themeButton.getBoundingClientRect();
+  const controls = settingsControls.getBoundingClientRect();
+  const left = Math.max(8, Math.min(trigger.left, window.innerWidth - themeMenu.offsetWidth - 8));
+  themeMenu.style.left = `${left - controls.left}px`;
+  themeMenu.style.top = `${trigger.bottom - controls.top + 10}px`;
 }
 
 function initLens() {
@@ -498,17 +483,14 @@ function initLens() {
     if (lensButton) {
       lensButton.disabled = true;
       lensButton.setAttribute("aria-disabled", "true");
-      lensButton.title = isSafari ? "FX unavailable in Safari" : "FX unavailable on touch devices";
+      lensButton.title = translate(isSafari ? "FX unavailable in Safari" : "FX unavailable on touch devices");
+      lensButton.setAttribute("aria-label", lensButton.title);
     }
-    const noteMessage = isSafari
-      ? "Liquid FX is disabled in Safari because WebKit does not support this effect reliably. Touch devices also stay on the normal display."
-      : "Liquid FX is disabled on touch devices. Safari also stays on the normal display because the effect is not reliable there.";
-    setTimeout(() => showUnsupportedLensNoteOnce(noteMessage), 250);
     return;
   }
 
   const savedLens = storage.getItem(LENS_KEY);
-  const shouldEnable = savedLens !== "off";
+  const shouldEnable = savedLens === "on" && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   applyLens(shouldEnable);
 
   if (lensButton) {
@@ -518,9 +500,6 @@ function initLens() {
     });
   }
 
-  if (shouldEnable) {
-    setTimeout(showLensNoteOnce, 250);
-  }
 }
 
 
@@ -591,6 +570,7 @@ function initImageLoaders() {
 }
 
 function bootstrap() {
+  buildTopbar();
   initI18n();
   buildSettingsControls();
   initTheme();

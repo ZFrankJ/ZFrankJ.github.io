@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="../../assets/css/site.css?v=14" />
+  <link rel="stylesheet" href="../../assets/css/site.css?v=23" />
   <style>
     .gallery-shell {
       display: grid;
@@ -52,19 +52,23 @@
     .gallery-arrow {
       width: 52px;
       height: 52px;
-      border-radius: 999px;
+      border-radius: var(--control-radius);
       border: 1px solid var(--border);
-      background: var(--panel-strong);
+      background: transparent;
       color: var(--text);
       font-size: 1.25rem;
       font-weight: 700;
       cursor: pointer;
-      transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+      display: grid;
+      place-items: center;
+      transition: background 0.15s ease, color 0.15s ease;
       box-shadow: var(--shadow);
     }
 
     .gallery-arrow:hover:not(:disabled) {
-      transform: translateY(-1px);
+      background: var(--highlight-surface);
+      color: var(--highlight-ink);
+      box-shadow: var(--highlight-edge);
     }
 
     .gallery-arrow:disabled {
@@ -77,16 +81,12 @@
       position: relative;
       min-width: 0;
       overflow: hidden;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: var(--panel-strong);
       min-height: clamp(220px, 48vh, 560px);
       height: clamp(220px, 48vh, 560px);
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 14px;
-      box-shadow: var(--shadow);
     }
 
     .gallery-stage img {
@@ -95,15 +95,12 @@
       width: auto;
       height: auto;
       object-fit: contain;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--bg);
       transition: opacity 0.2s ease;
     }
 
     .gallery-stage .media-load-indicator {
-      border-radius: 10px;
-      background: var(--panel-strong);
+      border-radius: var(--control-radius);
+      background: transparent;
     }
 
     .gallery-stage.is-loading .media-load-indicator {
@@ -124,24 +121,13 @@
 </head>
 <body>
   <div class="page">
-    <div class="breadcrumbs">
-      <a href="../../index.html">Home</a>
-      <span>-</span>
-      <a href="./index.html">Others</a>
-      <span>-</span>
-      <span>Self-Cultivation Gallery</span>
-    </div>
 
-    <header class="sub-hero" data-lens>
+<header class="sub-hero" data-lens>
       <h1>Self-Cultivation Gallery</h1>
       <p class="lede">Karate, calligraphy, and Duke of Edinburgh moments collected in one place.</p>
     </header>
 
-    <div class="back-row">
-      <a class="pill pill--ghost" href="./index.html">← Back to Others</a>
-    </div>
-
-    <main class="content">
+<main class="content">
       <section class="content-section gallery-shell">
         <div class="gallery-head">
           <h2 id="gallery-title">Karate · 1 / 3</h2>
@@ -149,7 +135,7 @@
         </div>
 
         <div class="gallery-nav">
-          <button class="gallery-arrow" id="gallery-prev" aria-label="Previous image">←</button>
+          <button class="gallery-arrow" id="gallery-prev" aria-label="Previous image"><svg class="site-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg></button>
           <div class="gallery-stage media-load-shell" id="gallery-stage">
             <img id="gallery-image" data-loader-skip="true" src="../../assets/img/others-karate-1.png" alt="Karate image 1" />
             <div class="media-load-indicator" aria-live="polite">
@@ -157,7 +143,7 @@
               <span class="media-load-label">Loading image</span>
             </div>
           </div>
-          <button class="gallery-arrow" id="gallery-next" aria-label="Next image">→</button>
+          <button class="gallery-arrow" id="gallery-next" aria-label="Next image"><svg class="site-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg></button>
         </div>
       </section>
     </main>
@@ -296,6 +282,6 @@
     })();
   </script>
 
-  <script type="module" src="../../assets/js/site.js?v=22"></script>
+  <script type="module" src="../../assets/js/site.js?v=25"></script>
 </body>
 </html>

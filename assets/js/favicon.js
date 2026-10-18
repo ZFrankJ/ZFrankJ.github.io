@@ -24,6 +24,7 @@
     const mode = getThemeMode();
     const isLight = mode === "light" || (mode === "system" && systemQuery?.matches);
     favicon.href = favicon.dataset[isLight ? "light" : "dark"];
+    if (document.documentElement) document.documentElement.style.colorScheme = isLight ? "light" : "dark";
   }
 
   // Apply the saved choice in the head, before the main module initializes.

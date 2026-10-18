@@ -54,200 +54,14 @@ html:not([data-portable-source-tooltips-ready]) .portable-chart-summary>.portabl
 @media print{:root{--portable-border:rgba(13,13,13,.05)}}
 </style>
 
-<style id="report-chapter-navigation-styles">
-[data-artifact-block-id="report-chapter-navigation"] {
-  --chapter-nav-bg: var(--portable-canvas, var(--ds-bg, #fff));
-  --chapter-nav-surface: var(--portable-surface-subtle, var(--ds-surface-secondary, #f7f7f7));
-  --chapter-nav-ink: var(--portable-ink, var(--ds-text-primary, #0d0d0d));
-  --chapter-nav-muted: var(--portable-muted, var(--ds-text-secondary, #5d5d5d));
-  --chapter-nav-border: var(--portable-border, var(--ds-border-subtle, rgba(13, 13, 13, .1)));
-  --chapter-nav-accent: var(--portable-accent, var(--ds-blue-bright, #0285ff));
-}
-
-#data-analytics-portable-reader [data-artifact-block-id="report-chapter-navigation"] > #report-chapter-navigation,
-#data-analytics-portable-fallback [data-artifact-block-id="report-chapter-navigation"] {
-  color: var(--chapter-nav-ink);
-}
-
-[data-artifact-block-id="report-chapter-navigation"] .viz-card-actions {
-  display: none !important;
-}
-
-[data-artifact-block-id="report-chapter-navigation"] h2 {
-  margin: 0 0 10px !important;
-  color: var(--chapter-nav-muted) !important;
-  font-size: 12px !important;
-  font-weight: 650 !important;
-  line-height: 18px !important;
-  letter-spacing: .08em !important;
-  text-transform: uppercase;
-}
-
-[data-artifact-block-id="report-chapter-navigation"] ul {
-  margin: 0 !important;
-  padding: 0 !important;
-  list-style: none !important;
-}
-
-[data-artifact-block-id="report-chapter-navigation"] li {
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-[data-artifact-block-id="report-chapter-navigation"] a {
-  color: var(--chapter-nav-muted) !important;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 18px;
-  text-decoration: none !important;
-}
-
-[data-artifact-block-id="report-chapter-navigation"] a:hover,
-[data-artifact-block-id="report-chapter-navigation"] a:focus-visible,
-[data-artifact-block-id="report-chapter-navigation"] a[aria-current="location"] {
-  color: var(--chapter-nav-ink) !important;
-}
-
-[data-artifact-block-id="report-chapter-navigation"] a:focus-visible {
-  outline: 2px solid var(--chapter-nav-accent);
-  outline-offset: 2px;
-}
-
-#data-analytics-portable-reader [data-artifact-block-id]:not([data-artifact-block-id="report-chapter-navigation"]) [id],
-#data-analytics-portable-fallback [data-artifact-block-id]:not([data-artifact-block-id="report-chapter-navigation"]) {
-  scroll-margin-top: 96px;
-}
-
-@media screen and (min-width: 1400px) {
-  #data-analytics-portable-reader [data-artifact-block-id="report-chapter-navigation"],
-  #data-analytics-portable-fallback [data-artifact-block-id="report-chapter-navigation"] {
-    position: fixed !important;
-    z-index: 55;
-    top: 72px !important;
-    left: 16px !important;
-    display: block !important;
-    box-sizing: border-box !important;
-    width: 176px !important;
-    max-width: 176px !important;
-    max-height: calc(100vh - 96px);
-    margin: 0 !important;
-    padding: 0 12px 12px 0 !important;
-    overflow-x: hidden;
-    overflow-y: auto;
-    border: 0 !important;
-    border-right: 1px solid var(--chapter-nav-border) !important;
-    border-radius: 0 !important;
-    background: var(--chapter-nav-bg) !important;
-    box-shadow: none !important;
-  }
-
-  #data-analytics-portable-reader [data-artifact-block-id="report-chapter-navigation"] > #report-chapter-navigation {
-    margin: 0 !important;
-    padding: 0 !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-
-  #data-analytics-portable-reader .analytics-layout-row:has(> [data-artifact-block-id="report-chapter-navigation"]) {
-    display: contents !important;
-  }
-
-  [data-artifact-block-id="report-chapter-navigation"] li + li {
-    margin-top: 2px !important;
-  }
-
-  [data-artifact-block-id="report-chapter-navigation"] a {
-    display: block;
-    padding: 5px 8px;
-    border-left: 2px solid transparent;
-    border-radius: 0 6px 6px 0;
-  }
-
-  [data-artifact-block-id="report-chapter-navigation"] a:hover,
-  [data-artifact-block-id="report-chapter-navigation"] a:focus-visible {
-    background: var(--chapter-nav-surface);
-  }
-
-  [data-artifact-block-id="report-chapter-navigation"] a[aria-current="location"] {
-    border-left-color: var(--chapter-nav-accent);
-    background: var(--chapter-nav-surface);
-  }
-}
-
-@media screen and (max-width: 1399px) {
-  #data-analytics-portable-reader [data-artifact-block-id="report-chapter-navigation"] > #report-chapter-navigation,
-  #data-analytics-portable-fallback [data-artifact-block-id="report-chapter-navigation"] {
-    padding: 14px 16px !important;
-    border: 1px solid var(--chapter-nav-border) !important;
-    border-radius: 12px !important;
-    background: var(--chapter-nav-surface) !important;
-  }
-
-  [data-artifact-block-id="report-chapter-navigation"] ul {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding: 0 0 4px !important;
-    scroll-snap-type: x proximity;
-    scrollbar-width: thin;
-  }
-
-  [data-artifact-block-id="report-chapter-navigation"] li {
-    flex: 0 0 auto;
-    scroll-snap-align: start;
-  }
-
-  [data-artifact-block-id="report-chapter-navigation"] a {
-    display: block;
-    padding: 6px 10px;
-    border: 1px solid var(--chapter-nav-border);
-    border-radius: 999px;
-    background: var(--chapter-nav-bg);
-    white-space: nowrap;
-  }
-
-  [data-artifact-block-id="report-chapter-navigation"] a[aria-current="location"] {
-    border-color: var(--chapter-nav-accent);
-  }
-}
-
-@media screen and (max-width: 760px) {
-  #data-analytics-portable-reader [data-artifact-block-id]:not([data-artifact-block-id="report-chapter-navigation"]) [id],
-  #data-analytics-portable-fallback [data-artifact-block-id]:not([data-artifact-block-id="report-chapter-navigation"]) {
-    scroll-margin-top: 40px;
-  }
-}
-
-@media print {
-  [data-artifact-block-id="report-chapter-navigation"] {
-    display: none !important;
-  }
-
-  #data-analytics-portable-reader,
-  #data-analytics-portable-fallback {
-    width: 100% !important;
-    margin-left: 0 !important;
-  }
-}
-</style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="../../../assets/css/site.css?v=14">
-<link rel="stylesheet" href="./report.css?v=19">
+<link rel="stylesheet" href="../../../assets/css/site.css?v=23">
+<link rel="stylesheet" href="./report.css?v=26">
+<link rel="stylesheet" href="../../../assets/css/reading.css?v=5">
 </head>
 <body class="quant-report">
-<div class="report-site-frame report-site-top">
-  <div class="breadcrumbs">
-    <a href="../../../index.html">Home</a>
-    <span>·</span>
-    <a href="../">Finance</a>
-    <span>·</span>
-    <span>Engineering trajectory</span>
-  </div>
-</div>
 <div class="report-loading-shell" role="status" aria-label="Loading journal">
   <aside class="report-loading-nav" aria-hidden="true">
     <span class="report-loading-label"></span>
@@ -6413,8 +6227,8 @@ ivjnSXcQcPO4VDeP11//6YMY0j/djL9+/c1r5Wd7K9J981q+hKj/JZX3rXpy+Ga5+lCtltKjUmg2
   <p class="muted">© 2026 Fujia Zhang. All rights reserved.</p>
 </footer>
 <div class="control-bubbles" aria-label="Display controls"></div>
-<script type="module" src="../../../assets/js/site.js?v=22"></script>
-<script type="module" src="./report-layout.js?v=6"></script>
+<script type="module" src="../../../assets/js/site.js?v=25"></script>
+<script type="module" src="./report-layout.js?v=9"></script>
 <script type="module" src="./report-i18n.js?v=4"></script>
 </body>
 </html>

@@ -31,9 +31,9 @@
 }
 
 #data-analytics-portable-reader {
-  --bg: #0a1628 !important;
-  --panel: #0f1f3a !important;
-  --panel-strong: #152952 !important;
+  --bg: #0e182c !important;
+  --panel: #141922 !important;
+  --panel-strong: #1b2431 !important;
   --text: #f4e8c1 !important;
   --muted: #b8a978 !important;
   --portable-table-text: #e7d9ad !important;
@@ -44,9 +44,9 @@
 }
 
 :root.theme-light #data-analytics-portable-reader {
-  --bg: #fdf8e8 !important;
-  --panel: #fffef8 !important;
-  --panel-strong: #f9f3dc !important;
+  --bg: #f8f3de !important;
+  --panel: #fffdf7 !important;
+  --panel-strong: #f4efdf !important;
   --text: #1a2d4a !important;
   --muted: #4a5a78 !important;
   --portable-table-text: #3f506e !important;
@@ -90,21 +90,18 @@ html[data-language="zh"] body.quant-report pre * {
 }
 
 .quant-report a {
-  color: var(--accent) !important;
+  color: var(--link-color) !important;
 }
 
 .quant-report a:hover,
 .quant-report a:focus-visible {
-  color: var(--accent-2) !important;
+  color: var(--link-color) !important;
+  text-decoration: underline;
+  text-underline-offset: 5px;
 }
 
 .quant-report .control-bubbles {
   z-index: 95;
-}
-
-.quant-report .control-bubbles .bubble {
-  width: 46px;
-  height: 46px;
 }
 
 .quant-report .report-loading-shell {
@@ -120,10 +117,10 @@ html[data-language="zh"] body.quant-report pre * {
 .quant-report .report-loading-hero,
 .quant-report .report-loading-content {
   overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  background: color-mix(in srgb, var(--panel) 96%, transparent);
-  box-shadow: var(--shadow);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .quant-report .report-loading-nav {
@@ -138,11 +135,11 @@ html[data-language="zh"] body.quant-report pre * {
   grid-row: 1;
   margin-top: 8px;
   padding: 48px;
-  background: linear-gradient(145deg, rgba(212, 175, 55, 0.12), rgba(10, 22, 40, 0.92));
+  background: transparent;
 }
 
 :root.theme-light .quant-report .report-loading-hero {
-  background: linear-gradient(145deg, rgba(30, 58, 95, 0.08), rgba(212, 175, 55, 0.12));
+  background: transparent;
 }
 
 .quant-report .report-loading-content {
@@ -264,15 +261,15 @@ html[data-language="zh"] body.quant-report pre * {
   margin: 90px auto 0 !important;
   padding: clamp(26px, 4vw, 42px) !important;
   gap: 24px !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius) !important;
-  background: linear-gradient(145deg, rgba(212, 175, 55, 0.12), rgba(10, 22, 40, 0.92)) !important;
-  box-shadow: var(--shadow) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 :root.theme-light .quant-report .portable-page-header,
 :root.theme-light .quant-report #data-analytics-portable-reader .portable-page-header {
-  background: linear-gradient(145deg, rgba(30, 58, 95, 0.08), rgba(212, 175, 55, 0.12)) !important;
+  background: transparent !important;
 }
 
 .quant-report .portable-page-heading {
@@ -280,11 +277,11 @@ html[data-language="zh"] body.quant-report pre * {
 }
 
 .quant-report .portable-surface-label {
-  display: inline-flex !important;
+  display: none !important;
   margin: 0 0 14px !important;
   padding: 5px 10px !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 999px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
   color: var(--accent) !important;
   font-size: 11px !important;
   font-weight: 700 !important;
@@ -382,35 +379,35 @@ html[data-language="zh"] body.quant-report pre * {
   background: transparent !important;
 }
 
-.quant-report #data-analytics-portable-reader .panel.report-block,
+.quant-report #data-analytics-portable-reader .panel.report-block:not(#report-chapter-navigation),
 .quant-report #data-analytics-portable-reader .panel.table-panel,
 .quant-report #data-analytics-portable-reader .panel.chart-panel,
 .quant-report #data-analytics-portable-reader .panel.viz-card {
   overflow: visible !important;
   padding: clamp(22px, 4vw, 34px) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 16px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
   color: var(--text) !important;
-  background: color-mix(in srgb, var(--panel) 94%, transparent) !important;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.14) !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
-:root.theme-light .quant-report #data-analytics-portable-reader .panel.report-block,
+:root.theme-light .quant-report #data-analytics-portable-reader .panel.report-block:not(#report-chapter-navigation),
 :root.theme-light .quant-report #data-analytics-portable-reader .panel.table-panel,
 :root.theme-light .quant-report #data-analytics-portable-reader .panel.chart-panel,
 :root.theme-light .quant-report #data-analytics-portable-reader .panel.viz-card {
-  box-shadow: 0 12px 28px rgba(30, 58, 95, 0.08) !important;
+  box-shadow: none !important;
 }
 
 .quant-report #data-analytics-portable-reader [data-artifact-block-id^="01-from-scripts"] .panel {
   padding: clamp(28px, 5vw, 48px) !important;
-  border-radius: var(--radius) !important;
-  background: linear-gradient(145deg, rgba(212, 175, 55, 0.12), rgba(10, 22, 40, 0.92)) !important;
-  box-shadow: var(--shadow) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 :root.theme-light .quant-report #data-analytics-portable-reader [data-artifact-block-id^="01-from-scripts"] .panel {
-  background: linear-gradient(145deg, rgba(30, 58, 95, 0.08), rgba(212, 175, 55, 0.12)) !important;
+  background: transparent !important;
 }
 
 .quant-report #data-analytics-portable-reader [data-artifact-block-id^="01-from-scripts"] h1 {
@@ -473,21 +470,6 @@ html[data-language="zh"] body.quant-report pre * {
   --table-scroll-edge-surface: #000 !important;
 }
 
-:root:not(.theme-light) .quant-report #data-analytics-portable-reader .viz-card-menu-button {
-  border-color: rgba(184, 199, 224, 0.14) !important;
-  color: rgba(244, 248, 255, 0.72) !important;
-  background: var(--panel) !important;
-  box-shadow: none !important;
-}
-
-:root:not(.theme-light) .quant-report #data-analytics-portable-reader .viz-card-menu-button:hover,
-:root:not(.theme-light) .quant-report #data-analytics-portable-reader .viz-card-menu-button:focus-visible,
-:root:not(.theme-light) .quant-report #data-analytics-portable-reader .viz-card-menu-button[aria-expanded="true"] {
-  border-color: rgba(184, 199, 224, 0.24) !important;
-  color: rgba(255, 255, 255, 0.92) !important;
-  background: var(--panel-strong) !important;
-}
-
 .quant-report #data-analytics-portable-reader .data-table th,
 .quant-report #data-analytics-portable-reader .data-table td {
   border-color: var(--border) !important;
@@ -502,14 +484,14 @@ html[data-language="zh"] body.quant-report pre * {
   grid-column: 1 !important;
   min-width: 0 !important;
   padding: clamp(22px, 4vw, 34px) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 16px !important;
-  background: color-mix(in srgb, var(--panel) 94%, transparent) !important;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.14) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 :root.theme-light .quant-report .portable-block:not([data-artifact-block-id="report-chapter-navigation"]) {
-  box-shadow: 0 12px 28px rgba(30, 58, 95, 0.08) !important;
+  box-shadow: none !important;
 }
 
 .quant-report .portable-markdown {
@@ -614,55 +596,6 @@ html[data-language="zh"] body.quant-report pre * {
 }
 
 .quant-report [data-artifact-block-id="report-chapter-navigation"] {
-  border-color: var(--border) !important;
-  background: color-mix(in srgb, var(--panel) 94%, transparent) !important;
-  box-shadow: var(--shadow) !important;
-}
-
-.quant-report [data-artifact-block-id="report-chapter-navigation"] h2 {
-  color: var(--accent) !important;
-}
-
-.quant-report [data-artifact-block-id="report-chapter-navigation"] a {
-  color: var(--muted) !important;
-  border-color: var(--border) !important;
-  background: var(--panel) !important;
-}
-
-.quant-report [data-artifact-block-id="report-chapter-navigation"] a:hover,
-.quant-report [data-artifact-block-id="report-chapter-navigation"] a:focus-visible,
-.quant-report [data-artifact-block-id="report-chapter-navigation"] a[aria-current="location"] {
-  color: var(--text) !important;
-  border-color: var(--accent) !important;
-  background: var(--panel-strong) !important;
-}
-
-.quant-report #data-analytics-portable-reader [data-artifact-block-id="report-chapter-navigation"] a {
-  color: var(--muted) !important;
-  border-color: var(--border) !important;
-  background: var(--panel) !important;
-}
-
-.quant-report #data-analytics-portable-reader [data-artifact-block-id="report-chapter-navigation"] a:hover,
-.quant-report #data-analytics-portable-reader [data-artifact-block-id="report-chapter-navigation"] a:focus-visible,
-.quant-report #data-analytics-portable-reader [data-artifact-block-id="report-chapter-navigation"] a[aria-current="location"] {
-  color: var(--text) !important;
-  border-color: var(--accent) !important;
-  background: var(--panel-strong) !important;
-}
-
-.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation a {
-  color: var(--muted) !important;
-  border-color: var(--border) !important;
-  background: var(--panel) !important;
-}
-
-.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation a:hover,
-.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation a:focus-visible,
-.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation a[aria-current="location"] {
-  color: var(--text) !important;
-  border-color: var(--accent) !important;
-  background: var(--panel-strong) !important;
 }
 
 .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .markdown-render p,
@@ -689,169 +622,9 @@ html[data-language="zh"] body.quant-report pre * {
   background: var(--panel-strong) !important;
 }
 
-@media (min-width: 761px) {
-  .quant-report .portable-fallback,
-  .quant-report #data-analytics-portable-reader {
-    padding: 0 24px 32px 256px !important;
-  }
-
-  .quant-report .portable-page-header {
-    width: min(920px, 100%) !important;
-    margin: 24px auto 0 !important;
-  }
-
-  .quant-report .portable-block-stack {
-    width: min(920px, 100%) !important;
-    max-width: 920px !important;
-    margin: 26px auto 0 !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .analytics-layout-canvas,
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-content-grid,
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-block-stack {
-    width: min(920px, 100%) !important;
-    max-width: 920px !important;
-    margin-right: auto !important;
-    margin-left: auto !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .analytics-layout-canvas {
-    padding: 24px 0 32px !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .analytics-layout-row:has(> [data-artifact-block-id="report-chapter-navigation"]) {
-    display: contents !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root [data-artifact-block-id="report-chapter-navigation"] {
-    position: fixed !important;
-    z-index: 55 !important;
-    top: 18px !important;
-    bottom: 18px !important;
-    left: 18px !important;
-    display: block !important;
-    width: 220px !important;
-    max-width: 220px !important;
-    max-height: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: visible !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root [data-artifact-block-id="report-chapter-navigation"] > .analytics-layout-item-shell {
-    width: 100% !important;
-    height: 100% !important;
-    padding: 0 !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation {
-    width: 100% !important;
-    height: 100% !important;
-    max-height: 100% !important;
-    padding: 18px !important;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-    border: 1px solid var(--border) !important;
-    border-radius: 20px !important;
-    background: color-mix(in srgb, var(--panel) 96%, transparent) !important;
-    box-shadow: var(--shadow) !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation h2 {
-    margin: 0 0 12px !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation ul {
-    display: block !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: visible !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation li {
-    display: block !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation li + li {
-    margin-top: 5px !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation a {
-    display: block !important;
-    padding: 7px 9px !important;
-    border: 1px solid var(--border) !important;
-    border-radius: 11px !important;
-    background: var(--panel) !important;
-    line-height: 1.35 !important;
-    white-space: normal !important;
-  }
-
-  .quant-report #data-analytics-portable-fallback [data-artifact-block-id="report-chapter-navigation"] {
-    position: fixed !important;
-    z-index: 55 !important;
-    top: 18px !important;
-    bottom: 18px !important;
-    left: 18px !important;
-    width: 220px !important;
-    max-width: 220px !important;
-    max-height: none !important;
-    margin: 0 !important;
-    padding: 18px !important;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-    border: 1px solid var(--border) !important;
-    border-radius: 20px !important;
-    background: color-mix(in srgb, var(--panel) 96%, transparent) !important;
-    box-shadow: var(--shadow) !important;
-  }
-
-  .quant-report #data-analytics-portable-fallback [data-artifact-block-id="report-chapter-navigation"] ul {
-    display: block !important;
-    overflow: visible !important;
-  }
-
-  .quant-report #data-analytics-portable-fallback [data-artifact-block-id="report-chapter-navigation"] li + li {
-    margin-top: 5px !important;
-  }
-
-  .quant-report #data-analytics-portable-fallback [data-artifact-block-id="report-chapter-navigation"] a {
-    display: block !important;
-    padding: 7px 9px !important;
-    border: 1px solid var(--border) !important;
-    border-radius: 11px !important;
-    white-space: normal !important;
-  }
-}
-
 @media (max-width: 760px) {
   body.quant-report {
     padding-bottom: 40px;
-  }
-
-  .quant-report .control-bubbles {
-    top: 14px;
-    right: 14px;
-    gap: 8px;
-  }
-
-  .quant-report .control-bubbles .bubble {
-    width: 42px;
-    height: 42px;
   }
 
   .quant-report .report-loading-shell {
@@ -923,23 +696,13 @@ html[data-language="zh"] body.quant-report pre * {
   .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root [data-artifact-block-id="report-chapter-navigation"],
   .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root [data-artifact-block-id="report-chapter-navigation"] > .analytics-layout-item-shell {
     margin: 0 !important;
-    padding: 0 !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
   }
 
   .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation {
-    padding: 16px !important;
     overflow: hidden !important;
-    border: 1px solid var(--border) !important;
-    border-radius: 18px !important;
-    background: color-mix(in srgb, var(--panel) 96%, transparent) !important;
-    box-shadow: var(--shadow) !important;
   }
 
-  .quant-report #data-analytics-portable-reader .panel.report-block,
+  .quant-report #data-analytics-portable-reader .panel.report-block:not(#report-chapter-navigation),
   .quant-report #data-analytics-portable-reader .panel.table-panel,
   .quant-report #data-analytics-portable-reader .panel.chart-panel,
   .quant-report #data-analytics-portable-reader .panel.viz-card {
@@ -956,146 +719,6 @@ html[data-language="zh"] body.quant-report pre * {
 
   .quant-report .portable-table-scroll {
     overflow-x: auto !important;
-  }
-}
-
-@media (min-width: 761px) {
-  .quant-report .portable-fallback,
-  .quant-report #data-analytics-portable-reader {
-    padding: 0 24px 32px !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .analytics-layout-canvas,
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-content-grid,
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-block-stack {
-    width: min(1180px, 100%) !important;
-    max-width: 1180px !important;
-    margin-right: auto !important;
-    margin-left: auto !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-block-stack {
-    display: grid !important;
-    grid-template-columns: 220px minmax(0, 1fr) !important;
-    grid-auto-flow: row !important;
-    gap: 22px 18px !important;
-    align-items: start !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-block-stack > .analytics-layout-row {
-    grid-column: 2 !important;
-    margin: 0 !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .analytics-layout-row:has(> [data-artifact-block-id="report-chapter-navigation"]) {
-    position: sticky !important;
-    z-index: 55 !important;
-    top: 18px !important;
-    display: block !important;
-    grid-column: 1 !important;
-    grid-row: 1 !important;
-    align-self: start !important;
-    width: 220px !important;
-    max-width: 220px !important;
-    height: auto !important;
-    max-height: calc(100vh - 36px) !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: visible !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root [data-artifact-block-id="report-chapter-navigation"] {
-    position: static !important;
-    inset: auto !important;
-    display: block !important;
-    width: 220px !important;
-    max-width: 220px !important;
-    height: auto !important;
-    max-height: calc(100vh - 36px) !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: visible !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root [data-artifact-block-id="report-chapter-navigation"] > .analytics-layout-item-shell {
-    width: 220px !important;
-    height: auto !important;
-    max-height: calc(100vh - 36px) !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root #report-chapter-navigation {
-    width: 220px !important;
-    height: auto !important;
-    max-height: calc(100vh - 36px) !important;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-    border: 1px solid var(--border) !important;
-    border-radius: 20px !important;
-    background: color-mix(in srgb, var(--panel) 96%, transparent) !important;
-    box-shadow: var(--shadow) !important;
-  }
-
-  .quant-report #data-analytics-portable-fallback .portable-block-stack {
-    display: grid !important;
-    grid-template-columns: 220px minmax(0, 1fr) !important;
-    gap: 22px 18px !important;
-    width: min(1180px, 100%) !important;
-    max-width: 1180px !important;
-  }
-
-  .quant-report #data-analytics-portable-fallback .portable-block:not([data-artifact-block-id="report-chapter-navigation"]) {
-    grid-column: 2 !important;
-  }
-
-  .quant-report #data-analytics-portable-fallback [data-artifact-block-id="report-chapter-navigation"] {
-    position: sticky !important;
-    inset: auto !important;
-    top: 18px !important;
-    grid-column: 1 !important;
-    grid-row: 1 !important;
-    align-self: start !important;
-    width: 220px !important;
-    height: auto !important;
-    max-height: calc(100vh - 36px) !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-block-stack:has(> .report-reading-layout) {
-    display: block !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-reading-layout {
-    display: grid !important;
-    grid-template-columns: 220px minmax(0, 1fr) !important;
-    gap: 18px !important;
-    align-items: stretch !important;
-    width: 100% !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-reading-sidebar {
-    position: relative !important;
-    align-self: stretch !important;
-    min-width: 0 !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-reading-main {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    gap: 22px !important;
-    align-content: start !important;
-    min-width: 0 !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-reading-main > .analytics-layout-row {
-    grid-column: 1 !important;
-    margin: 0 !important;
   }
 }
 
@@ -1161,82 +784,6 @@ html[data-language="zh"] body.quant-report pre * {
   width: 100% !important;
 }
 
-@media (min-width: 761px) {
-  .quant-report #data-analytics-portable-fallback .portable-block-stack:has(> .report-reading-layout),
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-block-stack:has(> .report-reading-layout) {
-    display: block !important;
-    width: min(1180px, 100%) !important;
-    max-width: 1180px !important;
-  }
-
-  .quant-report #data-analytics-portable-fallback .report-reading-layout,
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-reading-layout {
-    display: grid !important;
-    grid-template-columns: 240px minmax(0, 1fr) !important;
-    gap: 18px !important;
-    align-items: stretch !important;
-    width: 100% !important;
-  }
-
-  .quant-report #data-analytics-portable-fallback .report-reading-sidebar,
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-reading-sidebar {
-    position: relative !important;
-    align-self: stretch !important;
-    min-width: 0 !important;
-  }
-
-  .quant-report #data-analytics-portable-fallback .report-sidebar-sticky,
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-sidebar-sticky {
-    position: sticky !important;
-    top: 18px !important;
-  }
-
-  .quant-report #data-analytics-portable-fallback .report-reading-main,
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-reading-main {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    gap: 22px !important;
-    align-content: start !important;
-    min-width: 0 !important;
-  }
-
-  .quant-report #data-analytics-portable-fallback .report-reading-main > .portable-block,
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-reading-main > .analytics-layout-row {
-    grid-column: 1 !important;
-    margin: 0 !important;
-  }
-
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-sidebar-sticky > .analytics-layout-row {
-    position: static !important;
-    inset: auto !important;
-    width: 240px !important;
-    max-width: 240px !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-
-  .quant-report #data-analytics-portable-fallback .report-sidebar-sticky > [data-artifact-block-id="report-chapter-navigation"],
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-sidebar-sticky [data-artifact-block-id="report-chapter-navigation"] {
-    position: static !important;
-    inset: auto !important;
-    width: 240px !important;
-    max-width: 240px !important;
-    margin: 0 !important;
-  }
-
-  .quant-report #data-analytics-portable-fallback .report-sidebar-sticky > [data-artifact-block-id="report-chapter-navigation"],
-  .quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-sidebar-sticky #report-chapter-navigation {
-    width: 240px !important;
-    max-width: 240px !important;
-    max-height: calc(100vh - 106px) !important;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-  }
-}
-
 @media (max-width: 760px) {
   .quant-report .report-site-frame {
     width: calc(100% - 28px) !important;
@@ -1284,4 +831,10 @@ html[data-language="zh"] body.quant-report pre * {
   .quant-report .report-return-links {
     display: none !important;
   }
+}
+
+/* The generated shell must not inset the shared chapter catalog. */
+.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-reading-sidebar .analytics-layout-item-shell {
+  width: 100% !important;
+  padding: 0 !important;
 }

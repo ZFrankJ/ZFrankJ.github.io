@@ -10,9 +10,9 @@
   --surface-raised: var(--panel-strong) !important;
   --secondary: var(--journal-secondary) !important;
   --control: var(--panel) !important;
-  --control-hover: var(--panel-strong) !important;
-  --interaction-hover: var(--panel-strong) !important;
-  --interaction-active: var(--panel-strong) !important;
+  --control-hover: var(--highlight-surface) !important;
+  --interaction-hover: var(--highlight-surface) !important;
+  --interaction-active: var(--highlight-surface) !important;
   --font-sans: "MuseoModerno", "LXGW WenKai", "Segoe UI", sans-serif !important;
   --data-app-report-body-text: var(--journal-secondary) !important;
   --data-app-report-evidence-width: 920px;
@@ -46,7 +46,7 @@ body.journal-report {
   --surface: var(--journal-surface) !important;
   --surface-raised: var(--journal-raised) !important;
   --control: var(--journal-surface) !important;
-  --control-hover: var(--journal-raised) !important;
+  --control-hover: var(--highlight-surface) !important;
   --border: var(--journal-border) !important;
   --border-strong: color-mix(in srgb, var(--journal-ink) 24%, transparent) !important;
   --accent: var(--journal-accent) !important;
@@ -67,8 +67,6 @@ body.journal-report {
 
 .journal-frame {
   display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
-  gap: 18px;
   align-items: start;
   margin: 28px auto 32px;
 }
@@ -82,46 +80,18 @@ body.journal-report {
   gap: 16px;
   width: 100%;
   position: sticky;
-  top: 18px;
+  top: calc(var(--site-topbar-height) + 18px);
 }
 
 .journal-chapter-card {
   width: 100%;
-  max-height: calc(100dvh - 106px);
+  max-height: calc(100dvh - var(--site-topbar-height) - 32px);
   overflow-y: auto;
-  border: 1px solid var(--journal-border);
-  border-radius: 20px;
-  padding: 18px;
-  background: color-mix(in srgb, var(--journal-surface) 96%, transparent);
-  box-shadow: var(--shadow);
-}
-
-.journal-chapter-card h2 {
-  color: var(--journal-accent);
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: .04em;
-  margin: 0 0 14px;
-}
-
-.journal-chapters { display: grid; gap: 6px; }
-.journal-chapters a {
-  display: block;
-  border: 1px solid var(--journal-border);
-  border-radius: 11px;
-  padding: 9px 11px;
-  color: var(--journal-secondary);
-  background: var(--journal-surface);
-  line-height: 1.4;
-  font-size: 13px;
-}
-
-.journal-chapters a:hover,
-.journal-chapters a:focus-visible,
-.journal-chapters a[aria-current="location"] {
-  color: var(--journal-ink);
-  border-color: var(--journal-accent);
-  background: var(--journal-raised);
+  border: 0;
+  border-radius: 0;
+  padding: 18px 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .journal-report .report-return-links {
@@ -153,18 +123,18 @@ body.journal-report {
 .journal-report .story-chapter,
 .journal-downloads {
   min-width: 0;
-  border: 1px solid var(--journal-border);
-  border-radius: 20px;
+  border: 0;
+  border-radius: 0;
   padding: clamp(22px, 3vw, 34px);
-  background: color-mix(in srgb, var(--journal-surface) 96%, transparent);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, .14);
+  background: transparent;
+  box-shadow: none;
 }
 .journal-report .report-hero {
   padding: clamp(28px, 4vw, 48px);
-  background: linear-gradient(145deg, rgba(212, 175, 55, .12), rgba(10, 22, 40, .92));
+  background: transparent;
 }
 :root.theme-light .journal-report .report-hero {
-  background: linear-gradient(145deg, rgba(30, 58, 95, .08), rgba(212, 175, 55, .12));
+  background: transparent;
 }
 .journal-report .report-hero h1 {
   color: var(--journal-ink);
@@ -172,6 +142,7 @@ body.journal-report {
   letter-spacing: -.035em;
 }
 .journal-report .method-story .story-kicker {
+  display: none;
   margin: 0;
   color: var(--journal-accent);
   font-size: 11px;
@@ -206,8 +177,8 @@ body.journal-report {
 .journal-report .method-story .story-equation {
   font-family: var(--font-sans);
   color: var(--journal-ink);
-  border-color: var(--journal-accent);
-  background: var(--journal-raised);
+  border: 0;
+  background: transparent;
   padding: 18px 20px;
   border-radius: 0 12px 12px 0;
   font-size: 14px;
@@ -218,9 +189,9 @@ body.journal-report {
 .journal-report .report-page .dashboard-component[data-component-kind="chart"],
 .journal-report .report-page [data-component-id="std-manifold"] {
   --data-card-background: var(--journal-raised);
-  border: 1px solid var(--journal-border);
-  border-radius: 14px;
-  background: var(--journal-raised);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   box-shadow: none;
   color: var(--journal-ink);
 }
@@ -234,13 +205,6 @@ body.journal-report {
 }
 .journal-report [data-component-id="threshold-density"] .recharts-line-curve {
   stroke: var(--journal-accent);
-}
-.journal-report .method-story .cloud-presets button,
-.journal-report .method-story .cloud-inspect select {
-  border-radius: 10px;
-  background: var(--journal-surface);
-  border-color: var(--journal-border);
-  color: var(--journal-ink);
 }
 .journal-report [data-component-id="std-manifold"] > .report-narrative-actions {
   top: 22px !important;
@@ -267,10 +231,6 @@ body.journal-report {
   font-weight: 600;
   line-height: 1.5;
   letter-spacing: 0;
-}
-.journal-report .method-story .cloud-presets button:hover {
-  background: var(--journal-raised);
-  border-color: var(--journal-accent);
 }
 .journal-report .method-story .cloud-plot,
 .journal-report .method-story .cloud-plot * {
@@ -304,19 +264,6 @@ body.journal-report {
   border-color: var(--journal-border);
   font-family: var(--font-sans);
 }
-.journal-report .menu-trigger {
-  color: var(--journal-secondary);
-  background: var(--journal-surface);
-  border: 1px solid color-mix(in srgb, var(--journal-ink) 12%, transparent);
-  border-radius: 50%;
-  box-shadow: none;
-}
-.journal-report .menu-trigger:is(:hover, :focus-visible, [data-state="open"]) {
-  color: var(--journal-ink);
-  border-color: color-mix(in srgb, var(--journal-ink) 22%, transparent);
-  background: var(--journal-raised);
-  box-shadow: none;
-}
 .journal-report .journal-downloads h2 { font-size: 22px; }
 .journal-download-links { display: grid; gap: 10px; font-size: 13px; }
 .journal-report .control-bubbles { z-index: 150; }
@@ -337,7 +284,6 @@ body.journal-report {
   .journal-sidebar-sticky { position: static; }
   .journal-chapter-card { max-height: none; }
   .journal-report .report-return-links { flex-wrap: wrap; }
-  .journal-chapters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .journal-report .report-page .dashboard-component[data-component-kind="chart"],
   .journal-report .report-page [data-component-id="std-manifold"] { padding: 16px 12px; }
   .journal-report [data-component-id="std-manifold"] > .report-narrative-actions {

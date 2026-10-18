@@ -4,33 +4,24 @@ const reader = document.querySelector("#data-analytics-portable-reader");
 let layoutObserver = null;
 let fallbackTimer = null;
 
-function createReturnLinks() {
-  const links = document.createElement("nav");
-  links.className = "back-row report-return-links";
-  links.setAttribute("aria-label", "Return links");
-  links.innerHTML = `
-    <a class="pill pill--ghost report-return-link" href="../../../index.html"><span aria-hidden="true">←</span><span>Home</span></a>
-    <a class="pill pill--ghost report-return-link" href="../"><span aria-hidden="true">←</span><span>Finance</span></a>
-  `;
-  return links;
-}
-
 function createReadingLayout(stack, navigation, children, sidebarLabel) {
   const layout = document.createElement("div");
   const sidebar = document.createElement("aside");
   const sticky = document.createElement("div");
   const main = document.createElement("div");
 
-  layout.className = "report-reading-layout";
-  sidebar.className = "report-reading-sidebar";
+  layout.className = "report-reading-layout reading-layout";
+  sidebar.className = "report-reading-sidebar reading-sidebar";
   sidebar.setAttribute("aria-label", sidebarLabel);
-  sticky.className = "report-sidebar-sticky";
-  main.className = "report-reading-main";
+  sticky.className = "report-sidebar-sticky reading-sidebar-sticky";
+  main.className = "report-reading-main reading-main";
 
+  const catalog = navigation.querySelector("#report-chapter-navigation") || navigation;
+  catalog.classList.add("chapter-catalog");
   stack.replaceChildren(layout);
   layout.append(sidebar, main);
   sidebar.append(sticky);
-  sticky.append(createReturnLinks(), navigation);
+  sticky.append(navigation);
   children.filter((child) => child !== navigation).forEach((child) => main.append(child));
 }
 
