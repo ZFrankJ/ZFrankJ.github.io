@@ -352,12 +352,18 @@ html[data-language="zh"] body.quant-report pre * {
   background: var(--panel-strong) !important;
 }
 
-:root.theme-light .quant-report #data-analytics-portable-reader .table-scroll-shell {
-  --table-scroll-edge-surface: #fff !important;
+.quant-report #data-analytics-portable-reader .table-scroll-shell {
+  --table-scroll-edge-surface: var(--panel-strong) !important;
 }
 
-:root:not(.theme-light) .quant-report #data-analytics-portable-reader .table-scroll-shell {
-  --table-scroll-edge-surface: #000 !important;
+.quant-report #data-analytics-portable-reader .table-scroll-edge-left {
+  border-top-left-radius: inherit;
+  border-bottom-left-radius: inherit;
+}
+
+.quant-report #data-analytics-portable-reader .table-scroll-edge-right {
+  border-top-right-radius: inherit;
+  border-bottom-right-radius: inherit;
 }
 
 .quant-report #data-analytics-portable-reader .data-table th,

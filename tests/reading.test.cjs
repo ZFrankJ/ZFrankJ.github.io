@@ -6,6 +6,18 @@ const vm = require('node:vm');
 const test = require('node:test');
 const root = path.resolve(__dirname, '..');
 
+test('engineering table overflow fades match the table surface and outer corners', () => {
+  const css = fs.readFileSync(path.join(root, 'pages/finance/quant-engineering-trajectory/report.css'), 'utf8');
+  assert.match(css, /\.table-scroll-shell\s*\{\s*--table-scroll-edge-surface: var\(--panel-strong\) !important;/);
+  assert.doesNotMatch(css, /--table-scroll-edge-surface:\s*#(?:fff|000)\b/);
+  for (const side of ['left', 'right']) {
+    const rule = css.match(new RegExp(`\\.table-scroll-edge-${side}\\s*\\{([^}]+)\\}`))[1];
+    for (const end of ['top', 'bottom']) {
+      assert.match(rule, new RegExp(`border-${end}-${side}-radius: inherit;`));
+    }
+  }
+});
+
 test('technical articles ship the same catalog and title components outside their renderers', () => {
   const build = spawnSync('python3', ['scripts/build-reading-shells.py', '--check'], { cwd: root, encoding: 'utf8' });
   assert.equal(build.status, 0, build.stderr);
