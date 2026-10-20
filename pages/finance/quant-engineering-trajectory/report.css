@@ -60,8 +60,8 @@ html,
 body.quant-report {
   min-height: 100%;
   color: var(--text) !important;
-  background: var(--bg-gradient) !important;
-  background-attachment: fixed !important;
+  background: var(--bg-fringe) var(--bg-gradient) !important;
+
   font-family: "MuseoModerno", "Space Grotesk", "DM Sans", "Segoe UI", sans-serif !important;
 }
 
@@ -104,122 +104,12 @@ html[data-language="zh"] body.quant-report pre * {
   z-index: 95;
 }
 
-.quant-report .report-loading-shell {
-  display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
-  grid-template-rows: 304px 314px;
-  gap: 30px 18px;
-  width: min(1180px, calc(100% - 112px));
-  margin: 48px auto 32px;
-}
-
-.quant-report .report-loading-nav,
-.quant-report .report-loading-hero,
-.quant-report .report-loading-content {
-  overflow: hidden;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-.quant-report .report-loading-nav {
-  grid-column: 1;
-  grid-row: 1 / span 2;
-  min-height: 648px;
-  padding: 18px;
-}
-
-.quant-report .report-loading-hero {
-  grid-column: 2;
-  grid-row: 1;
-  margin-top: 8px;
-  padding: 48px;
-  background: transparent;
-}
-
-:root.theme-light .quant-report .report-loading-hero {
-  background: transparent;
-}
-
-.quant-report .report-loading-content {
-  grid-column: 2;
-  grid-row: 2;
-  min-height: 0;
-  padding: 34px;
-}
-
-.quant-report .report-loading-nav span,
-.quant-report .report-loading-hero span,
-.quant-report .report-loading-content span {
-  display: block;
-  height: 14px;
-  margin-bottom: 10px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--muted) 18%, transparent);
-  animation: report-loading-pulse 1.4s ease-in-out infinite alternate;
-}
-
-.quant-report .report-loading-nav .report-loading-label {
-  width: 42%;
-  height: 10px;
-  margin-bottom: 16px;
-}
-
-.quant-report .report-loading-nav span:not(.report-loading-label) {
-  width: 100%;
-  height: 34px;
-  margin-bottom: 6px;
-  border: 1px solid var(--border);
-  border-radius: 11px;
-}
-
-.quant-report .report-loading-hero span:nth-child(1) {
-  width: 88%;
-  height: 34px;
-}
-
-.quant-report .report-loading-hero span:nth-child(2) {
-  width: 74%;
-  height: 34px;
-}
-
-.quant-report .report-loading-hero span:nth-child(3) {
-  width: 56%;
-  height: 34px;
-}
-
-.quant-report .report-loading-content span:nth-child(1) {
-  width: 24%;
-  height: 22px;
-  margin-bottom: 22px;
-}
-
-.quant-report .report-loading-content span:nth-child(2) { width: 100%; }
-.quant-report .report-loading-content span:nth-child(3) { width: 94%; }
-.quant-report .report-loading-content span:nth-child(4) { width: 98%; }
-.quant-report .report-loading-content span:nth-child(5) { width: 72%; }
-
-@keyframes report-loading-pulse {
-  from { opacity: 0.45; }
-  to { opacity: 0.85; }
-}
-
 @media screen {
-  .quant-report:not(.report-ready):not(.report-fallback-ready) #data-analytics-portable-fallback {
-    display: none !important;
-  }
-
   .quant-report:not(.report-ready) #data-analytics-portable-reader {
     position: absolute !important;
     inset: 0 !important;
     visibility: hidden !important;
     pointer-events: none !important;
-  }
-
-  .quant-report.report-ready .report-loading-shell,
-  .quant-report.report-fallback-ready .report-loading-shell {
-    display: none !important;
   }
 
   .quant-report.report-ready #data-analytics-portable-reader {
@@ -228,11 +118,11 @@ html[data-language="zh"] body.quant-report pre * {
     pointer-events: auto !important;
   }
 
-  .quant-report.report-fallback-ready #data-analytics-portable-reader {
+  .quant-report.report-ready #data-analytics-portable-fallback {
     display: none !important;
   }
 
-  .quant-report.report-fallback-ready #data-analytics-portable-fallback {
+  .quant-report:not(.report-ready) #data-analytics-portable-fallback {
     display: block !important;
   }
 }
@@ -625,40 +515,6 @@ html[data-language="zh"] body.quant-report pre * {
 @media (max-width: 760px) {
   body.quant-report {
     padding-bottom: 40px;
-  }
-
-  .quant-report .report-loading-shell {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto;
-    gap: 16px;
-    width: calc(100% - 28px);
-    margin: 76px 14px 28px;
-  }
-
-  .quant-report .report-loading-hero {
-    grid-column: 1;
-    grid-row: 1;
-    min-height: 250px;
-    margin-top: 0;
-    padding: 28px 22px;
-  }
-
-  .quant-report .report-loading-nav {
-    grid-column: 1;
-    grid-row: 2;
-    min-height: 180px;
-    padding: 16px;
-  }
-
-  .quant-report .report-loading-nav span:nth-of-type(n + 5) {
-    display: none;
-  }
-
-  .quant-report .report-loading-content {
-    grid-column: 1;
-    grid-row: 3;
-    min-height: 300px;
-    padding: 24px 18px;
   }
 
   .quant-report .portable-fallback,

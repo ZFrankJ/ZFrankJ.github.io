@@ -105,7 +105,7 @@ function htmlFiles(directory) {
   });
 }
 
-test("every page has one paper-plane icon and the synchronous startup script", () => {
+test("every page has one paper-plane icon and its startup script", () => {
   const pages = [path.join(root, "index.html"), ...htmlFiles(path.join(root, "pages"))];
   for (const file of pages) {
     const html = fs.readFileSync(file, "utf8");
@@ -115,7 +115,7 @@ test("every page has one paper-plane icon and the synchronous startup script", (
     assert.match(icons[0][0], /id="site-favicon"/);
     const href = icons[0][0].match(/href="([^"]+)"/)[1];
     assert.equal(path.resolve(path.dirname(file), href), path.join(root, "assets/icons/paper-plane-night.svg"));
-    const script = head.match(/<script src="([^"]*favicon\.js\?v=1)"><\/script>/);
+    const script = head.match(/<script\b[^>]*src="([^"]*favicon\.js\?v=\d+)"[^>]*><\/script>/);
     assert.ok(script, file);
     assert.equal(path.resolve(path.dirname(file), script[1].split("?")[0]), path.join(root, "assets/js/favicon.js"));
     assert.doesNotMatch(head, /rel="icon"[^>]*data:/);

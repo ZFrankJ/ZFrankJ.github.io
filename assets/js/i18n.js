@@ -77,7 +77,7 @@ const entries = [
   ["Others · Particle interaction", "其他 · 粒子交互"],
   ["3D particle interaction using hand gestures.", "基于手势的三维粒子交互。"],
   ["Profile · Contact", "个人简介 · 联系方式"],
-  ["Reach out for research chats, mentorship, or to share papers.", "欢迎联系我，探讨研究、寻求指导，或分享论文。"],
+  ["Reach out for research chats or to share papers.", "欢迎联系我，探讨研究或分享论文。"],
 
   { aliases: ["Fujia Zhang | Science"], en: "Fujia Zhang · 张孚嘉 | Science", zh: "张孚嘉 · Fujia Zhang | 科学" },
   ["General intelligence, language and vision experiments, and AI projects that build intuition.", "通用智能、语言与视觉实验，以及用于培养直觉的 AI 项目。"],

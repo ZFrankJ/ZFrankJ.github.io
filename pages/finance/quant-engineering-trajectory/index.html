@@ -1,33 +1,34 @@
 <!doctype html>
 <html lang="en" data-data-analytics-portable-artifact="true">
 <head>
+  <meta charset="utf-8" />
+  <style data-canvas-startup>html,body{background:var(--bg-fringe,#142038) var(--bg-gradient,none)!important;color:#f4e8c1;color-scheme:dark}html.theme-light,html.theme-light body{background:var(--bg-fringe,#f2ebcf) var(--bg-gradient,none)!important;color:#1a2d4a;color-scheme:light}</style>
+  <script>
+  (() => {
+    const readPreference = key => {
+      try { return localStorage.getItem(key); } catch { return null; }
+    };
+    const mode = readPreference("fz-theme") || "system";
+    const light = mode === "light" || (mode === "system" && window.matchMedia?.("(prefers-color-scheme: light)").matches);
+    document.documentElement.classList.toggle("theme-light", light);
+    document.documentElement.style.colorScheme = light ? "light" : "dark";
+    window.__fzPreferredTheme = light ? "light" : "dark";
+    window.__fzThemeMode = mode;
+    const language = readPreference("fz-language") === "zh" ? "zh" : "en";
+    document.documentElement.dataset.language = language;
+    document.documentElement.lang = language === "zh" ? "zh-CN" : "en";
+  })();
+  </script>
   <link id="site-favicon" rel="icon" type="image/svg+xml" href="../../../assets/icons/paper-plane-night.svg" />
-  <script src="../../../assets/js/favicon.js?v=1"></script>
-<meta charset="utf-8" />
+  <script src="../../../assets/js/favicon.js?v=2" defer></script>
+
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="light dark" />
 <meta http-equiv="Content-Security-Policy" content="default-src &#39;self&#39;; img-src &#39;self&#39; data: blob:; font-src &#39;self&#39; data: https://fonts.gstatic.com https://cdn.jsdelivr.net; style-src &#39;self&#39; &#39;unsafe-inline&#39; https://fonts.googleapis.com https://cdn.jsdelivr.net; script-src &#39;self&#39; &#39;unsafe-inline&#39; blob:; connect-src &#39;none&#39;; media-src &#39;self&#39; data: blob:; worker-src blob:; frame-src &#39;self&#39; data: blob:; object-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;" />
 <meta name="referrer" content="no-referrer" />
 <meta name="description" content="A first-person software-engineering history of learning to build a governed private product in cooperation with AI." />
 <title>From Scripts to a System: How a Quant Project Changed the Way I Build with AI</title>
-<script>
-  (function () {
-    const saved = localStorage.getItem("fz-theme");
-    const prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
-    const mode = saved || "system";
-    const theme = mode === "system" ? (prefersLight ? "light" : "dark") : mode;
-    document.documentElement.classList.toggle("theme-light", theme === "light");
-    window.__fzPreferredTheme = theme;
-    window.__fzThemeMode = mode;
-    const language = localStorage.getItem("fz-language") === "zh" ? "zh" : "en";
-    document.documentElement.dataset.language = language;
-    document.documentElement.lang = language === "zh" ? "zh-CN" : "en";
-    if (language === "zh") {
-      document.title = "从脚本到系统：一个量化项目如何改变了我与 AI 协作开发的方式";
-      document.querySelector('meta[name="description"]').content = "一篇第一人称的软件工程史：我如何在与 AI 的协作中，学会构建一套治理完善的私有产品。";
-    }
-  })();
-</script>
+
 <style data-data-analytics-portable-fallback="true">
 :root{color-scheme:light dark;--portable-canvas:#fff;--portable-surface:#fff;--portable-surface-subtle:#f7f7f7;--portable-ink:#0d0d0d;--portable-muted:#5d5d5d;--portable-tertiary:#8f8f8f;--portable-table-text:#5d5d5d;--portable-border:rgba(13,13,13,.1);--portable-accent:#0285ff;--portable-positive:#00692a;--portable-positive-bg:#edfaf2;--portable-negative:#ba2623;--portable-negative-bg:#fff0f0;--portable-warning-bg:#fff8e6;--portable-warning-border:#e7b84b;--portable-radius:16px;--portable-safe-area-top:env(safe-area-inset-top,0px);--portable-safe-area-right:env(safe-area-inset-right,0px);--portable-safe-area-bottom:env(safe-area-inset-bottom,0px);--portable-safe-area-left:env(safe-area-inset-left,0px);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--portable-canvas);color:var(--portable-ink)}
 @media(prefers-color-scheme:dark){:root{--portable-canvas:#181818;--portable-surface:#212121;--portable-surface-subtle:#2a2a2a;--portable-ink:#dfdfdf;--portable-muted:#cdcdcd;--portable-tertiary:#afafaf;--portable-table-text:#cdcdcd;--portable-border:rgba(255,255,255,.12);--portable-accent:#66b5ff;--portable-positive:#79d996;--portable-positive-bg:rgba(64,180,99,.16);--portable-negative:#ff8583;--portable-negative-bg:rgba(224,74,70,.16);--portable-warning-bg:#302817;--portable-warning-border:#8b6a20}.portable-static-chart-light{display:none!important}.portable-static-chart-dark{display:block!important}}
@@ -56,23 +57,44 @@ html:not([data-portable-source-tooltips-ready]) .portable-chart-summary>.portabl
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="../../../assets/css/site.css?v=23">
-<link rel="stylesheet" href="./report.css?v=26">
-<link rel="stylesheet" href="../../../assets/css/reading.css?v=5">
+<link rel="stylesheet" href="../../../assets/css/site.css?v=25">
+  <link rel="stylesheet" href="../../../assets/css/fonts.css?v=1" media="print" onload="this.media='all'" />
+<link rel="stylesheet" href="./report.css?v=29">
+<link rel="stylesheet" href="../../../assets/css/reading.css?v=6">
+<script type="module" src="../../../assets/js/reading.js?v=1"></script>
 </head>
 <body class="quant-report">
-<div class="report-loading-shell" role="status" aria-label="Loading journal">
-  <aside class="report-loading-nav" aria-hidden="true">
-    <span class="report-loading-label"></span>
-    <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-  </aside>
-  <div class="report-loading-hero" aria-hidden="true"><span></span><span></span><span></span></div>
-  <div class="report-loading-content" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+<div class="article-frame reading-layout" data-reading>
+<!-- reading:catalog:start -->
+<aside class="reading-sidebar" aria-label="Article navigation">
+<div class="reading-sidebar-sticky">
+<section class="chapter-catalog" data-reading-catalog>
+<h2><span data-language-content="en" data-i18n-skip>Chapters</span><span data-language-content="zh" data-i18n-skip>章节</span></h2>
+<nav class="journal-chapters" aria-label="Chapter navigation">
+<a href="#02-intro" aria-current="location"><span data-language-content="en" data-i18n-skip>01 · Intro</span><span data-language-content="zh" data-i18n-skip>01 · 引言</span></a>
+<a href="#03-the-first-interface-was-the-artifact-2024-to-mid-2025"><span data-language-content="en" data-i18n-skip>02 · 2024–mid-2025 · Artifact workbench</span><span data-language-content="zh" data-i18n-skip>02 · 2024—2025 年中 · 以成果为中心的工作台</span></a>
+<a href="#04-git-made-ai-assisted-change-recoverable-the-pure-boundary"><span data-language-content="en" data-i18n-skip>03 · Git and recoverability</span><span data-language-content="zh" data-i18n-skip>03 · Git 与可恢复性</span></a>
+<a href="#05-the-gui-launchd-and-synchronization-made-the-project-operable"><span data-language-content="en" data-i18n-skip>04 · GUI, launchd, and synchronization</span><span data-language-content="zh" data-i18n-skip>04 · 图形界面、launchd 与同步</span></a>
+<a href="#06-guides-make-and-just-became-the-interface-for-ai"><span data-language-content="en" data-i18n-skip>05 · Guides, make, and just</span><span data-language-content="zh" data-i18n-skip>05 · 指南、make 与 just</span></a>
+<a href="#07-refactoring-moved-ownership-without-rewriting-behavior"><span data-language-content="en" data-i18n-skip>06 · Guarded refactoring</span><span data-language-content="zh" data-i18n-skip>06 · 受保护的重构</span></a>
+<a href="#08-reconciliation-bound-evidence-to-exact-code"><span data-language-content="en" data-i18n-skip>07 · Exact-code reconciliation</span><span data-language-content="zh" data-i18n-skip>07 · 精确代码对账</span></a>
+<a href="#09-the-repository-grew-large-its-contracts-grew-faster"><span data-language-content="en" data-i18n-skip>08 · Growth evidence</span><span data-language-content="zh" data-i18n-skip>08 · 增长证据</span></a>
+<a href="#11-why-the-repository-remains-closed-source"><span data-language-content="en" data-i18n-skip>09 · Why the repository is private</span><span data-language-content="zh" data-i18n-skip>09 · 仓库为何保持私有</span></a>
+<a href="#13-a-curated-engineering-chronology"><span data-language-content="en" data-i18n-skip>10 · Engineering chronology</span><span data-language-content="zh" data-i18n-skip>10 · 工程历程</span></a>
+<a href="#14-each-control-closed-a-failure-the-previous-one-left-open"><span data-language-content="en" data-i18n-skip>11 · How the controls became a system</span><span data-language-content="zh" data-i18n-skip>11 · 各项控制如何形成系统</span></a>
+<a href="#15-evidence-boundaries-and-limitations"><span data-language-content="en" data-i18n-skip>12 · Evidence boundaries</span><span data-language-content="zh" data-i18n-skip>12 · 证据边界</span></a>
+</nav>
+</section>
 </div>
-<main id="data-analytics-portable-fallback" class="portable-fallback" data-portable-fallback="true" data-portable-surface="report"><header class="portable-page-header"><div class="portable-page-heading"><p class="portable-surface-label">Data Analytics report</p><h1>From Scripts to a System: How a Quant Project Changed the Way I Build with AI</h1><p class="portable-description">A first-person software-engineering history of learning to build a governed private product in cooperation with AI.</p></div><div class="portable-page-meta"><time datetime="2026-08-10T06:00:36.547Z">Aug 10, 2026, 6:00 AM UTC</time></div></header><div class="portable-block-stack">
-<div id="report-chapter-navigation" role="navigation" aria-label="Chapter navigation" class="portable-block portable-layout-full" data-artifact-block-id="report-chapter-navigation" data-artifact-block-type="markdown" data-layout="full"><section class="portable-markdown"><h2>Chapters</h2>
-<ul><li><a href="#02-intro" rel="noreferrer">01 · Intro</a></li><li><a href="#03-the-first-interface-was-the-artifact-2024-to-mid-2025" rel="noreferrer">02 · 2024–mid-2025 · Artifact workbench</a></li><li><a href="#04-git-made-ai-assisted-change-recoverable-the-pure-boundary" rel="noreferrer">03 · Git and recoverability</a></li><li><a href="#05-the-gui-launchd-and-synchronization-made-the-project-operable" rel="noreferrer">04 · GUI, launchd, and synchronization</a></li><li><a href="#06-guides-make-and-just-became-the-interface-for-ai" rel="noreferrer">05 · Guides, make, and just</a></li><li><a href="#07-refactoring-moved-ownership-without-rewriting-behavior" rel="noreferrer">06 · Guarded refactoring</a></li><li><a href="#08-reconciliation-bound-evidence-to-exact-code" rel="noreferrer">07 · Exact-code reconciliation</a></li><li><a href="#09-the-repository-grew-large-its-contracts-grew-faster" rel="noreferrer">08 · Growth evidence</a></li><li><a href="#11-why-the-repository-remains-closed-source" rel="noreferrer">09 · Why the repository is private</a></li><li><a href="#13-a-curated-engineering-chronology" rel="noreferrer">10 · Engineering chronology</a></li><li><a href="#14-each-control-closed-a-failure-the-previous-one-left-open" rel="noreferrer">11 · How the controls became a system</a></li><li><a href="#15-evidence-boundaries-and-limitations" rel="noreferrer">12 · Evidence boundaries</a></li></ul></section></div>
+</aside>
+<!-- reading:catalog:end -->
+<div class="reading-main">
+<!-- reading:hero:start -->
+<header class="reading-hero"><h1><span data-language-content="en" data-i18n-skip>From Scripts to a System: How a Quant Project Changed the Way I Build with AI</span><span data-language-content="zh" data-i18n-skip>从脚本到系统：一个量化项目如何改变了我与 AI 协作开发的方式</span></h1></header>
+<!-- reading:hero:end -->
+<div class="reading-content" data-reading-content>
+<main data-reading-active id="data-analytics-portable-fallback" class="portable-fallback" data-portable-fallback="true" data-portable-surface="report"><div class="portable-block-stack">
+
 <div id="02-intro" class="portable-block portable-layout-full" data-artifact-block-id="02-intro" data-artifact-block-type="markdown" data-layout="full"><section class="portable-markdown"><h2>Intro</h2>
 <p>I began this project by using ChatGPT to turn questions into Python programs, charts, and written conclusions. An early AI-assisted rewrite then changed the direction of the project. I remember <code>QUA-6-MUL.py</code> as the file an agent replaced in a different form. The archive cannot independently prove that incident, but it preserves the environment in which the risk was real: there was no trustworthy before-state, no diff-based review, and no shared contract for what had to survive.</p>
 <p>By the August 2026 stopping point, a significant change moved through a very different system. Git preserved the before-state and the proposed diff. Repository guides identified the existing owner and the behavior that could not drift. <code>make</code> and <code>just</code> encoded verification and the development lifecycle. Reconciliation authenticated whether the evidence belonged to one exact commit and its declared review scope. Machine-sensitive work added isolated production evidence, while I retained the merge decision.</p>
@@ -784,6 +806,10 @@ ORDER BY date;</code></pre></details></li><li><strong>Consolidated engineering c
 SELECT sort_order, period, phase, event, engineering_shift, evidence_level
 FROM ledger
 ORDER BY sort_order;</code></pre></details></li></ol></section></main>
+<div id="data-analytics-portable-reader" aria-hidden="true" inert></div>
+</div>
+</div>
+</div>
 <script data-data-analytics-portable-source-tooltips="true">(() => {
   const RUNTIME_FLAG = "__dataAnalyticsPortableSourceTooltipsInitialized";
   const READY_ATTRIBUTE = "data-portable-source-tooltips-ready";
@@ -1122,7 +1148,7 @@ ORDER BY sort_order;</code></pre></details></li></ol></section></main>
     console.warn("Portable source tooltips could not start; keeping the CSS fallback.", error);
   }
 })();</script>
-<div id="data-analytics-portable-reader" aria-hidden="true" inert></div>
+
 <template id="data-analytics-portable-artifact-payload-source" data-compression="gzip-base64">
 H4sIAAAAAAACE+2925Ib15km+ioZVDhoKwCocK4iLzpKFEWxhxQ5JOXePS0HmQASVSkCmTAywSLs
 cITmbq7HfTkTMW8x9/MoepL9f/9hHRKJqiJFqveOscM2C6eVa/3rPx//eqd8e+devd1lnTtX+eIi
@@ -5881,12 +5907,7 @@ ivjnSXcQcPO4VDeP11//6YMY0j/djL9+/c1r5Wd7K9J981q+hKj/JZX3rXpy+Ga5+lCtltKjUmg2
   function revealReader() {
     if (revealed) return;
     revealed = true;
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      fallback.classList.add("portable-enhanced-hidden");
-      reader.removeAttribute("aria-hidden");
-      reader.removeAttribute("inert");
-      state.dataAnalyticsPortableReader = "ready";
-    }));
+    reader.dispatchEvent(new CustomEvent("reading:enhanced-ready", { bubbles: true }));
   }
   window.addEventListener("data-analytics-portable-reader-ready", revealReader, { once: true });
   document.addEventListener("data-analytics-portable-reader-ready", revealReader, { once: true });
@@ -5943,292 +5964,17 @@ ivjnSXcQcPO4VDeP11//6YMY0j/djL9+/c1r5Wd7K9J981q+hKj/JZX3rXpy+Ga5+lCtltKjUmg2
   function scheduleBoot() {
     requestAnimationFrame(() => window.setTimeout(() => void boot(), 0));
   }
-  if (document.readyState === "complete") scheduleBoot();
-  else window.addEventListener("load", scheduleBoot, { once: true });
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", scheduleBoot, { once: true });
+  else scheduleBoot();
 })();</script>
 
-<script id="report-chapter-navigation-runtime">
-(() => {
-  function reserveNaturalChapterIntervals(rawThresholds, maximum, viewportHeight) {
-  const thresholds = rawThresholds.map((threshold) => Math.min(
-    maximum,
-    Math.max(0, threshold),
-  ));
-  if (thresholds.length < 2 || maximum <= 0) return thresholds;
 
-  const minimumNaturalInterval = Math.min(
-    160,
-    Math.max(96, viewportHeight * 0.12),
-  );
-  const affordableInterval = thresholds.at(-1) / (thresholds.length - 1);
-  const interval = Math.min(minimumNaturalInterval, affordableInterval);
-  for (let index = thresholds.length - 2; index >= 0; index -= 1) {
-    thresholds[index] = Math.max(
-      0,
-      Math.min(thresholds[index], thresholds[index + 1] - interval),
-    );
-  }
-  return thresholds;
-}
-  const navigationId = "report-chapter-navigation";
-  const fallback = document.getElementById("data-analytics-portable-fallback");
-  const reader = document.getElementById("data-analytics-portable-reader");
-  let frame = 0;
-  let readerWasReady = false;
-  let preferredHash = location.hash || "";
-  const manualScrollKeys = new Set([
-    "ArrowDown", "ArrowUp", "End", "Home", "PageDown", "PageUp", " ", "Space",
-  ]);
-
-  function readerIsReady() {
-    return Boolean(reader?.querySelector('[id="' + navigationId + '"]'));
-  }
-
-  function syncFallbackIds() {
-    if (!fallback) return;
-    const enhanced = readerIsReady();
-    fallback.querySelectorAll("[data-artifact-block-id]").forEach((block) => {
-      const id = block.getAttribute("data-artifact-block-id");
-      if (!id) return;
-      if (enhanced) block.removeAttribute("id");
-      else block.setAttribute("id", id);
-    });
-  }
-
-  function navigationRoots() {
-    return Array.from(document.querySelectorAll(
-      '[data-artifact-block-id="' + navigationId + '"]'
-    ));
-  }
-
-  function navigationLinks() {
-    return navigationRoots().flatMap((root) => Array.from(root.querySelectorAll('a[href^="#"]')));
-  }
-
-  function targetForHash(hash) {
-    const id = decodeURIComponent(String(hash || "").replace(/^#/, ""));
-    if (!id) return null;
-    return reader?.querySelector('[id="' + id + '"]')
-      || fallback?.querySelector('[data-artifact-block-id="' + id + '"]')
-      || null;
-  }
-
-  function chapterEntries() {
-    const seen = new Set();
-    const entries = [];
-    for (const link of navigationLinks()) {
-      const hash = link.getAttribute("href");
-      if (!hash || seen.has(hash)) continue;
-      const target = targetForHash(hash);
-      if (!target) continue;
-      seen.add(hash);
-      entries.push({ hash, target });
-    }
-    return entries;
-  }
-
-  function visibleStickyHeaderBottom() {
-    let bottom = 0;
-    const headers = document.querySelectorAll('header, [role="banner"], .portable-page-header');
-    for (const header of headers) {
-      const rect = header.getBoundingClientRect();
-      if (rect.width <= 0 || rect.height <= 0 || rect.bottom <= 0 || rect.top > 8) continue;
-      const position = getComputedStyle(header).position;
-      if (position !== "fixed" && position !== "sticky") continue;
-      bottom = Math.max(bottom, rect.bottom);
-    }
-    return bottom;
-  }
-
-  function chapterLandingOffset() {
-    const compact = window.innerWidth <= 760;
-    const minimum = compact ? 40 : 96;
-    const breathingRoom = compact ? 24 : 40;
-    return Math.max(minimum, Math.ceil(visibleStickyHeaderBottom() + breathingRoom));
-  }
-
-  function maximumScrollTop() {
-    const scroller = document.scrollingElement || document.documentElement;
-    return Math.max(0, scroller.scrollHeight - window.innerHeight);
-  }
-
-  function isAtDocumentEnd() {
-    const scroller = document.scrollingElement || document.documentElement;
-    return scroller.scrollTop >= maximumScrollTop() - 4;
-  }
-
-  function chapterActivationThresholds(chapters) {
-    const scroller = document.scrollingElement || document.documentElement;
-    const scrollTop = scroller.scrollTop;
-    const maximum = maximumScrollTop();
-    const activationLine = chapterLandingOffset() + 8;
-    const rawThresholds = chapters.map(
-      (chapter) => scrollTop + chapter.target.getBoundingClientRect().top - activationLine,
-    );
-    return reserveNaturalChapterIntervals(rawThresholds, maximum, window.innerHeight);
-  }
-
-  function revealActiveLink(root, link) {
-    const rootRect = root.getBoundingClientRect();
-    if (rootRect.width <= 0 || rootRect.height <= 0) return;
-    const list = root.querySelector("ul");
-    const listCanScroll = list
-      && (list.scrollWidth > list.clientWidth + 1 || list.scrollHeight > list.clientHeight + 1);
-    const container = listCanScroll ? list : root;
-    const containerRect = container.getBoundingClientRect();
-    const linkRect = link.getBoundingClientRect();
-    const inset = 8;
-    let leftDelta = 0;
-    let topDelta = 0;
-    if (linkRect.left < containerRect.left + inset) {
-      leftDelta = linkRect.left - containerRect.left - inset;
-    } else if (linkRect.right > containerRect.right - inset) {
-      leftDelta = linkRect.right - containerRect.right + inset;
-    }
-    if (linkRect.top < containerRect.top + inset) {
-      topDelta = linkRect.top - containerRect.top - inset;
-    } else if (linkRect.bottom > containerRect.bottom - inset) {
-      topDelta = linkRect.bottom - containerRect.bottom + inset;
-    }
-    if (leftDelta) container.scrollLeft += leftDelta;
-    if (topDelta) container.scrollTop += topDelta;
-  }
-
-  function setActiveHash(hash) {
-    for (const root of navigationRoots()) {
-      let activeLink = null;
-      for (const link of root.querySelectorAll('a[href^="#"]')) {
-        const active = link.getAttribute("href") === hash;
-        if (active) {
-          link.setAttribute("aria-current", "location");
-          activeLink = link;
-        } else {
-          link.removeAttribute("aria-current");
-        }
-        link.removeAttribute("target");
-      }
-      if (activeLink) revealActiveLink(root, activeLink);
-    }
-  }
-
-  function scrollToHash(hash, updateHistory = false) {
-    const target = targetForHash(hash);
-    if (!target) return false;
-    const chapters = chapterEntries();
-    preferredHash = chapters.some((entry) => entry.hash === hash) ? hash : "";
-    if (preferredHash) setActiveHash(preferredHash);
-    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-    if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
-    target.focus({ preventScroll: true });
-    requestAnimationFrame(() => {
-      const currentTop = window.scrollY || document.scrollingElement?.scrollTop || 0;
-      const wantedTop = currentTop + target.getBoundingClientRect().top - chapterLandingOffset();
-      window.scrollTo({
-        top: Math.min(maximumScrollTop(), Math.max(0, wantedTop)),
-        behavior: reduceMotion ? "auto" : "smooth",
-      });
-      scheduleSync();
-    });
-    if (updateHistory && location.hash !== hash) {
-      try {
-        history.pushState(null, "", hash);
-      } catch {
-        location.hash = hash;
-      }
-    }
-    return true;
-  }
-
-  function updateActiveLink() {
-    const chapters = chapterEntries();
-    if (!chapters.length) return;
-    if (preferredHash && chapters.some((entry) => entry.hash === preferredHash)) {
-      setActiveHash(preferredHash);
-      return;
-    }
-    preferredHash = "";
-    const scroller = document.scrollingElement || document.documentElement;
-    const scrollTop = scroller.scrollTop;
-    const thresholds = chapterActivationThresholds(chapters);
-    let activeIndex = 0;
-    for (let index = 1; index < thresholds.length; index += 1) {
-      if (scrollTop + 0.5 >= thresholds[index]) activeIndex = index;
-      else break;
-    }
-    if (isAtDocumentEnd()) activeIndex = chapters.length - 1;
-    setActiveHash(chapters[activeIndex].hash);
-  }
-
-  function syncNavigation() {
-    frame = 0;
-    syncFallbackIds();
-    for (const root of navigationRoots()) {
-      root.setAttribute("role", "navigation");
-      root.setAttribute("aria-label", "Chapter navigation");
-    }
-    const ready = readerIsReady();
-    if (ready && !readerWasReady && location.hash) {
-      preferredHash = location.hash;
-      requestAnimationFrame(() => scrollToHash(location.hash));
-    }
-    readerWasReady = ready;
-    updateActiveLink();
-  }
-
-  function scheduleSync() {
-    if (frame) return;
-    frame = requestAnimationFrame(syncNavigation);
-  }
-
-  function clearPreferredHash() {
-    if (!preferredHash) return;
-    preferredHash = "";
-    scheduleSync();
-  }
-
-  document.addEventListener("click", (event) => {
-    const link = event.target instanceof Element
-      ? event.target.closest('[data-artifact-block-id="' + navigationId + '"] a[href^="#"]')
-      : null;
-    if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    const hash = link.getAttribute("href");
-    if (!hash || !targetForHash(hash)) return;
-    event.preventDefault();
-    scrollToHash(hash, true);
-    updateActiveLink();
-  });
-
-  document.addEventListener("scroll", scheduleSync, { passive: true });
-  document.addEventListener("wheel", clearPreferredHash, { passive: true });
-  document.addEventListener("touchstart", clearPreferredHash, { passive: true });
-  document.addEventListener("pointerdown", clearPreferredHash, { passive: true });
-  document.addEventListener("keydown", (event) => {
-    if (!manualScrollKeys.has(event.key) || event.metaKey || event.ctrlKey || event.altKey) return;
-    const target = event.target;
-    if (target instanceof Element
-      && (target.matches("input, textarea, select") || target.isContentEditable)) return;
-    preferredHash = "";
-    scheduleSync();
-  });
-  window.addEventListener("resize", scheduleSync, { passive: true });
-  window.addEventListener("hashchange", () => {
-    preferredHash = location.hash;
-    scrollToHash(location.hash);
-    scheduleSync();
-  });
-
-  const observer = new MutationObserver(scheduleSync);
-  if (reader) observer.observe(reader, { childList: true, subtree: true });
-  if (fallback) observer.observe(fallback, { attributes: true, attributeFilter: ["class"] });
-  syncNavigation();
-})();
-</script>
 <footer class="site-footer report-site-frame report-site-footer">
   <p class="muted">© 2026 Fujia Zhang. All rights reserved.</p>
 </footer>
 <div class="control-bubbles" aria-label="Display controls"></div>
-<script type="module" src="../../../assets/js/site.js?v=25"></script>
-<script type="module" src="./report-layout.js?v=9"></script>
+<script type="module" src="../../../assets/js/site.js?v=27"></script>
+<script type="module" src="./report-layout.js?v=11"></script>
 <script type="module" src="./report-i18n.js?v=4"></script>
 </body>
 </html>

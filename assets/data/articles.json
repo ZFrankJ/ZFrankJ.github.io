@@ -1,0 +1,105 @@
+[
+  {
+    "path": "pages/finance/quant-engineering-trajectory/index.html",
+    "title": {
+      "en": "From Scripts to a System: How a Quant Project Changed the Way I Build with AI",
+      "zh": "从脚本到系统：一个量化项目如何改变了我与 AI 协作开发的方式"
+    },
+    "chapters": [
+      {
+        "id": "02-intro",
+        "en": "01 · Intro",
+        "zh": "01 · 引言"
+      },
+      {
+        "id": "03-the-first-interface-was-the-artifact-2024-to-mid-2025",
+        "en": "02 · 2024–mid-2025 · Artifact workbench",
+        "zh": "02 · 2024—2025 年中 · 以成果为中心的工作台"
+      },
+      {
+        "id": "04-git-made-ai-assisted-change-recoverable-the-pure-boundary",
+        "en": "03 · Git and recoverability",
+        "zh": "03 · Git 与可恢复性"
+      },
+      {
+        "id": "05-the-gui-launchd-and-synchronization-made-the-project-operable",
+        "en": "04 · GUI, launchd, and synchronization",
+        "zh": "04 · 图形界面、launchd 与同步"
+      },
+      {
+        "id": "06-guides-make-and-just-became-the-interface-for-ai",
+        "en": "05 · Guides, make, and just",
+        "zh": "05 · 指南、make 与 just"
+      },
+      {
+        "id": "07-refactoring-moved-ownership-without-rewriting-behavior",
+        "en": "06 · Guarded refactoring",
+        "zh": "06 · 受保护的重构"
+      },
+      {
+        "id": "08-reconciliation-bound-evidence-to-exact-code",
+        "en": "07 · Exact-code reconciliation",
+        "zh": "07 · 精确代码对账"
+      },
+      {
+        "id": "09-the-repository-grew-large-its-contracts-grew-faster",
+        "en": "08 · Growth evidence",
+        "zh": "08 · 增长证据"
+      },
+      {
+        "id": "11-why-the-repository-remains-closed-source",
+        "en": "09 · Why the repository is private",
+        "zh": "09 · 仓库为何保持私有"
+      },
+      {
+        "id": "13-a-curated-engineering-chronology",
+        "en": "10 · Engineering chronology",
+        "zh": "10 · 工程历程"
+      },
+      {
+        "id": "14-each-control-closed-a-failure-the-previous-one-left-open",
+        "en": "11 · How the controls became a system",
+        "zh": "11 · 各项控制如何形成系统"
+      },
+      {
+        "id": "15-evidence-boundaries-and-limitations",
+        "en": "12 · Evidence boundaries",
+        "zh": "12 · 证据边界"
+      }
+    ]
+  },
+  {
+    "path": "pages/finance/quant-method-story/index.html",
+    "title": {
+      "en": "From a Threshold to STD: Finding Patterns in Data",
+      "zh": "从阀值到标准差：寻找数据规律"
+    },
+    "chapters": [
+      {
+        "id": "intro",
+        "en": "01 · Intro",
+        "zh": "01 · 引言"
+      },
+      {
+        "id": "threshold",
+        "en": "02 · The threshold stage",
+        "zh": "02 · 阀值阶段"
+      },
+      {
+        "id": "std",
+        "en": "03 · The STD stage",
+        "zh": "03 · 标准差阶段"
+      },
+      {
+        "id": "reflection",
+        "en": "04 · What changed in my thinking",
+        "zh": "04 · 思考方式的变化"
+      },
+      {
+        "id": "evidence",
+        "en": "05 · The current method",
+        "zh": "05 · 当前方法"
+      }
+    ]
+  }
+]

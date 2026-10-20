@@ -16,8 +16,8 @@
   --font-sans: "MuseoModerno", "LXGW WenKai", "Segoe UI", sans-serif !important;
   --data-app-report-body-text: var(--journal-secondary) !important;
   --data-app-report-evidence-width: 920px;
-  background: var(--bg-gradient) !important;
-  background-attachment: fixed !important;
+  background: var(--bg-fringe) var(--bg-gradient) !important;
+
 }
 
 :root[data-language="zh"] {
@@ -27,13 +27,21 @@
 body.journal-report {
   /* Keep the first child's top margin inside the painted page canvas. */
   display: flow-root;
-  background: var(--bg-gradient) !important;
-  background-attachment: fixed !important;
+  background: var(--bg-fringe) var(--bg-gradient) !important;
+
   color: var(--journal-ink);
   font-family: var(--font-sans) !important;
   font-size: 15px;
   line-height: 1.72;
   padding-bottom: 48px;
+}
+
+/* The pre-rendered introduction sits outside the renderer's narrative wrappers. */
+.journal-report .report-intro-preview p {
+  color: var(--site-muted);
+  font-size: 15px;
+  line-height: 1.72;
+  margin: 0 0 14px;
 }
 
 .journal-report #root,
@@ -54,44 +62,6 @@ body.journal-report {
   --data-app-report-body-text: var(--journal-secondary) !important;
   font-family: var(--font-sans) !important;
   min-width: 0;
-}
-
-.report-site-frame,
-.journal-frame {
-  width: min(1180px, calc(100% - 112px));
-}
-.report-site-top { margin: 24px auto 0; }
-.report-site-top .breadcrumbs { margin-bottom: 0; }
-.report-site-top .breadcrumbs a { color: var(--journal-secondary); }
-.report-site-top .breadcrumbs a:is(:hover, :focus-visible) { color: var(--journal-accent); }
-
-.journal-frame {
-  display: grid;
-  align-items: start;
-  margin: 28px auto 32px;
-}
-
-.journal-sidebar { align-self: stretch; min-width: 0; }
-.journal-main { display: grid; gap: 22px; min-width: 0; }
-.journal-sidebar-sticky {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 16px;
-  width: 100%;
-  position: sticky;
-  top: calc(var(--site-topbar-height) + 18px);
-}
-
-.journal-chapter-card {
-  width: 100%;
-  max-height: calc(100dvh - var(--site-topbar-height) - 32px);
-  overflow-y: auto;
-  border: 0;
-  border-radius: 0;
-  padding: 18px 0;
-  background: transparent;
-  box-shadow: none;
 }
 
 .journal-report .report-return-links {

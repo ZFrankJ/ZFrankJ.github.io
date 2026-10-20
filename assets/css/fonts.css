@@ -1,0 +1,4 @@
+/* Optional typography: loaded without blocking the page or timeline. */
+@import url("https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;500;600;700&display=swap");
+@import url("https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.1.0/lxgwwenkai-regular.css");
+@import url("https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.1.0/lxgwwenkai-bold.css");

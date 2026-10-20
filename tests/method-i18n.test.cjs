@@ -9,7 +9,7 @@ const directory = path.resolve(__dirname, "../pages/finance/quant-method-story")
 const html = fs.readFileSync(path.join(directory, "index.html"), "utf8");
 const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)];
 const snapshot = JSON.parse(scripts.filter(match => /id="data-app-reviewed-snapshot"|data-app-snapshot-chunk/.test(match[1])).map(match => match[2]).join(""));
-const program = scripts.at(-1)[2];
+const program = fs.readFileSync(path.join(directory, "report-app.js"), "utf8");
 const authored = program.slice(program.indexOf("var jsxRuntime ="), program.indexOf("\n})(__dataAuthoredModule"));
 const localization = fs.readFileSync(path.join(directory, "report-i18n.js"), "utf8");
 
@@ -269,7 +269,7 @@ test("public privacy wording names ETF codes and names without an exchange-rate 
   assert.doesNotMatch(copy, /身份标识|标的身份/);
   assert.doesNotMatch(localization, /身份标识|标的身份|method-fx-note/);
   assert.doesNotMatch(html, /method-fx-note|人民币金额按|1 美元 = 6\.7351/);
-  assert.match(html, /remove ETF codes and names, along with private information/);
+  assert.match(program, /remove ETF codes and names, along with private information/);
 });
 
 test("English and Chinese titles keep threshold-to-STD and data-patterns framing", () => {

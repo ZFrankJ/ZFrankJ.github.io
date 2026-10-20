@@ -1,30 +1,36 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <link id="site-favicon" rel="icon" type="image/svg+xml" href="../../assets/icons/paper-plane-night.svg" />
-  <script src="../../assets/js/favicon.js?v=1"></script>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="向内求：一场迟来的自我修行——再度回首开悟之旅有感。" />
-  <title>向内求：一场迟来的自我修行 | Fujia Zhang</title>
+  <style data-canvas-startup>html{background:#142038;color-scheme:dark}html.theme-light{background:#f2ebcf;color-scheme:light}</style>
   <script>
     (function () {
-      const saved = localStorage.getItem("fz-theme");
+      const readPreference = key => {
+        try { return localStorage.getItem(key); } catch { return null; }
+      };
+      const saved = readPreference("fz-theme");
       const prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
       const mode = saved || "system";
       const theme = mode === "system" ? (prefersLight ? "light" : "dark") : mode;
       document.documentElement.classList.toggle("theme-light", theme === "light");
       window.__fzPreferredTheme = theme;
       window.__fzThemeMode = mode;
-      const language = localStorage.getItem("fz-language") || localStorage.getItem("fz-article-language") || "en";
+      const language = readPreference("fz-language") || readPreference("fz-article-language") || "en";
       document.documentElement.lang = language === "zh" ? "zh-CN" : "en";
       document.documentElement.dataset.language = language === "zh" ? "zh" : "en";
     })();
   </script>
+  <link id="site-favicon" rel="icon" type="image/svg+xml" href="../../assets/icons/paper-plane-night.svg" />
+  <script src="../../assets/js/favicon.js?v=2" defer></script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="向内求：一场迟来的自我修行——再度回首开悟之旅有感。" />
+  <title>向内求：一场迟来的自我修行 | Fujia Zhang</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;500;600;700&amp;display=swap">
-  <link rel="stylesheet" href="../../assets/css/site.css?v=23" />
+  <link rel="stylesheet" href="../../assets/css/site.css?v=25" />
+  <link rel="stylesheet" href="../../assets/css/fonts.css?v=1" media="print" onload="this.media='all'" />
 </head>
 <body>
   <div class="page page--article">
@@ -153,6 +159,6 @@
 
   <div class="control-bubbles" aria-label="Display controls"></div>
 
-  <script type="module" src="../../assets/js/site.js?v=25"></script>
+  <script type="module" src="../../assets/js/site.js?v=27"></script>
 </body>
 </html>

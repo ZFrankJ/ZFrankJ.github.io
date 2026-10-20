@@ -1,75 +1,104 @@
-/* Center the article itself, with equal side tracks and the catalog on the left. */
-:root { --reading-column-width: 840px; }
+/* Shared first-paint shell for every technical article. */
+:root {
+    --reading-column-width: 840px;
+    --reading-section-gap: 22px;
+    /* A generated reader must not recolor the permanent catalog or its prose. */
+    --muted: var(--site-muted) !important;
+}
 
-.reading-layout {
-    display: grid !important;
+/* Reserve the injected top bar's place even when its module arrives slowly. */
+@media screen {
+    body:is(.journal-report, .quant-report):not(:has(> .site-topbar)) { padding-top: 80px !important; }
+}
+@media screen and (max-width: 520px) {
+    body:is(.journal-report, .quant-report):not(:has(> .site-topbar)) { padding-top: 76px !important; }
+}
+
+.article-frame.reading-layout {
+    display: grid;
     grid-template-columns: minmax(0, 1fr);
     align-items: stretch;
-    margin-inline: auto;
+    width: calc(100% - 48px);
+    max-width: 1368px;
+    margin: 28px auto 32px;
 }
-.reading-main {
-    display: grid;
-    gap: 22px;
-    align-content: start;
-    min-width: 0;
+.reading-main { display: grid; gap: var(--reading-section-gap); align-content: start; min-width: 0; }
+.reading-content, .reading-sidebar { min-width: 0; }
+.reading-sidebar-sticky { position: sticky; top: calc(var(--site-topbar-height) + 18px); }
+.reading-hero { min-width: 0; margin: 0; padding: clamp(28px, 4vw, 48px); }
+.reading-hero h1 {
+    margin: 0;
+    color: var(--site-text);
+    font-family: inherit;
+    font-size: clamp(30px, 4.3vw, 46px);
+    font-weight: 650;
+    line-height: 1.12;
+    letter-spacing: -.035em;
 }
-.reading-sidebar { min-width: 0; }
-.reading-sidebar-sticky {
-    position: sticky;
-    top: calc(var(--site-topbar-height) + 18px);
-}
-
-/* Remove the generated report's nested width restrictions. */
-.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root :is(
-    .analytics-layout-canvas, .report-content-grid, .report-block-stack
-),
-.quant-report #data-analytics-portable-fallback .portable-block-stack {
-    width: 100% !important;
-    max-width: 1368px !important;
-    margin-inline: auto !important;
-}
-.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .analytics-layout-canvas {
-    padding: 28px 0 32px !important;
-}
-.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .report-block-stack,
-.quant-report #data-analytics-portable-fallback .portable-block-stack {
-    display: block !important;
-}
-.quant-report .reading-sidebar :is(.analytics-layout-row, [data-artifact-block-id="report-chapter-navigation"], #report-chapter-navigation) {
-    width: 100% !important;
-    max-width: none !important;
-    height: auto !important;
-    margin: 0 !important;
-}
-.quant-report .reading-sidebar .analytics-layout-row { padding: 0 !important; }
-.quant-report .reading-main > :is(.analytics-layout-row, .portable-block) { margin: 0 !important; }
+/* Resolve bilingual chrome before JavaScript or the article renderer starts. */
+[data-reading] [data-language-content] { display: none !important; }
+:root[data-language="en"] [data-reading] [data-language-content="en"],
+:root[data-language="zh"] [data-reading] [data-language-content="zh"] { display: revert !important; }
+/* html already reserves the bar plus 20px for native anchor navigation. */
+[data-reading-content] [id] { scroll-margin-top: 4px !important; }
 
 @media (min-width: 761px) {
-    .reading-layout {
-        grid-template-columns: minmax(160px, 1fr) minmax(0, var(--reading-column-width)) minmax(160px, 1fr) !important;
-        column-gap: 0 !important;
-        width: 100%;
-        max-width: 1368px;
+    .article-frame.reading-layout {
+        grid-template-columns: minmax(160px, 1fr) minmax(0, var(--reading-column-width)) minmax(160px, 1fr);
     }
-    .journal-frame.reading-layout { width: calc(100% - 48px); }
     .reading-sidebar {
-        grid-column: 1;
-        grid-row: 1;
-        justify-self: end;
-        width: calc(100% - 24px);
-        max-width: 240px;
-        margin-right: 24px;
+        grid-column: 1; grid-row: 1; justify-self: end;
+        width: calc(100% - 24px); max-width: 240px; margin-right: 24px;
     }
     .reading-main { grid-column: 2; grid-row: 1; }
-    .reading-sidebar .chapter-catalog {
-        max-height: calc(100dvh - var(--site-topbar-height) - 32px) !important;
-        overflow-y: auto !important;
-    }
+    .reading-sidebar .chapter-catalog { max-height: calc(100dvh - var(--site-topbar-height) - 32px); overflow-y: auto; }
 }
 @media (max-width: 760px) {
     .reading-sidebar-sticky { position: static; }
     .reading-sidebar { margin-bottom: 16px; }
+    .reading-hero { padding: 26px 22px; }
+    .reading-sidebar .chapter-catalog .journal-chapters { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
 }
+
+/* Generated runtimes own content only, never the page title or catalog. */
+.journal-report #root .report-hero,
+.quant-report #data-analytics-portable-reader .portable-page-header,
+.quant-report #data-analytics-portable-reader .analytics-layout-row:has([data-artifact-block-id="report-chapter-navigation"]),
+.quant-report #data-analytics-portable-reader .analytics-layout-row:has([data-artifact-block-id^="01-from-scripts"]) { display: none !important; }
+
+.quant-report #data-analytics-portable-fallback,
+.quant-report #data-analytics-portable-reader {
+    position: relative;
+    width: 100% !important; max-width: none !important; padding: 0 !important; margin: 0 !important;
+}
+.quant-report #data-analytics-portable-fallback .portable-block-stack,
+.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root :is(
+    .analytics-layout-root, .analytics-report-layout, .analytics-layout-canvas,
+    .report-content-grid, .report-block-stack, .analytics-layout-row
+) {
+    width: 100% !important; max-width: none !important; padding: 0 !important; margin: 0 !important;
+    display: grid !important; grid-template-columns: minmax(0, 1fr) !important; gap: var(--reading-section-gap) !important;
+}
+.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .analytics-layout-row:has([data-artifact-block-id="report-chapter-navigation"]),
+.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .analytics-layout-row:has([data-artifact-block-id^="01-from-scripts"]) { display: none !important; }
+.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root :is(.analytics-layout-item, .analytics-layout-item-shell) {
+    width: 100% !important; margin: 0 !important; padding: 0 !important; min-width: 0 !important;
+}
+.quant-report #data-analytics-portable-reader .dashboard-shell.report-shell { min-height: 0 !important; padding: 0 !important; }
+
+/* Match static and enhanced prose so the handoff does not reflow the introduction. */
+.quant-report #data-analytics-portable-fallback .portable-block,
+.quant-report #data-analytics-portable-reader #data-analytics-portable-reader-root .panel.report-block {
+    padding: clamp(22px, 3vw, 34px) !important;
+}
+.quant-report :is(.portable-markdown, .markdown-render) h2 {
+    margin: 0 0 14px !important; color: var(--site-text) !important;
+    font-family: inherit !important; font-size: clamp(22px, 3vw, 28px) !important; font-weight: 650 !important; line-height: 1.28 !important;
+}
+.quant-report :is(.portable-markdown, .markdown-render) p {
+    color: var(--site-muted) !important; font-size: 15px !important; line-height: 1.72 !important; margin: 0 0 16px !important;
+}
+.quant-report :is(.portable-markdown, .markdown-render) > :last-child { margin-bottom: 0 !important; }
 
 /* Keep authored report links on the shared text-link palette. */
 .journal-report :is(.rich-narrative-content, .report-rich-editable, .source-links,
@@ -137,7 +166,7 @@ body .chapter-catalog a {
     border: 0 !important;
     border-radius: var(--control-radius) !important;
     background: transparent !important;
-    color: var(--muted) !important;
+    color: var(--site-muted) !important;
     font-family: inherit !important;
     font-size: 13px !important;
     font-weight: 500 !important;

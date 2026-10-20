@@ -1,29 +1,35 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <link id="site-favicon" rel="icon" type="image/svg+xml" href="../../assets/icons/paper-plane-night.svg" />
-  <script src="../../assets/js/favicon.js?v=1"></script>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fujia Zhang | Self-Cultivation Gallery</title>
+  <style data-canvas-startup>html{background:#142038;color-scheme:dark}html.theme-light{background:#f2ebcf;color-scheme:light}</style>
   <script>
     (function () {
-      const saved = localStorage.getItem("fz-theme");
+      const readPreference = key => {
+        try { return localStorage.getItem(key); } catch { return null; }
+      };
+      const saved = readPreference("fz-theme");
       const prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
       const mode = saved || "system";
       const theme = mode === "system" ? (prefersLight ? "light" : "dark") : mode;
       document.documentElement.classList.toggle("theme-light", theme === "light");
       window.__fzPreferredTheme = theme;
       window.__fzThemeMode = mode;
-      const language = localStorage.getItem("fz-language") || localStorage.getItem("fz-article-language") || "en";
+      const language = readPreference("fz-language") || readPreference("fz-article-language") || "en";
       document.documentElement.lang = language === "zh" ? "zh-CN" : "en";
       document.documentElement.dataset.language = language === "zh" ? "zh" : "en";
     })();
   </script>
+  <link id="site-favicon" rel="icon" type="image/svg+xml" href="../../assets/icons/paper-plane-night.svg" />
+  <script src="../../assets/js/favicon.js?v=2" defer></script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fujia Zhang | Self-Cultivation Gallery</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="../../assets/css/site.css?v=23" />
+  <link rel="stylesheet" href="../../assets/css/site.css?v=25" />
+  <link rel="stylesheet" href="../../assets/css/fonts.css?v=1" media="print" onload="this.media='all'" />
   <style>
     .gallery-shell {
       display: grid;
@@ -137,7 +143,7 @@
         <div class="gallery-nav">
           <button class="gallery-arrow" id="gallery-prev" aria-label="Previous image"><svg class="site-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg></button>
           <div class="gallery-stage media-load-shell" id="gallery-stage">
-            <img id="gallery-image" data-loader-skip="true" src="../../assets/img/others-karate-1.png" alt="Karate image 1" />
+            <img id="gallery-image" data-loader-skip="true" src="../../assets/img/others-karate-1.webp" alt="Karate image 1" />
             <div class="media-load-indicator" aria-live="polite">
               <span class="media-load-dot" aria-hidden="true"></span>
               <span class="media-load-label">Loading image</span>
@@ -154,16 +160,16 @@
   <script>
     (function () {
       const images = [
-        { src: "../../assets/img/others-karate-1.png", alt: "Karate image 1", group: "Karate", groupIndex: 1, groupTotal: 3 },
-        { src: "../../assets/img/others-karate-2.png", alt: "Karate image 2", group: "Karate", groupIndex: 2, groupTotal: 3 },
-        { src: "../../assets/img/others-karate-3.png", alt: "Karate image 3", group: "Karate", groupIndex: 3, groupTotal: 3 },
+        { src: "../../assets/img/others-karate-1.webp", alt: "Karate image 1", group: "Karate", groupIndex: 1, groupTotal: 3 },
+        { src: "../../assets/img/others-karate-2.webp", alt: "Karate image 2", group: "Karate", groupIndex: 2, groupTotal: 3 },
+        { src: "../../assets/img/others-karate-3.webp", alt: "Karate image 3", group: "Karate", groupIndex: 3, groupTotal: 3 },
         { src: "../../assets/img/others-calligraphy-1.png", alt: "Calligraphy image 1", group: "Calligraphy", groupIndex: 1, groupTotal: 4 },
         { src: "../../assets/img/others-calligraphy-2.png", alt: "Calligraphy image 2", group: "Calligraphy", groupIndex: 2, groupTotal: 4 },
-        { src: "../../assets/img/others-calligraphy-3.png", alt: "Calligraphy image 3", group: "Calligraphy", groupIndex: 3, groupTotal: 4 },
-        { src: "../../assets/img/others-calligraphy-4.png", alt: "Calligraphy image 4", group: "Calligraphy", groupIndex: 4, groupTotal: 4 },
-        { src: "../../assets/img/others-duke-edinburgh-1.png", alt: "Duke of Edinburgh image 1", group: "Duke of Edinburgh", groupIndex: 1, groupTotal: 3 },
-        { src: "../../assets/img/others-duke-edinburgh-2.png", alt: "Duke of Edinburgh image 2", group: "Duke of Edinburgh", groupIndex: 2, groupTotal: 3 },
-        { src: "../../assets/img/others-duke-edinburgh-3.png", alt: "Duke of Edinburgh image 3", group: "Duke of Edinburgh", groupIndex: 3, groupTotal: 3 }
+        { src: "../../assets/img/others-calligraphy-3.webp", alt: "Calligraphy image 3", group: "Calligraphy", groupIndex: 3, groupTotal: 4 },
+        { src: "../../assets/img/others-calligraphy-4.webp", alt: "Calligraphy image 4", group: "Calligraphy", groupIndex: 4, groupTotal: 4 },
+        { src: "../../assets/img/others-duke-edinburgh-1.webp", alt: "Duke of Edinburgh image 1", group: "Duke of Edinburgh", groupIndex: 1, groupTotal: 3 },
+        { src: "../../assets/img/others-duke-edinburgh-2.webp", alt: "Duke of Edinburgh image 2", group: "Duke of Edinburgh", groupIndex: 2, groupTotal: 3 },
+        { src: "../../assets/img/others-duke-edinburgh-3.webp", alt: "Duke of Edinburgh image 3", group: "Duke of Edinburgh", groupIndex: 3, groupTotal: 3 }
       ];
 
       const startByHash = {
@@ -282,6 +288,6 @@
     })();
   </script>
 
-  <script type="module" src="../../assets/js/site.js?v=25"></script>
+  <script type="module" src="../../assets/js/site.js?v=27"></script>
 </body>
 </html>

@@ -1,5 +1,4 @@
-import { LiquidLens } from "./liquid-lens.js";
-import { getLanguage, initI18n, setLanguage, translate } from "./i18n.js?v=12";
+import { getLanguage, initI18n, setLanguage, translate } from "./i18n.js?v=13";
 
 // Warn if loaded via file:// which can block ES modules and FX filter
 if (window.location.protocol === "file:") {
@@ -29,8 +28,11 @@ let themeMode = "system";
 const systemQuery =
   typeof window.matchMedia === "function" ? window.matchMedia("(prefers-color-scheme: light)") : null;
 let themeMenu = null;
-let timelineSpineRaf = 0;
-let timelineResizeObserver = null;
+let LiquidLens = null;
+let lensModulePromise = null;
+let lensRequested = false;
+let lensRequestId = 0;
+let lensUnavailableReason = "";
 
 function createStorage() {
   try {
@@ -100,87 +102,43 @@ function getInitialThemeMode() {
   return "system";
 }
 
-function applyLens(enabled, { persist = true } = {}) {
+function renderLensControl(enabled) {
+  if (!lensButton) return;
+  const icon = lensButton.querySelector(".control-chip__icon");
+  const title = lensUnavailableReason || (enabled ? "Disable liquid lens" : "Enable liquid lens");
+  if (icon) icon.innerHTML = svgIcon("sparkles");
+  const value = lensButton.querySelector(".control-chip__value");
+  if (value) value.textContent = translate(enabled ? "On" : "Off");
+  lensButton.title = translate(title);
+  lensButton.setAttribute("aria-label", translate(title));
+  lensButton.setAttribute("aria-pressed", String(enabled));
+  lensButton.classList.toggle("is-inactive", !enabled);
+}
+
+async function applyLens(enabled, { persist = true } = {}) {
+  const requestId = ++lensRequestId;
+  lensRequested = enabled;
+  renderLensControl(enabled);
+  if (persist) storage.setItem(LENS_KEY, enabled ? "on" : "off");
+
   try {
     if (enabled) {
+      // Optional FX must not delay navigation, text, or image initialization.
+      lensModulePromise ||= import("./liquid-lens.js?v=2");
+      const module = await lensModulePromise;
+      if (requestId !== lensRequestId) return;
+      LiquidLens = module.LiquidLens;
       LiquidLens.init("body");
     } else {
-      LiquidLens.destroy();
+      LiquidLens?.destroy();
     }
   } catch (err) {
+    if (requestId !== lensRequestId) return;
+    lensModulePromise = null;
+    lensRequested = false;
+    renderLensControl(false);
+    if (persist) storage.setItem(LENS_KEY, "off");
     console.error("Liquid Lens failed to toggle:", err);
-  }
-
-  if (lensButton) {
-    const icon = lensButton.querySelector(".control-chip__icon");
-    const title = enabled ? "Disable liquid lens" : "Enable liquid lens";
-    if (icon) icon.innerHTML = svgIcon("sparkles");
-    const value = lensButton.querySelector(".control-chip__value");
-    if (value) value.textContent = translate(enabled ? "On" : "Off");
-    lensButton.title = translate(title);
-    lensButton.setAttribute("aria-label", translate(title));
-    lensButton.setAttribute("aria-pressed", String(enabled));
-    lensButton.classList.toggle("is-inactive", !enabled);
-  }
-
-  if (persist) {
-    storage.setItem(LENS_KEY, enabled ? "on" : "off");
-  }
-}
-
-function setTimelineSpine(timeline) {
-  const items = timeline.querySelectorAll(".timeline-item");
-  if (items.length < 2) {
-    timeline.style.setProperty("--timeline-start", "0px");
-    timeline.style.setProperty("--timeline-span", "0px");
-    return;
-  }
-
-  const timelineRect = timeline.getBoundingClientRect();
-  const originY = timelineRect.top + timeline.clientTop;
-  const firstRect = items[0].getBoundingClientRect();
-  const lastRect = items[items.length - 1].getBoundingClientRect();
-
-  const start = firstRect.top + firstRect.height / 2 - originY;
-  const end = lastRect.top + lastRect.height / 2 - originY;
-
-  if (!Number.isFinite(start) || !Number.isFinite(end)) return;
-
-  const height = timeline.clientHeight;
-  const clampedStart = Math.max(0, Math.min(start, height));
-  const clampedEnd = Math.max(clampedStart, Math.min(end, height));
-  const span = clampedEnd - clampedStart;
-
-  timeline.style.setProperty("--timeline-start", `${clampedStart}px`);
-  timeline.style.setProperty("--timeline-span", `${span}px`);
-}
-
-function updateTimelineSpines() {
-  timelineSpineRaf = 0;
-  document.querySelectorAll(".timeline").forEach(setTimelineSpine);
-}
-
-function scheduleTimelineSpineUpdate() {
-  if (timelineSpineRaf) return;
-  timelineSpineRaf = requestAnimationFrame(updateTimelineSpines);
-}
-
-function initTimelineSpines() {
-  const timelines = document.querySelectorAll(".timeline");
-  if (timelines.length === 0) return;
-
-  scheduleTimelineSpineUpdate();
-
-  window.addEventListener("resize", scheduleTimelineSpineUpdate, { passive: true });
-  window.addEventListener("load", scheduleTimelineSpineUpdate, { passive: true });
-
-  if (document.fonts?.ready && typeof document.fonts.ready.then === "function") {
-    document.fonts.ready.then(scheduleTimelineSpineUpdate).catch(() => {});
-  }
-
-  if (typeof ResizeObserver === "function") {
-    timelineResizeObserver = new ResizeObserver(() => scheduleTimelineSpineUpdate());
-    timelines.forEach((timeline) => timelineResizeObserver.observe(timeline));
   }
 }
 
@@ -361,15 +319,8 @@ function buildSettingsControls() {
   document.addEventListener("fz:languagechange", () => {
     renderSettingsLabels();
     applyTheme(themeMode);
-    if (lensButton) {
-      const lensEnabled = LiquidLens.active;
-      const title = lensEnabled ? "Disable liquid lens" : "Enable liquid lens";
-      lensButton.title = translate(lensButton.disabled ? (LiquidLens.isSafariBrowser() ? "FX unavailable in Safari" : "FX unavailable on touch devices") : title);
-      lensButton.querySelector(".control-chip__value").textContent = translate(lensEnabled ? "On" : "Off");
-      lensButton.setAttribute("aria-label", lensButton.title);
-    }
+    renderLensControl(lensRequested);
     renderThemeMenuLabels();
-    scheduleTimelineSpineUpdate();
   });
 
   window.addEventListener("resize", () => {
@@ -477,14 +428,14 @@ function initLens() {
   const isCoarsePointer =
     (typeof window.matchMedia === "function" && window.matchMedia("(pointer: coarse)").matches) ||
     navigator.maxTouchPoints > 0;
-  const isSafari = LiquidLens.isSafariBrowser();
+  const isSafari = /Safari/i.test(navigator.userAgent) && /Apple/i.test(navigator.vendor || "") &&
+    !/Chrome|CriOS|EdgiOS|FxiOS|OPiOS|Chromium/i.test(navigator.userAgent);
   if (isCoarsePointer || isSafari) {
+    lensUnavailableReason = isSafari ? "FX unavailable in Safari" : "FX unavailable on touch devices";
     applyLens(false, { persist: false });
     if (lensButton) {
       lensButton.disabled = true;
       lensButton.setAttribute("aria-disabled", "true");
-      lensButton.title = translate(isSafari ? "FX unavailable in Safari" : "FX unavailable on touch devices");
-      lensButton.setAttribute("aria-label", lensButton.title);
     }
     return;
   }
@@ -495,7 +446,7 @@ function initLens() {
 
   if (lensButton) {
     lensButton.addEventListener("click", () => {
-      const next = !LiquidLens.active;
+      const next = !lensRequested;
       applyLens(next);
     });
   }
@@ -575,7 +526,6 @@ function bootstrap() {
   buildSettingsControls();
   initTheme();
   initLens();
-  initTimelineSpines();
   initImageLoaders();
 }
 

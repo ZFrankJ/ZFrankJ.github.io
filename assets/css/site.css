@@ -1,6 +1,3 @@
-@import url("https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.1.0/lxgwwenkai-regular.css");
-@import url("https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.1.0/lxgwwenkai-bold.css");
-
 :root {
     --site-topbar-height: 80px;
     --control-radius: 12px;
@@ -11,6 +8,10 @@
     --highlight-edge: inset 0 0 0 1px var(--content-border);
     --content-border: color-mix(in srgb, var(--accent) 13%, transparent);
     --bg: #0e182c;
+    --bg-fringe: #142038;
+    /* Keep the pale core near the reading width as desktop margins grow. */
+    --canvas-feather-x: max(clamp(100px, 14vw, 220px), calc((100vw - 1000px) / 2));
+    --canvas-feather-y: clamp(80px, 12vh, 140px);
     --panel: #141922;
     --panel-strong: #1b2431;
     --site-text: #f4e8c1;
@@ -34,6 +35,7 @@
 :root.theme-light,
 body.theme-light {
     --bg: #f8f3de;
+    --bg-fringe: #f2ebcf;
     --panel: #fffdf7;
     --panel-strong: #f4efdf;
     --site-text: #1a2d4a;
@@ -56,6 +58,7 @@ body.theme-light {
 }
 
 html {
+    background-color: var(--bg-fringe);
     scroll-padding-top: calc(var(--site-topbar-height) + 20px);
 }
 
@@ -65,21 +68,25 @@ body {
     isolation: isolate;
     font-family: "MuseoModerno", "LXGW WenKai", "Space Grotesk", "DM Sans", "Work Sans", "Segoe UI", sans-serif;
     color: var(--text);
-    background: var(--bg-gradient);
-    background-attachment: fixed;
+    background: var(--bg-fringe);
+    background-image: var(--bg-gradient);
+
     transition: background 0.4s ease, color 0.3s ease;
 }
 
-/* A broad feather blends the reading canvas into the colored fringe. */
+/* Two soft masks form a rounded reading area without a large blur layer.
+   The opaque canvas underneath keeps every outer edge in the fringe color. */
 body::before,
 .site-topbar__backdrop::before {
     content: "";
     position: fixed;
-    inset: -32px max(16px, calc((100vw - 1120px) / 2)) -32px;
+    inset: 0;
     z-index: -1;
-    border-radius: 160px;
     background: var(--bg);
-    filter: blur(clamp(100px, 10vw, 180px));
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--canvas-feather-x), #000 calc(100% - var(--canvas-feather-x)), transparent), linear-gradient(180deg, transparent, #000 var(--canvas-feather-y), #000 calc(100% - var(--canvas-feather-y)), transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 var(--canvas-feather-x), #000 calc(100% - var(--canvas-feather-x)), transparent), linear-gradient(180deg, transparent, #000 var(--canvas-feather-y), #000 calc(100% - var(--canvas-feather-y)), transparent);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
     pointer-events: none;
 }
 
@@ -416,32 +423,38 @@ a.highlight:hover .highlight__title,
 
 .timeline {
     --timeline-axis: 120px;
+    --timeline-gap: 24px;
     position: relative;
     display: grid;
-    gap: 24px;
+    gap: var(--timeline-gap);
     padding-left: 0;
-}
-
-.timeline::before {
-    content: "";
-    position: absolute;
-    left: var(--timeline-axis);
-    top: var(--timeline-start, 0px);
-    height: var(--timeline-span, 100%);
-    width: 2px;
-    background: var(--accent);
-    transform: translateX(-50%);
-    pointer-events: none;
 }
 
 .timeline-item {
     position: relative;
+    isolation: isolate;
     display: grid;
     grid-template-columns: var(--timeline-axis) 1fr;
     gap: 20px;
     padding: 6px 0;
     align-items: center;
 }
+
+/* Each row owns its connector. It stays attached as images and fonts load. */
+.timeline-item::after {
+    content: "";
+    position: absolute;
+    left: var(--timeline-axis);
+    top: calc(var(--timeline-gap) / -2);
+    bottom: calc(var(--timeline-gap) / -2);
+    width: 2px;
+    background: var(--accent);
+    transform: translateX(-50%);
+    pointer-events: none;
+    z-index: -1;
+}
+.timeline-item:first-child::after { top: 50%; }
+.timeline-item:last-child::after { bottom: 50%; }
 
 .timeline-item__date {
     font-weight: 700;
@@ -770,7 +783,7 @@ a.highlight:hover .highlight__title,
 .site-topbar__backdrop::before {
     position: absolute;
     bottom: auto;
-    height: calc(100vh + 64px);
+    height: 100vh;
     z-index: 0;
 }
 
@@ -1078,8 +1091,7 @@ a.highlight:hover .highlight__title,
     .site-nav a { padding: 0 4px; }
     .site-nav a { font-size: 14px; }
     .page { padding-top: 20px; }
-    body::before, .site-topbar__backdrop::before { inset: -48px; border-radius: 112px; filter: blur(100px); }
-    .site-topbar__backdrop::before { bottom: auto; height: calc(100vh + 96px); }
+    :root { --canvas-feather-x: 72px; --canvas-feather-y: 80px; }
     .hero__meta .meta-row { grid-template-columns: 72px minmax(0, 1fr); }
     .meta-row a { overflow-wrap: anywhere; }
     .timeline { --timeline-axis: 64px; }

@@ -1,0 +1,3 @@
+# Preserve the extracted renderer's reviewed bytes, including bundled whitespace.
+pages/finance/quant-method-story/runtime.js -whitespace linguist-vendored=true
+pages/finance/quant-method-story/runtime.css linguist-vendored=true

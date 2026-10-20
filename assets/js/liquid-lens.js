@@ -55,7 +55,7 @@ export const LiquidLens = {
     target.style.webkitFilter = "url(#liquid-lens-filter)";
     target.style.willChange = "filter";
     if (getComputedStyle(target).backgroundColor === "rgba(0, 0, 0, 0)") {
-      target.style.backgroundColor = "#fff";
+      target.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue("--bg-fringe").trim() || "#142038";
     }
     this.applySafariPaintWorkaround(target);
 
