@@ -211,6 +211,7 @@ test("generated inspector text and accessibility labels stay localized when valu
   const runtime = environment("zh");
   runtime.replaceGeneratedText("P0001 · Slow 1.234 · Medium -2.345 · Fast 3.456 · Forward return (20-day) +12.34%");
   assert.match(runtime.generatedText.nodeValue, /P0001 · 慢速 1\.234 · 中速 -2\.345/);
+  assert.match(runtime.generatedText.nodeValue, /未来 20 个交易日收益率 \+12\.34%/);
   runtime.replaceGeneratedText("P0002 · Slow 2.234 · Medium -1.345 · Fast 4.456 · Forward return (20-day) -2.00%");
   assert.match(runtime.generatedText.nodeValue, /P0002 · 慢速 2\.234/);
   runtime.setLanguage("en");
@@ -220,6 +221,21 @@ test("generated inspector text and accessibility labels stay localized when valu
   assert.equal(runtime.document.title, "从阀值到标准差：寻找数据规律");
   assert.equal(runtime.content.lang, "zh-CN");
   assert.equal(runtime.description.getAttribute("content"), "从固定价格阀值到三维标准差偏离状态，记录我如何从数据中寻找规律。");
+});
+
+test("forward returns use trading-day wording without implying a forecast", () => {
+  const runtime = environment("zh");
+  const translate = runtime.context.__fzMethodI18n.translate;
+  for (const label of ["20-day return", "20-day forward price return", "; Forward return (20-day)"]) {
+    assert.match(translate(label, "zh"), /未来 20 个交易日收益率/);
+    assert.equal(translate(label, "en"), label);
+  }
+  const text = visibleCopy(renderer(runtime)()).join("\n");
+  assert.match(text, /未来 20 个交易日收益率/);
+  assert.doesNotMatch(text, /后续 20 个交易观测/);
+  assert.match(text, /不是 20 个自然日/);
+  assert.match(text, /事后标签/);
+  assert.match(text, /不是预测/);
 });
 
 test("all source explanations and prose reproduction steps have Chinese translations", () => {
